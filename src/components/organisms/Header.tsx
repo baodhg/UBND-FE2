@@ -16,7 +16,7 @@ export const Header: React.FC = () => {
     { label: 'Trang chủ', path: '/', icon: <House size={18} /> },
     { label: 'Thủ tục hành chính', path: '/procedures', icon: <FileText size={18} /> },
     { label: 'Tin tức', path: '/news', icon: <Newspaper size={18} /> },
-    { label: 'Phản ánh', path: '/feedback', icon: <MessageSquare size={18} /> },
+    { label: 'Phản ánh', path: '/report', icon: <MessageSquare size={18} /> },
   ]
 
   return (

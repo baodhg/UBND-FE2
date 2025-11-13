@@ -102,14 +102,14 @@ export const SendReportForm: React.FC = () => {
               name="reportType"
               className="bg-gray-100 w-full px-4 py-2.5 text-base rounded-lg focus:outline-none "
             >
-              <option value="" className="bg-white text-gray-900">Chọn loại phản ánh</option>
-              <option value="infrastructure" className="bg-white hover:bg-gray-100 border hover:border-gray-300">Cơ sở hạ tầng</option>
-              <option value="environment" className="bg-white hover:bg-gray-100 border hover:border-gray-300">Môi trường</option>
-              <option value="traffic" className="bg-white hover:bg-gray-100 border hover:border-gray-300">Giao thông</option>
-              <option value="security" className="bg-white hover:bg-gray-100 border hover:border-gray-300">An ninh trật tự</option>
-              <option value="education" className="bg-white hover:bg-gray-100 border hover:border-gray-300">Giáo dục</option>
-              <option value="healthcare" className="bg-white hover:bg-gray-100 border hover:border-gray-300">Y tế</option>
-              <option value="other" className="bg-white hover:bg-gray-100 border hover:border-gray-300">Khác</option>
+              <option value="" className="bg-white">Chọn loại phản ánh</option>
+              <option value="infrastructure" className="bg-white" >Cơ sở hạ tầng</option>
+              <option value="environment" className="bg-white">Môi trường</option>
+              <option value="traffic" className="bg-white">Giao thông</option>
+              <option value="security" className="bg-white">An ninh trật tự</option>
+              <option value="education" className="bg-white">Giáo dục</option>
+              <option value="healthcare" className="bg-white">Y tế</option>
+              <option value="other" className="bg-white">Khác</option>
             </Field>
             <ErrorMessage name="reportType" component="div" className="text-red-500 text-sm mt-1" />
           </div>
@@ -224,7 +224,7 @@ export const SendReportForm: React.FC = () => {
                 as="input"
                 type="text"
                 placeholder="Nhập địa chỉ hoặc khu phố"
-                className="w-full pl-11 pr-4 py-2.5 text-base border border-gray-300 rounded-lg"
+                className="w-full pl-11 pr-4 py-2.5 bg-gray-100 text-base rounded-lg focus:ring-4 focus:ring-gray-300 focus:border focus:border-gray-400 focus:outline-none"
               />
             </div>
             <ErrorMessage name="location" component="div" className="text-red-500 text-sm mt-1" />
@@ -241,7 +241,7 @@ export const SendReportForm: React.FC = () => {
                 type="button"
                 onClick={() => setFieldValue('isAnonymous', !values.isAnonymous)}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  values.isAnonymous ? 'bg-blue-600' : 'bg-gray-200'
+                  values.isAnonymous ? 'bg-gray-900' : 'bg-gray-200'
                 }`}
               >
                 <span
@@ -266,7 +266,7 @@ export const SendReportForm: React.FC = () => {
                     as="input"
                     type="text"
                     placeholder="Nhập họ và tên"
-                    className="w-full px-4 py-2.5 text-base border border-gray-300 rounded-lg bg-gray-50"
+                    className="w-full px-4 py-2.5 text-base rounded-lg bg-gray-100 focus:ring-4 focus:ring-gray-300 focus:border focus:border-gray-400 focus:outline-none"
                   />
                   <ErrorMessage
                     name="fullName"
@@ -288,7 +288,7 @@ export const SendReportForm: React.FC = () => {
                     as="input"
                     type="tel"
                     placeholder="Nhập số điện thoại"
-                    className="w-full px-4 py-2.5 text-base border border-gray-300 rounded-lg bg-gray-50"
+                    className="w-full px-4 py-2.5 text-base rounded-lg bg-gray-100 focus:ring-4 focus:ring-gray-300 focus:border focus:border-gray-400 focus:outline-none"
                   />
                   <ErrorMessage
                     name="phoneNumber"

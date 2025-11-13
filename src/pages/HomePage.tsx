@@ -112,7 +112,7 @@ export const HomePage: React.FC = () => {
               </div>
             </div>
             <div className="max-w-5xl mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-6 py-5 rounded-xl transition-all shadow-lg hover:shadow-xl text-white">
                   <p className="text-center leading-relaxed">Dịch vụ công trực tuyến</p>
                 </button>
@@ -246,7 +246,7 @@ export const HomePage: React.FC = () => {
               <span>Hotline: (028) 1234 5678</span>
             </a>
           </div>
-        </div>
+      </div>
       </section>
     </div>
   )

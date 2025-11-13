@@ -1,101 +1,108 @@
 import React, { useState } from 'react'
 import { SendReportForm } from '../components/organisms/SendReportForm'
 import { TrackReportForm } from '../components/organisms/TrackReportForm'
+import { MessageSquare, Info } from 'lucide-react'
 
 const ReportPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'send' | 'track'>('send')
+  const [activeTab, setActiveTab] = useState<'send' | 'track'>('track')
 
   return (
-    <div className="min-h-screen">
-      <div className="mx-[68.5px] p-8">
-        {/* Header Section */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Phản ánh & Khiếu nại
-          </h1>
-          <p className="text-lg text-gray-600">
-            Gửi phản ánh hoặc tra cứu tiến độ xử lý
-          </p>
-        </div>
+    <div className="w-full">
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+        <div className="space-y-6">
+          {/* Header Section */}
+          <div>
+            <h2 className="text-2xl mb-2">Phản ánh & Khiếu nại</h2>
+            <p className="text-gray-600">Gửi phản ánh hoặc tra cứu tiến độ xử lý</p>
+          </div>
 
-        {/* Tabs - with gray background wrapper */}
-        <div className="bg-gray-200 rounded-full p-1 inline-flex gap-2 mb-8">
-          <button
-            onClick={() => setActiveTab('send')}
-            className={`px-14 py-1 rounded-full text-base font-medium transition-all ${
-              activeTab === 'send'
-                ? 'bg-white text-gray-900 shadow-md'
-                : 'bg-transparent text-gray-700 hover:text-gray-900'
-            }`}
-          >
-            Gửi phản ánh
-          </button>
-          <button
-            onClick={() => setActiveTab('track')}
-            className={`px-14 py-1 rounded-full text-base font-medium transition-all ${
-              activeTab === 'track'
-                ? 'bg-white text-gray-900 shadow-md'
-                : 'bg-transparent text-gray-700 hover:text-gray-900'
-            }`}
-          >
-            Tra cứu tiến độ
-          </button>
-        </div>
-
-        {/* Tab Content */}
-        <div className="">
-          {activeTab === 'send' ? (
-            <div className="grid grid-cols-3 gap-8">
-              {/* Form Section - 8/12 columns */}
-              <div className="col-span-2">
-                <div className="bg-white rounded-lg shadow-sm p-8 border border-gray-100">
-                  <div className="flex items-center gap-2 mb-6">
-                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                    </svg>
-                    <h2 className="text-xl font-semibold text-gray-900">Biểu mẫu phản ánh</h2>
-                  </div>
-                  <SendReportForm />
-                </div>
-              </div>
-
-              {/* Notes Section - 4/12 columns */}
-              <div className="col-span-1">
-                <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
-                  <div className="flex items-center gap-2 mb-4">
-                    <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                    </svg>
-                    <h3 className="text-base font-semibold text-blue-900">Lưu ý</h3>
-                  </div>
-                  <ul className="space-y-3 text-base text-gray-700">
-                    <li className="flex items-start gap-2">
-                      <span className="text-blue-600 mt-1">•</span>
-                      <span>Bạn sẽ nhận được mã tra cứu sau khi gửi phản ánh</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-blue-600 mt-1">•</span>
-                      <span>Lưu lại mã tra cứu để theo dõi tiến độ xử lý</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-blue-600 mt-1">•</span>
-                      <span>Thời gian xử lý trung bình: 5-7 ngày làm việc</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-blue-600 mt-1">•</span>
-                      <span>Cung cấp hình ảnh để hỗ trợ xử lý nhanh hơn</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
+          {/* Tabs */}
+          <div className="flex flex-col gap-2">
+            <div
+              role="tablist"
+              aria-orientation="horizontal"
+              className="bg-gray-200 text-gray-700 h-9 items-center justify-center rounded-xl p-[3px] grid w-full max-w-md grid-cols-2"
+            >
+              <button
+                type="button"
+                role="tab"
+                onClick={() => setActiveTab('send')}
+                className={`
+                  inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-xl border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-1
+                  ${activeTab === 'send'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'bg-transparent text-gray-700 hover:text-gray-900'
+                  }
+                `}
+              >
+                Gửi phản ánh
+              </button>
+              <button
+                type="button"
+                role="tab"
+                onClick={() => setActiveTab('track')}
+                className={`
+                  inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-xl border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-1
+                  ${activeTab === 'track'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'bg-transparent text-gray-700 hover:text-gray-900'
+                  }
+                `}
+              >
+                Tra cứu tiến độ
+              </button>
             </div>
-          ) : (
-            <div className="flex justify-center">
-              <div className="max-w-4xl w-full">
-                <TrackReportForm />
-              </div>
+
+            {/* Tab Content */}
+            <div className="flex-1 outline-none mt-6">
+              {activeTab === 'send' ? (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Form Section - 2 columns */}
+                  <div className="lg:col-span-2">
+                    <div className="bg-card text-card-foreground flex flex-col gap-6 rounded-xl p-6 border-0 shadow-sm">
+                      <h3 className="mb-6 flex items-center gap-2">
+                        <MessageSquare size={24} className="text-blue-600" />
+                        <span>Biểu mẫu phản ánh</span>
+                      </h3>
+                      <SendReportForm />
+                    </div>
+                  </div>
+
+                  {/* Notes Section - 1 column */}
+                  <div className="space-y-6">
+                    <div className="bg-card text-card-foreground flex flex-col gap-6 rounded-xl p-6 border-0 shadow-sm">
+                      <h4 className="mb-4 flex items-center gap-2">
+                        <Info size={20} className="text-blue-600" />
+                        <span>Lưu ý</span>
+                      </h4>
+                      <ul className="space-y-3 text-sm text-gray-600">
+                        <li className="flex items-start gap-2">
+                          <span className="text-blue-600 mt-1">•</span>
+                          <span>Bạn sẽ nhận được mã tra cứu sau khi gửi phản ánh</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-blue-600 mt-1">•</span>
+                          <span>Lưu lại mã tra cứu để theo dõi tiến độ xử lý</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-blue-600 mt-1">•</span>
+                          <span>Thời gian xử lý trung bình: 5-7 ngày làm việc</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-blue-600 mt-1">•</span>
+                          <span>Cung cấp hình ảnh để hỗ trợ xử lý nhanh hơn</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="max-w-3xl mx-auto">
+                  <TrackReportForm />
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

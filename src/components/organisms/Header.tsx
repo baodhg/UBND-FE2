@@ -49,10 +49,12 @@ export const Header: React.FC = () => {
       </div>
 
       {/* Navigation Bar */}
-      <nav className="bg-blue-600 text-white border-t border-blue-400">
+      <nav className="hidden lg:flex items-center bg-gradient-to-r from-blue-600 to-blue-700">
         <div className="max-w-7xl mx-auto w-full px-4 lg:px-8 flex items-center">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path
+            const isActive = location.pathname === item.path || 
+                            (item.path === '/' && location.pathname === '/') ||
+                            (item.path !== '/' && location.pathname.startsWith(item.path))
             return (
               <Link
                 key={item.path}
@@ -74,6 +76,8 @@ export const Header: React.FC = () => {
             )
           })}
           
+          <div className="flex-1"></div>
+          
           <Link
             to="/login"
             className="flex items-center gap-2 px-5 py-4 text-blue-50 hover:bg-blue-700 hover:text-white transition-all border-l border-blue-500"
@@ -81,8 +85,6 @@ export const Header: React.FC = () => {
             <LogIn size={18} />
             <span>Đăng nhập Khu Phố</span>
           </Link>
-          
-          <div className="flex-1"></div>
         </div>
       </nav>
     </header>

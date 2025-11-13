@@ -5,6 +5,9 @@ import { MainLayout } from './layouts/MainLayout'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
 import { ProfilePage } from './pages/ProfilePage'
+import { ProceduresPage } from './pages/ProceduresPage'
+import { NewsPage } from './pages/NewsPage'
+import { FeedbackPage } from './pages/FeedbackPage'
 
 function App() {
   return (
@@ -13,6 +16,9 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<MainLayout><HomePage /></MainLayout>} />
+            <Route path="/procedures" element={<MainLayout><ProceduresPage /></MainLayout>} />
+            <Route path="/news" element={<MainLayout><NewsPage /></MainLayout>} />
+            <Route path="/feedback" element={<MainLayout><FeedbackPage /></MainLayout>} />
             <Route path="/login" element={<MainLayout><LoginPage /></MainLayout>} />
             <Route path="/profile" element={<MainLayout><ProfilePage /></MainLayout>} />
           </Routes>

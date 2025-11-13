@@ -10,11 +10,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col">
       <Header />
-      <main className=" flex-grow container">
+      <main className="flex-grow">
         {children}
       </main>
       <Footer />
     </div>
   )
 }
-

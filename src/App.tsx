@@ -8,7 +8,7 @@ import { ProfilePage } from './pages/ProfilePage'
 import { ProceduresPage } from './pages/ProceduresPage'
 import { NewsPage } from './pages/NewsPage'
 import { FeedbackPage } from './pages/FeedbackPage'
-
+import ReportPage from './pages/ReportPage'
 function App() {
   return (
     <ThemeProvider>

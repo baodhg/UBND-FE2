@@ -21,6 +21,7 @@ function App() {
             <Route path="/feedback" element={<MainLayout><FeedbackPage /></MainLayout>} />
             <Route path="/login" element={<MainLayout><LoginPage /></MainLayout>} />
             <Route path="/profile" element={<MainLayout><ProfilePage /></MainLayout>} />
+            <Route path="/report" element={<MainLayout><ReportPage /></MainLayout>} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { SendReportForm } from '../components/organisms/SendReportForm'
+import { TrackReportForm } from '../components/organisms/TrackReportForm'
 
 const ReportPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'send' | 'track'>('send')
@@ -89,9 +90,10 @@ const ReportPage: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Tra cứu tiến độ</h2>
-              <p className="text-gray-600 text-sm">Form tra cứu tiến độ sẽ được thêm ở đây</p>
+            <div className="flex justify-center">
+              <div className="max-w-4xl w-full">
+                <TrackReportForm />
+              </div>
             </div>
           )}
         </div>

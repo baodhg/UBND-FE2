@@ -1,20 +1,20 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
-import { Button } from '../atoms/Button'
+import { Camera, MapPin, ChevronDown } from 'lucide-react'
 
 interface SendReportFormValues {
-  reportType: string
+  category: string
   description: string
   images: File[]
   location: string
   isAnonymous: boolean
-  fullName: string
-  phoneNumber: string
+  name: string
+  phone: string
 }
 
 const SendReportSchema = Yup.object().shape({
-  reportType: Yup.string().required('Loại phản ánh là bắt buộc'),
+  category: Yup.string().required('Loại phản ánh là bắt buộc'),
   description: Yup.string()
     .max(2000, 'Mô tả không được vượt quá 2000 ký tự')
     .required('Mô tả là bắt buộc'),
@@ -26,12 +26,12 @@ const SendReportSchema = Yup.object().shape({
     }),
   location: Yup.string().required('Địa điểm là bắt buộc'),
   isAnonymous: Yup.boolean(),
-  fullName: Yup.string().when('isAnonymous', {
+  name: Yup.string().when('isAnonymous', {
     is: false,
     then: (schema) => schema.required('Họ và tên là bắt buộc khi không gửi ẩn danh'),
     otherwise: (schema) => schema.notRequired(),
   }),
-  phoneNumber: Yup.string().when('isAnonymous', {
+  phone: Yup.string().when('isAnonymous', {
     is: false,
     then: (schema) =>
       schema
@@ -42,16 +42,14 @@ const SendReportSchema = Yup.object().shape({
 })
 
 export const SendReportForm: React.FC = () => {
-  const [imagePreview, setImagePreview] = useState<string[]>([])
-
   const initialValues: SendReportFormValues = {
-    reportType: '',
+    category: '',
     description: '',
     images: [],
     location: '',
     isAnonymous: false,
-    fullName: '',
-    phoneNumber: '',
+    name: '',
+    phone: '',
   }
 
   const handleImageChange = (
@@ -64,7 +62,6 @@ export const SendReportForm: React.FC = () => {
       return
     }
 
-    // Check file sizes
     const oversizedFiles = files.filter((file) => file.size > 3 * 1024 * 1024)
     if (oversizedFiles.length > 0) {
       alert('Mỗi file tối đa 3MB')
@@ -72,17 +69,22 @@ export const SendReportForm: React.FC = () => {
     }
 
     setFieldValue('images', files)
-
-    // Create preview URLs
-    const previews = files.map((file) => URL.createObjectURL(file))
-    setImagePreview(previews)
   }
 
   const handleSubmit = (values: SendReportFormValues) => {
     console.log('Form values:', values)
-    // Handle form submission here
     alert('Gửi phản ánh thành công!')
   }
+
+  const categories = [
+    'Cơ sở hạ tầng',
+    'Môi trường',
+    'An ninh trật tự',
+    'Giao thông',
+    'Giáo dục',
+    'Y tế',
+    'Khác',
+  ]
 
   return (
     <Formik
@@ -91,221 +93,188 @@ export const SendReportForm: React.FC = () => {
       onSubmit={handleSubmit}
     >
       {({ values, setFieldValue }) => (
-        <Form className="space-y-4 max-w-4xl">
+        <Form className="space-y-6">
           {/* Loại phản ánh */}
           <div>
-            <label htmlFor="reportType" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="category"
+              className="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+            >
               Loại phản ánh <span className="text-red-500">*</span>
             </label>
-            <Field
-              as="select"
-              name="reportType"
-              className="bg-gray-100 w-full px-4 py-2.5 text-base rounded-lg focus:outline-none "
-            >
-              <option value="" className="bg-white">Chọn loại phản ánh</option>
-              <option value="infrastructure" className="bg-white" >Cơ sở hạ tầng</option>
-              <option value="environment" className="bg-white">Môi trường</option>
-              <option value="traffic" className="bg-white">Giao thông</option>
-              <option value="security" className="bg-white">An ninh trật tự</option>
-              <option value="education" className="bg-white">Giáo dục</option>
-              <option value="healthcare" className="bg-white">Y tế</option>
-              <option value="other" className="bg-white">Khác</option>
-            </Field>
-            <ErrorMessage name="reportType" component="div" className="text-red-500 text-sm mt-1" />
+            <div className="relative mt-2">
+              <Field
+                as="select"
+                name="category"
+                id="category"
+                className="border-input data-[placeholder]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-full items-center justify-between gap-2 rounded-md border bg-input-background px-3 py-2 text-sm whitespace-nowrap transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 h-9 appearance-none pr-10"
+              >
+                <option value="">Chọn loại phản ánh</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </Field>
+              <ChevronDown
+                size={16}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none opacity-50"
+              />
+            </div>
+            <ErrorMessage name="category" component="div" className="text-red-500 text-sm mt-1" />
           </div>
 
           {/* Mô tả chi tiết */}
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="description"
+              className="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+            >
               Mô tả chi tiết <span className="text-red-500">*</span>
             </label>
             <Field
               name="description"
               as="textarea"
-              rows={4}
+              id="description"
+              rows={5}
               placeholder="Mô tả chi tiết vấn đề (tối đa 2000 ký tự)"
-              className="bg-gray-100 w-full px-4 py-2.5 text-base rounded-lg focus:ring-4 focus:ring-gray-300 focus:border focus:border-gray-400 focus:outline-none"
+              className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border bg-input-background px-3 py-2 text-base transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm mt-2 resize-none"
             />
+            <p className="text-sm text-gray-500 mt-1">{values.description.length}/2000 ký tự</p>
             <ErrorMessage
               name="description"
               component="div"
               className="text-red-500 text-sm mt-1"
             />
-            <div className="text-sm text-gray-500 mt-1">
-              {values.description.length}/2000 ký tự
-            </div>
           </div>
 
           {/* Hình ảnh/Video */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50">
               Hình ảnh/Video <span className="text-gray-500">(Tùy chọn)</span>
             </label>
-            <div className="border-2 border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 hover:bg-blue-50 transition-colors bg-white">
+            <div className="mt-2">
               <input
                 type="file"
                 accept="image/*,video/*"
                 multiple
-                max={5}
                 id="images"
                 className="hidden"
                 onChange={(e) => handleImageChange(e, setFieldValue)}
               />
               <label
                 htmlFor="images"
-                className="cursor-pointer flex items-center justify-center gap-2"
+                className="flex items-center justify-center gap-2 w-full p-4 border-2 border-gray-300 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all"
               >
-                <svg
-                  className="w-5 h-5 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-                <span className="text-base text-gray-600">
+                <Camera size={20} className="text-gray-600" />
+                <span className="text-gray-700">
                   Thêm ảnh/video ({values.images.length}/5)
                 </span>
               </label>
+              <p className="text-sm text-gray-500 mt-1">Mỗi file tối đa 3MB</p>
             </div>
-            <div className="text-sm text-gray-500 mt-2">Mỗi file tối đa 3MB</div>
             <ErrorMessage name="images" component="div" className="text-red-500 text-sm mt-1" />
-
-            {/* Image Preview */}
-            {imagePreview.length > 0 && (
-              <div className="grid grid-cols-5 gap-2 mt-3">
-                {imagePreview.map((preview, index) => (
-                  <img
-                    key={index}
-                    src={preview}
-                    alt={`Preview ${index + 1}`}
-                    className="w-full h-20 object-cover rounded-lg"
-                  />
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Địa điểm */}
           <div>
-            <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="location"
+              className="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+            >
               Địa điểm <span className="text-red-500">*</span>
             </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-              </span>
+            <div className="relative mt-2">
+              <MapPin
+                size={18}
+                className="absolute left-3 top-3 text-gray-400 pointer-events-none"
+              />
               <Field
                 name="location"
                 as="input"
                 type="text"
+                id="location"
                 placeholder="Nhập địa chỉ hoặc khu phố"
-                className="w-full pl-11 pr-4 py-2.5 bg-gray-100 text-base rounded-lg focus:ring-4 focus:ring-gray-300 focus:border focus:border-gray-400 focus:outline-none"
+                className="file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-9 w-full min-w-0 rounded-md border px-3 py-1 text-base bg-input-background transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive pl-10"
               />
             </div>
             <ErrorMessage name="location" component="div" className="text-red-500 text-sm mt-1" />
           </div>
 
           {/* Gửi ẩn danh */}
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-base font-medium text-gray-900">Gửi ẩn danh</div>
-                <div className="text-sm text-gray-600">Không hiển thị thông tin cá nhân</div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setFieldValue('isAnonymous', !values.isAnonymous)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  values.isAnonymous ? 'bg-gray-900' : 'bg-gray-200'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    values.isAnonymous ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
+          <div className="flex items-center justify-between p-4 border border-gray-200 bg-gray-50 rounded-xl">
+            <div>
+              <p className="text-gray-800">Gửi ẩn danh</p>
+              <p className="text-sm text-gray-600">Không hiển thị thông tin cá nhân</p>
             </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={values.isAnonymous}
+              onClick={() => setFieldValue('isAnonymous', !values.isAnonymous)}
+              className={`peer inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full border border-transparent transition-all outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 ${
+                values.isAnonymous
+                  ? 'bg-blue-600 data-[state=checked]:bg-primary'
+                  : 'bg-gray-300 data-[state=unchecked]:bg-switch-background dark:data-[state=unchecked]:bg-input/80'
+              }`}
+            >
+              <span
+                className={`pointer-events-none block size-4 rounded-full ring-0 transition-transform bg-white dark:data-[state=unchecked]:bg-card-foreground dark:data-[state=checked]:bg-primary-foreground ${
+                  values.isAnonymous
+                    ? 'translate-x-[calc(100%-2px)]'
+                    : 'translate-x-0'
+                }`}
+              />
+            </button>
           </div>
 
-          {/* Họ và tên (hiển thị khi không ẩn danh) */}
+          {/* Thông tin cá nhân (hiển thị khi không ẩn danh) */}
           {!values.isAnonymous && (
-            <div className="bg-white rounded-lg p-6 border border-gray-200">
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
-                    Họ và tên <span className="text-red-500">*</span>
-                  </label>
-                  <Field
-                    name="fullName"
-                    as="input"
-                    type="text"
-                    placeholder="Nhập họ và tên"
-                    className="w-full px-4 py-2.5 text-base rounded-lg bg-gray-100 focus:ring-4 focus:ring-gray-300 focus:border focus:border-gray-400 focus:outline-none"
-                  />
-                  <ErrorMessage
-                    name="fullName"
-                    component="div"
-                    className="text-red-500 text-sm mt-1"
-                  />
-                </div>
-
-                {/* Số điện thoại */}
-                <div>
-                  <label
-                    htmlFor="phoneNumber"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Số điện thoại <span className="text-red-500">*</span>
-                  </label>
-                  <Field
-                    name="phoneNumber"
-                    as="input"
-                    type="tel"
-                    placeholder="Nhập số điện thoại"
-                    className="w-full px-4 py-2.5 text-base rounded-lg bg-gray-100 focus:ring-4 focus:ring-gray-300 focus:border focus:border-gray-400 focus:outline-none"
-                  />
-                  <ErrorMessage
-                    name="phoneNumber"
-                    component="div"
-                    className="text-red-500 text-sm mt-1"
-                  />
-                </div>
+            <div className="space-y-4 p-4 border border-gray-200 rounded-xl bg-white">
+              <div>
+                <label
+                  htmlFor="name"
+                  className="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+                >
+                  Họ và tên <span className="text-red-500">*</span>
+                </label>
+                <Field
+                  name="name"
+                  as="input"
+                  type="text"
+                  id="name"
+                  placeholder="Nhập họ và tên"
+                  className="file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-9 w-full min-w-0 rounded-md border px-3 py-1 text-base bg-input-background transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive mt-2"
+                />
+                <ErrorMessage name="name" component="div" className="text-red-500 text-sm mt-1" />
+              </div>
+              <div>
+                <label
+                  htmlFor="phone"
+                  className="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+                >
+                  Số điện thoại <span className="text-red-500">*</span>
+                </label>
+                <Field
+                  name="phone"
+                  as="input"
+                  type="tel"
+                  id="phone"
+                  placeholder="Nhập số điện thoại"
+                  className="file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-9 w-full min-w-0 rounded-md border px-3 py-1 text-base bg-input-background transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive mt-2"
+                />
+                <ErrorMessage name="phone" component="div" className="text-red-500 text-sm mt-1" />
               </div>
             </div>
           )}
 
           {/* Submit Button */}
-          <div className="pt-2">
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-base">
-              Gửi phản ánh
-            </Button>
-          </div>
+          <button
+            type="submit"
+            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-primary-foreground px-4 py-2 has-[>svg]:px-3 w-full h-14 bg-blue-600 hover:bg-blue-700 text-lg"
+          >
+            Gửi phản ánh
+          </button>
         </Form>
       )}
     </Formik>

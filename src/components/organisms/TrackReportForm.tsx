@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Button } from '../atoms/Button'
+import { Search } from 'lucide-react'
 
 export const TrackReportForm: React.FC = () => {
   const [trackingCode, setTrackingCode] = useState('')
@@ -14,48 +14,31 @@ export const TrackReportForm: React.FC = () => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-      {/* Header Section */}
-      <div className="flex items-center gap-2 p-6">
-        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <h2 className="text-xl font-semibold text-gray-900">Tra cứu tiến độ</h2>
-      </div>
-      
-      {/* Form Section */}
-      <div className="p-8">
-        <div className="flex gap-4">
-          <div className="flex-1 relative">
-            <input
-              type="text"
-              value={trackingCode}
-              onChange={(e) => setTrackingCode(e.target.value)}
-              placeholder="Nhập mã tra cứu (VD: TNP20250001)"
-              className="w-full pl-11 pr-4 py-3 text-base bg-gray-100 rounded-lg focus:outline-none"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleSearch()
-                }
-              }}
-            />
-            <svg 
-              className="w-5 h-5 text-blue-600 absolute left-3 top-1/2 transform -translate-y-1/2" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-          <Button
-            type="button"
-            onClick={handleSearch}
-            className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white text-base font-medium"
-          >
-            Tra cứu
-          </Button>
-        </div>
+    <div className="bg-card text-card-foreground flex flex-col gap-6 rounded-xl p-6 border-0 shadow-sm">
+      <h3 className="mb-6 flex items-center gap-2">
+        <Search size={24} className="text-blue-600" />
+        <span className="text-lg font-semibold">Tra cứu tiến độ</span>
+      </h3>
+      <div className="flex gap-3 mb-6">
+        <input
+          type="text"
+          value={trackingCode}
+          onChange={(e) => setTrackingCode(e.target.value)}
+          placeholder="Nhập mã tra cứu (VD: TNP2025001)"
+          className="flex h-9 w-full min-w-0 rounded-md border border-gray-300 px-3 py-1 text-base bg-white transition-[color,box-shadow] outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 md:text-sm flex-1"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              handleSearch()
+            }
+          }}
+        />
+        <button
+          type="button"
+          onClick={handleSearch}
+          className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all h-9 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800"
+        >
+          Tra cứu
+        </button>
       </div>
     </div>
   )

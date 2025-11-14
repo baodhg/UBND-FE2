@@ -1,14 +1,17 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
-import { Camera, MapPin, ChevronDown } from 'lucide-react'
+import { Camera, MapPin, ChevronDown, CheckCircle2, X, Copy, Check } from 'lucide-react'
 import { useReportCategories } from '../../features/report-categories'
+import { useCreateReport } from '../../features/reports'
 
 interface SendReportFormValues {
   category: string
+  title: string
   description: string
   images: File[]
   location: string
+  priority: string
   isAnonymous: boolean
   name: string
   phone: string
@@ -16,6 +19,9 @@ interface SendReportFormValues {
 
 const SendReportSchema = Yup.object().shape({
   category: Yup.string().required('Loại phản ánh là bắt buộc'),
+  title: Yup.string()
+    .max(200, 'Tiêu đề không được vượt quá 200 ký tự')
+    .required('Tiêu đề là bắt buộc'),
   description: Yup.string()
     .max(2000, 'Mô tả không được vượt quá 2000 ký tự')
     .required('Mô tả là bắt buộc'),
@@ -26,6 +32,7 @@ const SendReportSchema = Yup.object().shape({
       return files.every((file: any) => file.size <= 3 * 1024 * 1024)
     }),
   location: Yup.string().required('Địa điểm là bắt buộc'),
+  priority: Yup.string().required('Mức độ là bắt buộc'),
   isAnonymous: Yup.boolean(),
   name: Yup.string().when('isAnonymous', {
     is: false,
@@ -43,6 +50,12 @@ const SendReportSchema = Yup.object().shape({
 })
 
 export const SendReportForm: React.FC = () => {
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [trackingCode, setTrackingCode] = useState('')
+  const [copied, setCopied] = useState(false)
+
+  const { mutate: createReport, isPending } = useCreateReport()
+
   // Fetch categories from API
   const { categories, isLoading: isLoadingCategories } = useReportCategories({
     page: 1,
@@ -52,9 +65,11 @@ export const SendReportForm: React.FC = () => {
 
   const initialValues: SendReportFormValues = {
     category: '',
+    title: '',
     description: '',
     images: [],
     location: '',
+    priority: 'THONG_THUONG',
     isAnonymous: false,
     name: '',
     phone: '',
@@ -62,30 +77,138 @@ export const SendReportForm: React.FC = () => {
 
   const handleImageChange = (
     event: React.ChangeEvent<HTMLInputElement>,
-    setFieldValue: (field: string, value: any) => void
+    setFieldValue: (field: string, value: any) => void,
+    currentImages: File[]
   ) => {
-    const files = Array.from(event.target.files || [])
-    if (files.length > 5) {
+    const newFiles = Array.from(event.target.files || [])
+    const totalFiles = [...currentImages, ...newFiles]
+    
+    if (totalFiles.length > 5) {
       alert('Chỉ được tải lên tối đa 5 hình ảnh')
       return
     }
 
-    const oversizedFiles = files.filter((file) => file.size > 3 * 1024 * 1024)
+    const oversizedFiles = newFiles.filter((file) => file.size > 3 * 1024 * 1024)
     if (oversizedFiles.length > 0) {
       alert('Mỗi file tối đa 3MB')
       return
     }
 
-    setFieldValue('images', files)
+    setFieldValue('images', totalFiles)
+    // Reset input để có thể chọn lại cùng file
+    event.target.value = ''
   }
 
-  const handleSubmit = (values: SendReportFormValues) => {
-    console.log('Form values:', values)
-    alert('Gửi phản ánh thành công!')
+  const handleRemoveImage = (
+    index: number,
+    setFieldValue: (field: string, value: any) => void,
+    currentImages: File[]
+  ) => {
+    const newImages = currentImages.filter((_, i) => i !== index)
+    setFieldValue('images', newImages)
+  }
+
+  const handleSubmit = (values: SendReportFormValues, { resetForm }: any) => {
+    const requestData = {
+      idLinhVucPhanAnh: values.category,
+      tieuDe: values.title,
+      moTa: values.description,
+      viTri: values.location,
+      mucDo: values.priority,
+      tenNguoiPhanAnh: values.isAnonymous ? undefined : values.name,
+      soDienThoaiNguoiPhanAnh: values.isAnonymous ? undefined : values.phone,
+    }
+
+    createReport(
+      { data: requestData, files: values.images },
+      {
+        onSuccess: (data) => {
+          console.log('API Response:', data)
+          console.log('Mã phản ánh:', data.ma_phan_anh)
+          setTrackingCode(data.ma_phan_anh || '')
+          setShowSuccessModal(true)
+          resetForm()
+        },
+        onError: (error: any) => {
+          console.error('Submit error:', error)
+          alert(error?.response?.data?.message || error?.message || 'Có lỗi xảy ra khi gửi phản ánh')
+        },
+      }
+    )
+  }
+
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(trackingCode)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   return (
-    <Formik
+    <>
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="relative bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 animate-in fade-in zoom-in duration-300">
+            {/* Close button */}
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X size={24} />
+            </button>
+
+            {/* Success icon */}
+            <div className="flex justify-center mb-4">
+              <div className="bg-green-100 rounded-full p-3">
+                <CheckCircle2 size={48} className="text-green-600" />
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="text-center">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Gửi thành công!</h3>
+              <p className="text-gray-600 mb-4">
+                Phản ánh của bạn đã được tiếp nhận. Chúng tôi sẽ xem xét và phản hồi sớm nhất.
+              </p>
+
+              {/* Tracking Code */}
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mb-6">
+                <p className="text-sm text-gray-600 mb-2">Mã tra cứu của bạn:</p>
+                <div className="flex items-center justify-center gap-2">
+                  <code className="text-2xl font-bold text-blue-600">{trackingCode}</code>
+                  <button
+                    type="button"
+                    onClick={handleCopyCode}
+                    className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
+                    title="Sao chép mã"
+                  >
+                    {copied ? (
+                      <Check size={20} className="text-green-600" />
+                    ) : (
+                      <Copy size={20} className="text-blue-600" />
+                    )}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Vui lòng lưu lại mã này để tra cứu tiến độ xử lý
+                </p>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowSuccessModal(false)}
+                  className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <Formik
       initialValues={initialValues}
       validationSchema={SendReportSchema}
       onSubmit={handleSubmit}
@@ -125,6 +248,51 @@ export const SendReportForm: React.FC = () => {
             <ErrorMessage name="category" component="div" className="text-red-500 text-sm mt-1" />
           </div>
 
+          {/* Tiêu đề */}
+          <div>
+            <label
+              htmlFor="title"
+              className="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+            >
+              Tiêu đề <span className="text-red-500">*</span>
+            </label>
+            <Field
+              name="title"
+              id="title"
+              type="text"
+              placeholder="Nhập tiêu đề phản ánh (tối đa 200 ký tự)"
+              className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex w-full rounded-md border bg-input-background px-3 py-2 text-base transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm mt-2"
+            />
+            <p className="text-sm text-gray-500 mt-1">{values.title.length}/200 ký tự</p>
+            <ErrorMessage name="title" component="div" className="text-red-500 text-sm mt-1" />
+          </div>
+
+          {/* Mức độ */}
+          <div>
+            <label
+              htmlFor="priority"
+              className="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+            >
+              Mức độ <span className="text-red-500">*</span>
+            </label>
+            <div className="relative mt-2">
+              <Field
+                as="select"
+                name="priority"
+                id="priority"
+                className="border-input data-[placeholder]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-full items-center justify-between gap-2 rounded-md border bg-input-background px-3 py-2 text-sm whitespace-nowrap transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 h-9 appearance-none pr-10"
+              >
+                <option value="THONG_THUONG">Thông thường</option>
+                <option value="KHAN_CAP">Khẩn cấp</option>
+              </Field>
+              <ChevronDown
+                size={16}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none opacity-50"
+              />
+            </div>
+            <ErrorMessage name="priority" component="div" className="text-red-500 text-sm mt-1" />
+          </div>
+
           {/* Mô tả chi tiết */}
           <div>
             <label
@@ -161,7 +329,7 @@ export const SendReportForm: React.FC = () => {
                 multiple
                 id="images"
                 className="hidden"
-                onChange={(e) => handleImageChange(e, setFieldValue)}
+                onChange={(e) => handleImageChange(e, setFieldValue, values.images)}
               />
               <label
                 htmlFor="images"
@@ -174,6 +342,32 @@ export const SendReportForm: React.FC = () => {
               </label>
               <p className="text-sm text-gray-500 mt-1">Mỗi file tối đa 3MB</p>
             </div>
+
+            {/* Image Preview */}
+            {values.images.length > 0 && (
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {values.images.map((file, index) => (
+                  <div key={index} className="relative group">
+                    <div className="aspect-square rounded-lg overflow-hidden border-2 border-gray-200">
+                      <img
+                        src={URL.createObjectURL(file)}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    {/* Remove button */}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(index, setFieldValue, values.images)}
+                      className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <ErrorMessage name="images" component="div" className="text-red-500 text-sm mt-1" />
           </div>
 
@@ -266,12 +460,14 @@ export const SendReportForm: React.FC = () => {
           {/* Submit Button */}
           <button
             type="submit"
+            disabled={isPending}
             className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-primary-foreground px-4 py-2 has-[>svg]:px-3 w-full h-14 bg-blue-600 hover:bg-blue-700 text-lg"
           >
-            Gửi phản ánh
+            {isPending ? 'Đang gửi...' : 'Gửi phản ánh'}
           </button>
         </Form>
       )}
     </Formik>
+    </>
   )
 }

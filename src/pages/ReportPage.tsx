@@ -4,7 +4,7 @@ import { TrackReportForm } from '../components/organisms/TrackReportForm'
 import { MessageSquare, Info } from 'lucide-react'
 
 const ReportPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'send' | 'track'>('track')
+  const [activeTab, setActiveTab] = useState<'send' | 'track'>('send')
 
   return (
     <div className="w-full">

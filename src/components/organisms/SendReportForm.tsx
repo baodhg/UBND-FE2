@@ -2,6 +2,7 @@ import React from 'react'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
 import { Camera, MapPin, ChevronDown } from 'lucide-react'
+import { useReportCategories } from '../../features/report-categories'
 
 interface SendReportFormValues {
   category: string
@@ -42,6 +43,13 @@ const SendReportSchema = Yup.object().shape({
 })
 
 export const SendReportForm: React.FC = () => {
+  // Fetch categories from API
+  const { categories, isLoading: isLoadingCategories } = useReportCategories({
+    page: 1,
+    size: 100,
+    isActive: true,
+  })
+
   const initialValues: SendReportFormValues = {
     category: '',
     description: '',
@@ -76,16 +84,6 @@ export const SendReportForm: React.FC = () => {
     alert('Gửi phản ánh thành công!')
   }
 
-  const categories = [
-    'Cơ sở hạ tầng',
-    'Môi trường',
-    'An ninh trật tự',
-    'Giao thông',
-    'Giáo dục',
-    'Y tế',
-    'Khác',
-  ]
-
   return (
     <Formik
       initialValues={initialValues}
@@ -107,12 +105,15 @@ export const SendReportForm: React.FC = () => {
                 as="select"
                 name="category"
                 id="category"
+                disabled={isLoadingCategories}
                 className="border-input data-[placeholder]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-full items-center justify-between gap-2 rounded-md border bg-input-background px-3 py-2 text-sm whitespace-nowrap transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 h-9 appearance-none pr-10"
               >
-                <option value="">Chọn loại phản ánh</option>
+                <option value="">
+                  {isLoadingCategories ? 'Đang tải...' : 'Chọn loại phản ánh'}
+                </option>
                 {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
+                  <option key={cat.id} value={cat.id}>
+                    {cat.ten}
                   </option>
                 ))}
               </Field>
@@ -211,19 +212,13 @@ export const SendReportForm: React.FC = () => {
               type="button"
               role="switch"
               aria-checked={values.isAnonymous}
+              data-state={values.isAnonymous ? 'checked' : 'unchecked'}
               onClick={() => setFieldValue('isAnonymous', !values.isAnonymous)}
-              className={`peer inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full border border-transparent transition-all outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 ${
-                values.isAnonymous
-                  ? 'bg-blue-600 data-[state=checked]:bg-primary'
-                  : 'bg-gray-300 data-[state=unchecked]:bg-switch-background dark:data-[state=unchecked]:bg-input/80'
-              }`}
+              className="peer data-[state=checked]:bg-primary data-[state=unchecked]:bg-switch-background focus-visible:border-ring focus-visible:ring-ring/50 dark:data-[state=unchecked]:bg-input/80 inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full border border-transparent transition-all outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
             >
               <span
-                className={`pointer-events-none block size-4 rounded-full ring-0 transition-transform bg-white dark:data-[state=unchecked]:bg-card-foreground dark:data-[state=checked]:bg-primary-foreground ${
-                  values.isAnonymous
-                    ? 'translate-x-[calc(100%-2px)]'
-                    : 'translate-x-0'
-                }`}
+                data-state={values.isAnonymous ? 'checked' : 'unchecked'}
+                className="bg-card dark:data-[state=unchecked]:bg-card-foreground dark:data-[state=checked]:bg-primary-foreground pointer-events-none block size-4 rounded-full ring-0 transition-transform data-[state=checked]:translate-x-[calc(100%-2px)] data-[state=unchecked]:translate-x-0"
               />
             </button>
           </div>

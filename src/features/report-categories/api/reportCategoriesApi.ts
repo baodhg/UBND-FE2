@@ -3,11 +3,11 @@ import apiClient from '../../../lib/axios'
 export interface ReportCategory {
   id: string
   ten: string
-  mo_ta: string
+  mo_ta: string | null
   is_active: boolean
   is_delete: boolean
   nguoi_tao: string
-  nguoi_cap_nhat: string
+  nguoi_cap_nhat: string | null
   thoi_gian_tao: string
   thoi_gian_cap_nhat: string
 }
@@ -19,11 +19,18 @@ export interface GetReportCategoriesParams {
   search?: string
 }
 
+export interface Pagination {
+  currentPage: number
+  pageSize: number
+  totalPages: number
+  totalItems: number
+}
+
 export interface GetReportCategoriesResponse {
+  success: boolean
   data: ReportCategory[]
-  total: number
-  page: number
-  size: number
+  message: string
+  pagination: Pagination
 }
 
 export interface GetReportCategoryByIdResponse {
@@ -44,29 +51,28 @@ export const reportCategoriesApi = {
   getReportCategories: async (
     params: GetReportCategoriesParams = {}
   ): Promise<GetReportCategoriesResponse> => {
-    const { page = 1, size = 10, isActive = true, search } = params
+    const { page = 1, size = 10, isActive, search } = params
 
     const queryParams = new URLSearchParams()
     queryParams.append('page', page.toString())
     queryParams.append('size', size.toString())
-    queryParams.append('isActive', isActive.toString())
+    if (isActive !== undefined) {
+      queryParams.append('isActive', isActive.toString())
+    }
     if (search) {
       queryParams.append('search', search)
     }
 
-    const response = await apiClient.get<ReportCategory[]>(
+    const response = await apiClient.get<GetReportCategoriesResponse>(
       `/linh-vuc-phan-anh?${queryParams.toString()}`
     )
 
-    // API returns an array directly based on the Swagger documentation
-    const data = Array.isArray(response.data) ? response.data : []
-    
-    return {
-      data,
-      total: data.length,
-      page,
-      size,
+    // API returns { success, data, message, pagination }
+    if (response.data.success && Array.isArray(response.data.data)) {
+      return response.data
     }
+    
+    throw new Error(response.data.message || 'Có lỗi xảy ra khi lấy danh sách lĩnh vực phản ánh')
   },
   getReportCategoryById: async (id: string): Promise<ReportCategory> => {
     const response = await apiClient.get<GetReportCategoryByIdResponse>(

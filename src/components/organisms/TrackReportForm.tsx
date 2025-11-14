@@ -6,6 +6,7 @@ export const TrackReportForm: React.FC = () => {
   const [trackingCode, setTrackingCode] = useState('')
   const [searchCode, setSearchCode] = useState('')
   const [showResult, setShowResult] = useState(false)
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
 
   const { data: report, isLoading, error } = useGetReportByCode(searchCode, showResult)
 
@@ -36,6 +37,32 @@ export const TrackReportForm: React.FC = () => {
 
   return (
     <>
+      {/* Image Preview Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-5xl w-full h-full flex items-center justify-center">
+            {/* Close button */}
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors bg-black/50 rounded-full p-2"
+            >
+              <X size={24} />
+            </button>
+            
+            {/* Image */}
+            <img
+              src={selectedImage}
+              alt="Preview"
+              className="max-w-full max-h-[90vh] object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
+      )}
+
       <div className="bg-card text-card-foreground flex flex-col gap-6 rounded-xl p-6 border-0 shadow-sm">
         <h3 className="mb-6 flex items-center gap-2">
           <Search size={24} className="text-blue-600" />
@@ -145,12 +172,7 @@ export const TrackReportForm: React.FC = () => {
                             src={`https://ubnd-api-staging.noah-group.org${file.url_file}`}
                             alt={`Đính kèm ${index + 1}`}
                             className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
-                            onClick={() =>
-                              window.open(
-                                `https://ubnd-api-staging.noah-group.org${file.url_file}`,
-                                '_blank'
-                              )
-                            }
+                            onClick={() => setSelectedImage(`https://ubnd-api-staging.noah-group.org${file.url_file}`)}
                           />
                           <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 text-center">
                             {file.kich_thuoc_file_mb} MB
@@ -309,7 +331,7 @@ export const TrackReportForm: React.FC = () => {
                                 src={`https://ubnd-api-staging.noah-group.org${file.url_file}`}
                                 alt={`Đính kèm ${index + 1}`}
                                 className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
-                                onClick={() => window.open(`https://ubnd-api-staging.noah-group.org${file.url_file}`, '_blank')}
+                                onClick={() => setSelectedImage(`https://ubnd-api-staging.noah-group.org${file.url_file}`)}
                               />
                               <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 text-center">
                                 {file.kich_thuoc_file_mb} MB

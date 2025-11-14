@@ -53,6 +53,7 @@ export const SendReportForm: React.FC = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [trackingCode, setTrackingCode] = useState('')
   const [copied, setCopied] = useState(false)
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
 
   const { mutate: createReport, isPending } = useCreateReport()
 
@@ -145,6 +146,32 @@ export const SendReportForm: React.FC = () => {
 
   return (
     <>
+      {/* Image Preview Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-5xl w-full h-full flex items-center justify-center">
+            {/* Close button */}
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors bg-black/50 rounded-full p-2"
+            >
+              <X size={24} />
+            </button>
+            
+            {/* Image */}
+            <img
+              src={selectedImage}
+              alt="Preview"
+              className="max-w-full max-h-[90vh] object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Success Modal */}
       {showSuccessModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -317,15 +344,15 @@ export const SendReportForm: React.FC = () => {
             />
           </div>
 
-          {/* Hình ảnh/Video */}
+          {/* Hình ảnh */}
           <div>
             <label className="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50">
-              Hình ảnh/Video <span className="text-gray-500">(Tùy chọn)</span>
+              Hình ảnh <span className="text-red-500">*</span>
             </label>
             <div className="mt-2">
               <input
                 type="file"
-                accept="image/*,video/*"
+                accept="image/*"
                 multiple
                 id="images"
                 className="hidden"
@@ -333,14 +360,12 @@ export const SendReportForm: React.FC = () => {
               />
               <label
                 htmlFor="images"
-                className="flex items-center justify-center gap-2 w-full p-4 border-2 border-gray-300 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all"
+                className="flex items-center justify-center gap-2 w-full p-6 border-2 border-gray-300 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all"
               >
-                <Camera size={20} className="text-gray-600" />
-                <span className="text-gray-700">
-                  Thêm ảnh/video ({values.images.length}/5)
-                </span>
+                <Camera size={24} className="text-gray-500" />
+                <span className="text-gray-600">Thêm ảnh (0/5)</span>
               </label>
-              <p className="text-sm text-gray-500 mt-1">Mỗi file tối đa 3MB</p>
+              <p className="text-sm text-gray-500 mt-2">Mỗi file tối đa 3MB</p>
             </div>
 
             {/* Image Preview */}
@@ -348,11 +373,14 @@ export const SendReportForm: React.FC = () => {
               <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {values.images.map((file, index) => (
                   <div key={index} className="relative group">
-                    <div className="aspect-square rounded-lg overflow-hidden border-2 border-gray-200">
+                    <div 
+                      className="aspect-square rounded-lg overflow-hidden border-2 border-gray-200 cursor-pointer"
+                      onClick={() => setSelectedImage(URL.createObjectURL(file))}
+                    >
                       <img
                         src={URL.createObjectURL(file)}
                         alt={`Preview ${index + 1}`}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover hover:scale-105 transition-transform"
                       />
                     </div>
                     {/* Remove button */}
@@ -369,6 +397,30 @@ export const SendReportForm: React.FC = () => {
             )}
 
             <ErrorMessage name="images" component="div" className="text-red-500 text-sm mt-1" />
+          </div>
+
+          {/* Hình ảnh/Video (Tùy chọn) */}
+          <div>
+            <label className="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50">
+              Video <span className="text-gray-500">(Tùy chọn)</span>
+            </label>
+            <div className="mt-2">
+              <input
+                type="file"
+                accept="image/*,video/*"
+                multiple
+                id="optional-media"
+                className="hidden"
+              />
+              <label
+                htmlFor="optional-media"
+                className="flex items-center justify-center gap-2 w-full p-6 border-2 border-gray-300 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all"
+              >
+                <Camera size={24} className="text-gray-500" />
+                <span className="text-gray-600">Thêm video</span>
+              </label>
+              <p className="text-sm text-gray-500 mt-2">Mỗi file tối đa 3MB</p>
+            </div>
           </div>
 
           {/* Địa điểm */}
@@ -399,7 +451,7 @@ export const SendReportForm: React.FC = () => {
           {/* Gửi ẩn danh */}
           <div className="flex items-center justify-between p-4 border border-gray-200 bg-gray-50 rounded-xl">
             <div>
-              <p className="text-gray-800">Gửi ẩn danh</p>
+              <p className="font-medium text-gray-800">Gửi ẩn danh</p>
               <p className="text-sm text-gray-600">Không hiển thị thông tin cá nhân</p>
             </div>
             <button
@@ -408,11 +460,16 @@ export const SendReportForm: React.FC = () => {
               aria-checked={values.isAnonymous}
               data-state={values.isAnonymous ? 'checked' : 'unchecked'}
               onClick={() => setFieldValue('isAnonymous', !values.isAnonymous)}
-              className="peer data-[state=checked]:bg-primary data-[state=unchecked]:bg-switch-background focus-visible:border-ring focus-visible:ring-ring/50 dark:data-[state=unchecked]:bg-input/80 inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full border border-transparent transition-all outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 transition-all ${
+                values.isAnonymous
+                  ? 'bg-gray-800 border-gray-800'
+                  : 'bg-gray-300 border-gray-300'
+              }`}
             >
               <span
-                data-state={values.isAnonymous ? 'checked' : 'unchecked'}
-                className="bg-card dark:data-[state=unchecked]:bg-card-foreground dark:data-[state=checked]:bg-primary-foreground pointer-events-none block size-4 rounded-full ring-0 transition-transform data-[state=checked]:translate-x-[calc(100%-2px)] data-[state=unchecked]:translate-x-0"
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  values.isAnonymous ? 'translate-x-6' : 'translate-x-1'
+                }`}
               />
             </button>
           </div>

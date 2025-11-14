@@ -30,6 +30,7 @@ export const useReportCategories = (params: GetReportCategoriesParams = {}) => {
   return {
     categories,
     selectedCategory,
+    pagination: query.data?.pagination || null,
     isLoading: isLoading || query.isLoading,
     error: error || (query.error ? 'Có lỗi xảy ra khi tải danh sách lĩnh vực' : null),
     refetch: query.refetch,

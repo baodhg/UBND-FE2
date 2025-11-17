@@ -35,6 +35,14 @@ export const TrackReportForm: React.FC = () => {
     })
   }
 
+  const formatPriority = (priority: string) => {
+    const priorityMap: { [key: string]: string } = {
+      'THONG_THUONG': 'Thông thường',
+      'KHAN_CAP': 'Khẩn cấp',
+    }
+    return priorityMap[priority] || priority
+  }
+
   return (
     <>
       {/* Image Preview Modal */}
@@ -63,7 +71,7 @@ export const TrackReportForm: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-card text-card-foreground flex flex-col gap-6 rounded-xl p-6 border-0 shadow-sm">
+      <div className="bg-white text-card-foreground flex flex-col gap-6 rounded-xl p-6 border border-gray-200 shadow-lg">
         <h3 className="mb-6 flex items-center gap-2">
           <Search size={24} className="text-blue-600" />
           <span className="text-lg font-semibold">Tra cứu tiến độ</span>
@@ -74,7 +82,7 @@ export const TrackReportForm: React.FC = () => {
             value={trackingCode}
             onChange={(e) => setTrackingCode(e.target.value)}
             placeholder="Nhập mã phản ánh (VD: 42139SHA)"
-            className="flex h-9 w-full min-w-0 rounded-md border border-gray-300 px-3 py-1 text-base bg-white transition-[color,box-shadow] outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 md:text-sm flex-1"
+            className="flex h-10 w-full min-w-0 rounded-md border border-gray-300 px-3 py-2.5 text-base bg-gray-100 transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 md:text-sm flex-1"
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 handleSearch()
@@ -94,7 +102,7 @@ export const TrackReportForm: React.FC = () => {
 
       {/* Result Display Below Search */}
       {searchCode && !showResult && (
-        <div className="mt-6 bg-white rounded-2xl shadow-lg p-6">
+        <div className="mt-6 bg-white rounded-xl p-6 border border-gray-200 shadow-lg">
           {isLoading && (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
@@ -138,6 +146,9 @@ export const TrackReportForm: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <span>Mã phản ánh: {report.ma_phan_anh}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span>Mức độ: {formatPriority(report.muc_do)}</span>
                   </div>
                 </div>
               </div>
@@ -300,6 +311,9 @@ export const TrackReportForm: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <span>Mã phản ánh: {report.ma_phan_anh}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span>Mức độ: {formatPriority(report.muc_do)}</span>
                       </div>
                     </div>
                   </div>

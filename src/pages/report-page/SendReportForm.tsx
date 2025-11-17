@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
 import { Camera, MapPin, ChevronDown, CheckCircle2, X, Copy, Check } from 'lucide-react'
+import { Switch } from 'antd'
 import { useReportCategories } from '../../features/report-categories'
 import { useCreateReport } from '../../features/reports'
 
@@ -54,6 +55,8 @@ export const SendReportForm: React.FC = () => {
   const [trackingCode, setTrackingCode] = useState('')
   const [copied, setCopied] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [showErrorModal, setShowErrorModal] = useState(false)
 
   const { mutate: createReport, isPending } = useCreateReport()
 
@@ -70,7 +73,7 @@ export const SendReportForm: React.FC = () => {
     description: '',
     images: [],
     location: '',
-    priority: 'THONG_THUONG',
+    priority: 'Thông thường',
     isAnonymous: false,
     name: '',
     phone: '',
@@ -85,13 +88,15 @@ export const SendReportForm: React.FC = () => {
     const totalFiles = [...currentImages, ...newFiles]
     
     if (totalFiles.length > 5) {
-      alert('Chỉ được tải lên tối đa 5 hình ảnh')
+      setErrorMessage('Chỉ được tải lên tối đa 5 hình ảnh')
+      setShowErrorModal(true)
       return
     }
 
     const oversizedFiles = newFiles.filter((file) => file.size > 3 * 1024 * 1024)
     if (oversizedFiles.length > 0) {
-      alert('Mỗi file tối đa 3MB')
+      setErrorMessage('Mỗi file tối đa 3MB')
+      setShowErrorModal(true)
       return
     }
 
@@ -132,7 +137,8 @@ export const SendReportForm: React.FC = () => {
         },
         onError: (error: any) => {
           console.error('Submit error:', error)
-          alert(error?.response?.data?.message || error?.message || 'Có lỗi xảy ra khi gửi phản ánh')
+          setErrorMessage(error?.response?.data?.message || error?.message || 'Có lỗi xảy ra khi gửi phản ánh')
+          setShowErrorModal(true)
         },
       }
     )
@@ -168,6 +174,44 @@ export const SendReportForm: React.FC = () => {
               className="max-w-full max-h-[90vh] object-contain rounded-lg"
               onClick={(e) => e.stopPropagation()}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Error Modal */}
+      {showErrorModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="relative bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 animate-in fade-in zoom-in duration-300">
+            {/* Close button */}
+            <button
+              onClick={() => setShowErrorModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X size={24} />
+            </button>
+
+            {/* Error icon */}
+            <div className="flex justify-center mb-4">
+              <div className="bg-red-100 rounded-full p-3">
+                <X size={48} className="text-red-600" />
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="text-center">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Thông báo</h3>
+              <p className="text-gray-600 mb-6">
+                {errorMessage}
+              </p>
+
+              {/* Action button */}
+              <button
+                onClick={() => setShowErrorModal(false)}
+                className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+              >
+                OK
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -256,7 +300,7 @@ export const SendReportForm: React.FC = () => {
                 name="category"
                 id="category"
                 disabled={isLoadingCategories}
-                className="border-input data-[placeholder]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-full items-center justify-between gap-2 rounded-md border bg-input-background px-3 py-2 text-sm whitespace-nowrap transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 h-9 appearance-none pr-10"
+                className="flex w-full items-center justify-between gap-2 rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-sm whitespace-nowrap transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50 h-10 appearance-none pr-10"
               >
                 <option value="">
                   {isLoadingCategories ? 'Đang tải...' : 'Chọn loại phản ánh'}
@@ -288,7 +332,7 @@ export const SendReportForm: React.FC = () => {
               id="title"
               type="text"
               placeholder="Nhập tiêu đề phản ánh (tối đa 200 ký tự)"
-              className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex w-full rounded-md border bg-input-background px-3 py-2 text-base transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm mt-2"
+              className="flex w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2.5 text-base transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm mt-2 h-10"
             />
             <p className="text-sm text-gray-500 mt-1">{values.title.length}/200 ký tự</p>
             <ErrorMessage name="title" component="div" className="text-red-500 text-sm mt-1" />
@@ -307,10 +351,10 @@ export const SendReportForm: React.FC = () => {
                 as="select"
                 name="priority"
                 id="priority"
-                className="border-input data-[placeholder]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-full items-center justify-between gap-2 rounded-md border bg-input-background px-3 py-2 text-sm whitespace-nowrap transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 h-9 appearance-none pr-10"
+                className="flex w-full items-center justify-between gap-2 rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-sm whitespace-nowrap transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50 h-10 appearance-none pr-10"
               >
-                <option value="THONG_THUONG">Thông thường</option>
-                <option value="KHAN_CAP">Khẩn cấp</option>
+                <option value="Thông thường">Thông thường</option>
+                <option value="Khẩn cấp">Khẩn cấp</option>
               </Field>
               <ChevronDown
                 size={16}
@@ -334,7 +378,7 @@ export const SendReportForm: React.FC = () => {
               id="description"
               rows={5}
               placeholder="Mô tả chi tiết vấn đề (tối đa 2000 ký tự)"
-              className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border bg-input-background px-3 py-2 text-base transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm mt-2 resize-none"
+              className="flex field-sizing-content min-h-16 w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2.5 text-base transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm mt-2 resize-none"
             />
             <p className="text-sm text-gray-500 mt-1">{values.description.length}/2000 ký tự</p>
             <ErrorMessage
@@ -342,6 +386,31 @@ export const SendReportForm: React.FC = () => {
               component="div"
               className="text-red-500 text-sm mt-1"
             />
+          </div>
+
+          {/* Địa điểm */}
+          <div>
+            <label
+              htmlFor="location"
+              className="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+            >
+              Địa điểm <span className="text-red-500">*</span>
+            </label>
+            <div className="relative mt-2">
+              <MapPin
+                size={18}
+                className="absolute left-3 top-3 text-gray-400 pointer-events-none"
+              />
+              <Field
+                name="location"
+                as="input"
+                type="text"
+                id="location"
+                placeholder="Nhập địa chỉ hoặc khu phố"
+                className="flex h-10 w-full min-w-0 rounded-md border border-gray-300 bg-gray-100 px-3 py-2.5 text-base transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pl-10"
+              />
+            </div>
+            <ErrorMessage name="location" component="div" className="text-red-500 text-sm mt-1" />
           </div>
 
           {/* Hình ảnh */}
@@ -363,7 +432,7 @@ export const SendReportForm: React.FC = () => {
                 className="flex items-center justify-center gap-2 w-full p-6 border-2 border-gray-300 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all"
               >
                 <Camera size={24} className="text-gray-500" />
-                <span className="text-gray-600">Thêm ảnh (0/5)</span>
+                <span className="text-gray-600">Thêm ảnh ({values.images.length}/5)</span>
               </label>
               <p className="text-sm text-gray-500 mt-2">Mỗi file tối đa 3MB</p>
             </div>
@@ -423,30 +492,7 @@ export const SendReportForm: React.FC = () => {
             </div>
           </div>
 
-          {/* Địa điểm */}
-          <div>
-            <label
-              htmlFor="location"
-              className="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
-            >
-              Địa điểm <span className="text-red-500">*</span>
-            </label>
-            <div className="relative mt-2">
-              <MapPin
-                size={18}
-                className="absolute left-3 top-3 text-gray-400 pointer-events-none"
-              />
-              <Field
-                name="location"
-                as="input"
-                type="text"
-                id="location"
-                placeholder="Nhập địa chỉ hoặc khu phố"
-                className="file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-9 w-full min-w-0 rounded-md border px-3 py-1 text-base bg-input-background transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive pl-10"
-              />
-            </div>
-            <ErrorMessage name="location" component="div" className="text-red-500 text-sm mt-1" />
-          </div>
+          
 
           {/* Gửi ẩn danh */}
           <div className="flex items-center justify-between p-4 border border-gray-200 bg-gray-50 rounded-xl">
@@ -454,24 +500,10 @@ export const SendReportForm: React.FC = () => {
               <p className="font-medium text-gray-800">Gửi ẩn danh</p>
               <p className="text-sm text-gray-600">Không hiển thị thông tin cá nhân</p>
             </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={values.isAnonymous}
-              data-state={values.isAnonymous ? 'checked' : 'unchecked'}
-              onClick={() => setFieldValue('isAnonymous', !values.isAnonymous)}
-              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 transition-all ${
-                values.isAnonymous
-                  ? 'bg-gray-800 border-gray-800'
-                  : 'bg-gray-300 border-gray-300'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  values.isAnonymous ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
+            <Switch 
+              checked={values.isAnonymous}
+              onChange={(checked) => setFieldValue('isAnonymous', checked)}
+            />
           </div>
 
           {/* Thông tin cá nhân (hiển thị khi không ẩn danh) */}
@@ -490,7 +522,7 @@ export const SendReportForm: React.FC = () => {
                   type="text"
                   id="name"
                   placeholder="Nhập họ và tên"
-                  className="file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-9 w-full min-w-0 rounded-md border px-3 py-1 text-base bg-input-background transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive mt-2"
+                  className="flex h-10 w-full min-w-0 rounded-md border border-gray-300 bg-gray-100 px-3 py-2.5 text-base transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm mt-2"
                 />
                 <ErrorMessage name="name" component="div" className="text-red-500 text-sm mt-1" />
               </div>
@@ -507,7 +539,7 @@ export const SendReportForm: React.FC = () => {
                   type="tel"
                   id="phone"
                   placeholder="Nhập số điện thoại"
-                  className="file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-9 w-full min-w-0 rounded-md border px-3 py-1 text-base bg-input-background transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive mt-2"
+                  className="flex h-10 w-full min-w-0 rounded-md border border-gray-300 bg-gray-100 px-3 py-2.5 text-base transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm mt-2"
                 />
                 <ErrorMessage name="phone" component="div" className="text-red-500 text-sm mt-1" />
               </div>
@@ -518,7 +550,7 @@ export const SendReportForm: React.FC = () => {
           <button
             type="submit"
             disabled={isPending}
-            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-primary-foreground px-4 py-2 has-[>svg]:px-3 w-full h-14 bg-blue-600 hover:bg-blue-700 text-lg"
+            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive px-4 py-2 has-[>svg]:px-3 w-full h-14 bg-blue-600 hover:bg-blue-700 text-lg text-white"
           >
             {isPending ? 'Đang gửi...' : 'Gửi phản ánh'}
           </button>

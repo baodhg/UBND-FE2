@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { SendReportForm } from '../components/organisms/SendReportForm'
-import { TrackReportForm } from '../components/organisms/TrackReportForm'
+import { SendReportForm } from './SendReportForm'
+import { TrackReportForm } from './TrackReportForm'
 import { MessageSquare, Info } from 'lucide-react'
 
 const ReportPage: React.FC = () => {
@@ -59,7 +59,7 @@ const ReportPage: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {/* Form Section - 2 columns */}
                   <div className="lg:col-span-2">
-                    <div data-slot="card" className="bg-card text-card-foreground flex flex-col gap-6 rounded-xl p-6 border-0 shadow-md">
+                    <div data-slot="card" className="bg-white text-card-foreground flex flex-col gap-6 rounded-xl p-6 border border-gray-200 shadow-lg">
                       <h3 className="mb-6 flex items-center gap-2">
                         <MessageSquare size={24} className="text-blue-600" />
                         <span>Biểu mẫu phản ánh</span>
@@ -70,7 +70,7 @@ const ReportPage: React.FC = () => {
 
                   {/* Notes Section - 1 column */}
                   <div className="space-y-6">
-                    <div data-slot="card" className="bg-card text-card-foreground flex flex-col gap-6 rounded-xl p-6 border-0 shadow-md">
+                    <div data-slot="card" className="bg-white text-card-foreground flex flex-col gap-6 rounded-xl p-6 border border-gray-200 shadow-lg">
                       <h4 className="mb-4 flex items-center gap-2">
                         <Info size={20} className="text-blue-600" />
                         <span>Lưu ý</span>

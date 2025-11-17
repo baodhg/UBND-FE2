@@ -5,6 +5,8 @@ import reportStatusHistoryReducer from '../features/report-status-history/store/
 import reportPriorityLevelsReducer from '../features/report-priority-levels/store/reportPriorityLevelsSlice'
 import reportStatusReducer from '../features/report-status/store/reportStatusSlice'
 import reportMetadataReducer from '../features/report-metadata/store/reportMetadataSlice'
+import newsReducer from '../features/news/store/newsSlice'
+import newsCategoriesReducer from '../features/news-categories/store/newsCategoriesSlice'
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -13,6 +15,8 @@ const rootReducer = combineReducers({
   reportPriorityLevels: reportPriorityLevelsReducer,
   reportStatus: reportStatusReducer,
   reportMetadata: reportMetadataReducer,
+  news: newsReducer,
+  newsCategories: newsCategoriesReducer,
   // Add other reducers here
 })
 

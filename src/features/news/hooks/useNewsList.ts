@@ -29,10 +29,10 @@ export const useNewsList = (params: GetNewsListParams = {}) => {
   })
 
   return {
-    newsList: newsList || query.data?.data || [],
-    pagination: pagination || query.data?.pagination || null,
-    isLoading: isLoadingList || query.isLoading,
-    error: errorList || (query.error ? 'Có lỗi xảy ra khi lấy danh sách tin tức' : null),
+    newsList: query.data?.data || [],
+    pagination: query.data?.pagination || null,
+    isLoading: query.isLoading,
+    error: query.error ? 'Có lỗi xảy ra khi lấy danh sách tin tức' : null,
     refetch: query.refetch,
     isFetching: query.isFetching,
   }

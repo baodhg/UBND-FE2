@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { SendReportForm } from '../components/organisms/SendReportForm'
-import { TrackReportForm } from '../components/organisms/TrackReportForm'
+import { SendReportForm } from './SendReportForm'
+import { TrackReportForm } from './TrackReportForm'
 import { MessageSquare, Info } from 'lucide-react'
 
 const ReportPage: React.FC = () => {

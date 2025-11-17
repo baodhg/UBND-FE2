@@ -35,9 +35,9 @@ export const useNewsById = (id: string | null) => {
   })
 
   return {
-    news: newsDetail || query.data || null,
-    isLoading: isLoading || query.isLoading,
-    error: error || (query.error ? 'Có lỗi xảy ra khi lấy chi tiết tin tức' : null),
+    news: query.data || null,
+    isLoading: query.isLoading,
+    error: query.error ? 'Có lỗi xảy ra khi lấy chi tiết tin tức' : null,
     refetch: query.refetch,
     isFetching: query.isFetching,
   }

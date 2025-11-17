@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
 import { Camera, MapPin, ChevronDown, CheckCircle2, X, Copy, Check } from 'lucide-react'
+import { Switch } from 'antd'
 import { useReportCategories } from '../../features/report-categories'
 import { useCreateReport } from '../../features/reports'
 
@@ -499,24 +500,10 @@ export const SendReportForm: React.FC = () => {
               <p className="font-medium text-gray-800">Gửi ẩn danh</p>
               <p className="text-sm text-gray-600">Không hiển thị thông tin cá nhân</p>
             </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={values.isAnonymous}
-              data-state={values.isAnonymous ? 'checked' : 'unchecked'}
-              onClick={() => setFieldValue('isAnonymous', !values.isAnonymous)}
-              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 transition-all ${
-                values.isAnonymous
-                  ? 'bg-gray-800 border-gray-800'
-                  : 'bg-gray-300 border-gray-300'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  values.isAnonymous ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
+            <Switch 
+              checked={values.isAnonymous}
+              onChange={(checked) => setFieldValue('isAnonymous', checked)}
+            />
           </div>
 
           {/* Thông tin cá nhân (hiển thị khi không ẩn danh) */}

@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { QuocHuy } from '../atoms/QuocHuy'
-import { House, FileText, Newspaper, MessageSquare, LogIn, Menu } from 'lucide-react'
+import { House, FileText, Newspaper, MessageSquare, LogIn, Menu, X } from 'lucide-react'
 
 interface NavItem {
   label: string
@@ -11,6 +11,7 @@ interface NavItem {
 
 export const Header: React.FC = () => {
   const location = useLocation()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const navItems: NavItem[] = [
     { label: 'Trang chủ', path: '/', icon: <House size={18} /> },
@@ -18,6 +19,8 @@ export const Header: React.FC = () => {
     { label: 'Tin tức', path: '/news', icon: <Newspaper size={18} /> },
     { label: 'Phản ánh', path: '/report', icon: <MessageSquare size={18} /> },
   ]
+
+  const closeMobileMenu = () => setMobileMenuOpen(false)
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
@@ -39,16 +42,17 @@ export const Header: React.FC = () => {
           </div>
           <div className="flex items-center gap-3">
             <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors" 
               aria-label="Toggle menu"
             >
-              <Menu size={24} />
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Navigation Bar */}
+      {/* Desktop Navigation Bar */}
       <nav className="hidden lg:flex items-center bg-gradient-to-r from-blue-600 to-blue-700">
         <div className="max-w-7xl mx-auto w-full px-4 lg:px-8 flex items-center">
           {navItems.map((item) => {
@@ -87,6 +91,45 @@ export const Header: React.FC = () => {
           </Link>
         </div>
       </nav>
+
+      {/* Mobile Navigation Menu */}
+      {mobileMenuOpen && (
+        <nav className="lg:hidden bg-white border-t border-gray-200 shadow-lg">
+          <div className="px-4 py-2">
+            {navItems.map((item) => {
+              const isActive = location.pathname === item.path || 
+                              (item.path === '/' && location.pathname === '/') ||
+                              (item.path !== '/' && location.pathname.startsWith(item.path))
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={closeMobileMenu}
+                  className={`
+                    flex items-center gap-3 px-4 py-3 rounded-lg transition-all my-1
+                    ${isActive 
+                      ? 'bg-blue-50 text-blue-600 font-medium' 
+                      : 'text-gray-700 hover:bg-gray-50'
+                    }
+                  `}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </Link>
+              )
+            })}
+            
+            <Link
+              to="/login"
+              onClick={closeMobileMenu}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-all my-1 border-t border-gray-200 mt-2 pt-3"
+            >
+              <LogIn size={18} />
+              <span>Đăng nhập Khu Phố</span>
+            </Link>
+          </div>
+        </nav>
+      )}
     </header>
   )
 }

@@ -117,11 +117,12 @@ export const ProcedureDetailModal: React.FC<ProcedureDetailModalProps> = ({
       closeIcon={<CloseOutlined className="text-gray-500 hover:text-gray-700" />}
       styles={{
         body: { 
-          padding: 0,
-          maxHeight: 'calc(100vh - 200px)',
+          padding: '24px',
+          marginTop: '20px',
+          marginBottom: '20px',
+          maxHeight: 'calc(100vh - 100px)',
           overflowY: 'auto',
-          paddingRight: '8px',
-          marginTop: '20px'
+          paddingRight: '32px'
         }
       }}
     >
@@ -130,7 +131,7 @@ export const ProcedureDetailModal: React.FC<ProcedureDetailModalProps> = ({
           <Spin size="large" />
         </div>
       ) : procedure ? (
-        <div className="p-6">
+        <div>
           {/* Header */}
           <div className="mb-6">
             <div className="text-xs text-gray-500 mb-2">{getLinhVucName()}</div>

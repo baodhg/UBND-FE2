@@ -136,11 +136,12 @@ export const ChecklistModal: React.FC<ChecklistModalProps> = ({
       closeIcon={<CloseOutlined className="text-gray-500 hover:text-gray-700" />}
       styles={{
         body: { 
-          padding: 0,
-          maxHeight: 'calc(100vh - 200px)',
+          padding: '24px',
+          marginTop: '20px',
+          marginBottom: '20px',
+          maxHeight: 'calc(100vh - 100px)',
           overflowY: 'auto',
-          paddingRight: '8px',
-          marginTop: '20px'
+          paddingRight: '32px'
         }
       }}
     >
@@ -149,7 +150,7 @@ export const ChecklistModal: React.FC<ChecklistModalProps> = ({
           <Spin size="large" />
         </div>
       ) : (
-        <div className="p-6">
+        <div>
           {/* Header */}
           <div className="mb-6">
             <div className="text-xs text-blue-500 font-medium mb-2">Thủ tục</div>

@@ -7,6 +7,7 @@ import reportStatusReducer from '../features/report-status/store/reportStatusSli
 import reportMetadataReducer from '../features/report-metadata/store/reportMetadataSlice'
 import newsReducer from '../features/news/store/newsSlice'
 import newsCategoriesReducer from '../features/news-categories/store/newsCategoriesSlice'
+import proceduresReducer from '../features/procedures/store/proceduresSlice'
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -17,6 +18,7 @@ const rootReducer = combineReducers({
   reportMetadata: reportMetadataReducer,
   news: newsReducer,
   newsCategories: newsCategoriesReducer,
+  procedures: proceduresReducer,
   // Add other reducers here
 })
 

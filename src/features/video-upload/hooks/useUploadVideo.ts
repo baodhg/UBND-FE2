@@ -14,7 +14,7 @@ export const useUploadVideo = () => {
       dispatch(setLoading(true))
       dispatch(
         setCurrentUpload({
-          idVideo: params.idVideo || undefined,
+          idVideo: params.idVideo || null,
           progress: 0,
           isUploading: true,
         })

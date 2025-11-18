@@ -34,13 +34,13 @@ const SendReportSchema = Yup.object().shape({
       if (!files) return true
       return files.every((file: any) => file.size <= 3 * 1024 * 1024)
     }),
-  video: Yup.mixed<File | null>()
+  video: Yup.mixed()
     .nullable()
-    .test('fileSize', 'Mỗi file tối đa 150MB', (file) => {
+    .test('fileSize', 'Mỗi file tối đa 150MB', (file: any) => {
       if (!file) return true
       return file.size <= 150 * 1024 * 1024
     })
-    .test('fileType', 'Chỉ chấp nhận file .mp4', (file) => {
+    .test('fileType', 'Chỉ chấp nhận file .mp4', (file: any) => {
       if (!file) return true
       return file.type === 'video/mp4' || file.name.toLowerCase().endsWith('.mp4')
     }),

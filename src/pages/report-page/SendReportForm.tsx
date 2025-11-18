@@ -503,6 +503,9 @@ export const SendReportForm: React.FC = () => {
             <Switch 
               checked={values.isAnonymous}
               onChange={(checked) => setFieldValue('isAnonymous', checked)}
+              style={{
+                backgroundColor: values.isAnonymous ? '#0e0e0fff' : '#d1d5db',
+              }}
             />
           </div>
 

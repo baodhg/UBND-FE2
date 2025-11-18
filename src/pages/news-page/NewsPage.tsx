@@ -64,7 +64,7 @@ export const NewsPage: React.FC = () => {
 
   return (
     <div className="py-12 bg-gray-50 min-h-screen">
-      <div className="container mx-auto px-4 max-w-5xl">
+      <div className="max-w-7xl mx-auto px-4 lg:px-8">
         <Card
           bordered={false}
           style={{

@@ -1,13 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import { useAppDispatch, useAppSelector } from '../../../store/hooks'
+import { useAppDispatch } from '../../../store/hooks'
 import { newsApi, type GetNewsListParams } from '../api/newsApi'
 import { setNewsList, setPagination, setLoadingList, setErrorList } from '../store/newsSlice'
 
 export const useNewsList = (params: GetNewsListParams = {}) => {
   const dispatch = useAppDispatch()
-  const { newsList, pagination, isLoadingList, errorList } = useAppSelector(
-    (state) => state.news
-  )
 
   const query = useQuery({
     queryKey: ['newsList', params],

@@ -9,6 +9,7 @@ import newsReducer from '../features/news/store/newsSlice'
 import newsCategoriesReducer from '../features/news-categories/store/newsCategoriesSlice'
 import proceduresReducer from '../features/procedures/store/proceduresSlice'
 import procedureFieldsReducer from '../features/procedure-fields/store/procedureFieldsSlice'
+import videoUploadReducer from '../features/video-upload/store/videoUploadSlice'
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -21,6 +22,7 @@ const rootReducer = combineReducers({
   newsCategories: newsCategoriesReducer,
   procedures: proceduresReducer,
   procedureFields: procedureFieldsReducer,
+  videoUpload: videoUploadReducer,
   // Add other reducers here
 })
 

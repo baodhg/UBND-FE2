@@ -1,6 +1,125 @@
-import React, { useState } from 'react'
-import { Search, Calendar, AlertCircle, CheckCircle2, X } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Search, Calendar, AlertCircle, CheckCircle2, X, Video } from 'lucide-react'
 import { useGetReportByCode } from '../../features/reports'
+import { videoUploadApi } from '../../features/video-upload'
+
+// Video Player Component with multiple URL fallback
+export const VideoPlayer: React.FC<{ idVideo: string; videoUrls: string[]; videoIndex: number }> = ({ 
+  idVideo, 
+  videoUrls, 
+  videoIndex 
+}) => {
+  const [videoUrl, setVideoUrl] = useState<string | null>(null)
+  const [currentUrlIndex, setCurrentUrlIndex] = useState(0)
+  const [videoError, setVideoError] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Try to get video URL from API first
+  useEffect(() => {
+    const fetchVideoUrl = async () => {
+      setIsLoading(true)
+      try {
+        const url = await videoUploadApi.getVideoUrl(idVideo)
+        if (url) {
+          console.log(`Got video URL from API:`, url)
+          setVideoUrl(url)
+          setIsLoading(false)
+          return
+        }
+      } catch (error) {
+        console.error('Error fetching video URL from API:', error)
+      }
+      
+      // If API doesn't return URL, fallback to hardcoded URLs
+      setIsLoading(false)
+    }
+    
+    fetchVideoUrl()
+  }, [idVideo])
+
+  const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
+    const currentUrl = videoUrl || videoUrls[currentUrlIndex]
+    console.error(`Video error with URL:`, currentUrl, e)
+    
+    // If we have a videoUrl from API and it failed, try hardcoded URLs
+    if (videoUrl && currentUrlIndex < videoUrls.length - 1) {
+      console.log(`API URL failed, trying hardcoded URL ${currentUrlIndex + 1}`)
+      setVideoUrl(null)
+      setCurrentUrlIndex(currentUrlIndex + 1)
+      setIsLoading(true)
+    } else if (currentUrlIndex < videoUrls.length - 1) {
+      console.log(`Trying next URL: ${currentUrlIndex + 1}`)
+      setCurrentUrlIndex(currentUrlIndex + 1)
+      setIsLoading(true)
+    } else {
+      console.error('All video URLs failed')
+      setVideoError(true)
+      setIsLoading(false)
+    }
+  }
+
+  const handleVideoLoaded = () => {
+    const currentUrl = videoUrl || videoUrls[currentUrlIndex]
+    console.log(`Video loaded successfully with URL:`, currentUrl)
+    setIsLoading(false)
+  }
+
+  const handleVideoLoadStart = () => {
+    const currentUrl = videoUrl || videoUrls[currentUrlIndex]
+    console.log(`Loading video from URL:`, currentUrl)
+  }
+  
+  const currentVideoUrl = videoUrl || videoUrls[currentUrlIndex]
+
+  return (
+    <div className="rounded-lg overflow-hidden border-2 border-gray-200 bg-black">
+      {!videoError ? (
+        <>
+          {isLoading && (
+            <div className="w-full h-64 flex items-center justify-center text-white">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-2"></div>
+                <p className="text-sm">Đang tải video...</p>
+              </div>
+            </div>
+          )}
+          {currentVideoUrl && (
+            <video
+              key={currentVideoUrl} // Force re-render when URL changes
+              src={currentVideoUrl}
+              controls
+              className="w-full max-h-96 object-contain"
+              preload="auto"
+              onError={handleVideoError}
+              onLoadedData={handleVideoLoaded}
+              onLoadStart={handleVideoLoadStart}
+              crossOrigin="anonymous"
+              style={{ display: isLoading ? 'none' : 'block' }}
+            >
+              Trình duyệt của bạn không hỗ trợ video.
+            </video>
+          )}
+        </>
+      ) : (
+        <div className="w-full h-64 flex items-center justify-center text-white">
+          <div className="text-center">
+            <Video size={48} className="mx-auto mb-2 opacity-50" />
+            <p className="text-sm">Không thể tải video</p>
+            <p className="text-xs opacity-75 mt-1">ID: {idVideo.substring(0, 8)}...</p>
+            <p className="text-xs opacity-50 mt-2">Đã thử {videoUrls.length} URL khác nhau</p>
+          </div>
+        </div>
+      )}
+      <div className="bg-black/50 text-white text-xs p-2 flex items-center justify-between">
+        <span className="flex items-center gap-2">
+          <Video size={14} />
+          Video {videoIndex}
+        </span>
+        <span>ID: {idVideo.substring(0, 8)}...</span>
+      </div>
+    </div>
+  )
+}
 
 export const TrackReportForm: React.FC = () => {
   const [trackingCode, setTrackingCode] = useState('')
@@ -194,6 +313,65 @@ export const TrackReportForm: React.FC = () => {
                 </div>
               )}
 
+              {/* Attached Videos */}
+              {((report.dinh_kem_phan_anh && report.dinh_kem_phan_anh.length > 0 && 
+                 report.dinh_kem_phan_anh.some(file => file.dinh_dang_file.startsWith('video/'))) ||
+                (report.id_video && report.id_video.length > 0)) && (
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <Video size={20} className="text-blue-600" />
+                    Video đính kèm
+                  </h4>
+                  <div className="space-y-3">
+                    {/* Videos from dinh_kem_phan_anh */}
+                    {report.dinh_kem_phan_anh && report.dinh_kem_phan_anh
+                      .filter(file => file.dinh_dang_file.startsWith('video/'))
+                      .map((file, index) => (
+                        <div key={`file-${index}`} className="rounded-lg overflow-hidden border-2 border-gray-200 bg-black">
+                          <video
+                            src={`https://ubnd-api-staging.noah-group.org${file.url_file}`}
+                            controls
+                            className="w-full max-h-96 object-contain"
+                            preload="metadata"
+                          >
+                            Trình duyệt của bạn không hỗ trợ video.
+                          </video>
+                          <div className="bg-black/50 text-white text-xs p-2 flex items-center justify-between">
+                            <span className="flex items-center gap-2">
+                              <Video size={14} />
+                              Video {index + 1}
+                            </span>
+                            <span>{file.kich_thuoc_file_mb} MB</span>
+                          </div>
+                        </div>
+                      ))}
+                    
+                    {/* Videos from id_video array */}
+                    {report.id_video && report.id_video.length > 0 && report.id_video.map((idVideo, index) => {
+                      const baseUrl = 'https://ubnd-api-staging.noah-group.org'
+                      // Try different URL patterns - video might be served from different endpoints
+                      const videoUrls = [
+                        `${baseUrl}/api/video/${idVideo}/stream`,
+                        `${baseUrl}/api/video/${idVideo}/play`,
+                        `${baseUrl}/api/video/${idVideo}`,
+                        `${baseUrl}/video/${idVideo}/stream`,
+                        `${baseUrl}/video/${idVideo}`,
+                      ]
+                      const videoIndex = (report.dinh_kem_phan_anh?.filter(f => f.dinh_dang_file.startsWith('video/')).length || 0) + index + 1
+                      
+                      return (
+                        <VideoPlayer 
+                          key={`id-${idVideo}`} 
+                          idVideo={idVideo} 
+                          videoUrls={videoUrls}
+                          videoIndex={videoIndex}
+                        />
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Timeline */}
               {report.lich_su_trang_thai && report.lich_su_trang_thai.length > 0 && (
                 <div>
@@ -352,6 +530,65 @@ export const TrackReportForm: React.FC = () => {
                               </div>
                             </div>
                           ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Attached Videos */}
+                  {((report.dinh_kem_phan_anh && report.dinh_kem_phan_anh.length > 0 && 
+                     report.dinh_kem_phan_anh.some(file => file.dinh_dang_file.startsWith('video/'))) ||
+                    (report.id_video && report.id_video.length > 0)) && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <Video size={20} className="text-blue-600" />
+                        Video đính kèm
+                      </h4>
+                      <div className="space-y-3">
+                        {/* Videos from dinh_kem_phan_anh */}
+                        {report.dinh_kem_phan_anh && report.dinh_kem_phan_anh
+                          .filter(file => file.dinh_dang_file.startsWith('video/'))
+                          .map((file, index) => (
+                            <div key={`file-${index}`} className="rounded-lg overflow-hidden border-2 border-gray-200 bg-black">
+                              <video
+                                src={`https://ubnd-api-staging.noah-group.org${file.url_file}`}
+                                controls
+                                className="w-full max-h-96 object-contain"
+                                preload="metadata"
+                              >
+                                Trình duyệt của bạn không hỗ trợ video.
+                              </video>
+                              <div className="bg-black/50 text-white text-xs p-2 flex items-center justify-between">
+                                <span className="flex items-center gap-2">
+                                  <Video size={14} />
+                                  Video {index + 1}
+                                </span>
+                                <span>{file.kich_thuoc_file_mb} MB</span>
+                              </div>
+                            </div>
+                          ))}
+                        
+                        {/* Videos from id_video array */}
+                        {report.id_video && report.id_video.length > 0 && report.id_video.map((idVideo, index) => {
+                          const baseUrl = 'https://ubnd-api-staging.noah-group.org'
+                          // Try different URL patterns - video might be served from different endpoints
+                          const videoUrls = [
+                            `${baseUrl}/api/video/${idVideo}/stream`,
+                            `${baseUrl}/api/video/${idVideo}/play`,
+                            `${baseUrl}/api/video/${idVideo}`,
+                            `${baseUrl}/video/${idVideo}/stream`,
+                            `${baseUrl}/video/${idVideo}`,
+                          ]
+                          const videoIndex = (report.dinh_kem_phan_anh?.filter(f => f.dinh_dang_file.startsWith('video/')).length || 0) + index + 1
+                          
+                          return (
+                            <VideoPlayer 
+                              key={`id-${idVideo}`} 
+                              idVideo={idVideo} 
+                              videoUrls={videoUrls}
+                              videoIndex={videoIndex}
+                            />
+                          )
+                        })}
                       </div>
                     </div>
                   )}

@@ -1,5 +1,11 @@
 import apiClient from '../../../lib/axios'
 
+export interface CachThuc {
+  hinh_thuc_ap_dung: string
+  le_phi: string
+  thoi_gian_giai_quyet: string
+}
+
 export interface Procedure {
   id: string
   ma_thu_tuc: string
@@ -9,6 +15,7 @@ export interface Procedure {
   co_so_dich_vu_cong: string
   so_dien_thoai_co_so: string
   linh_vuc: string[]
+  cach_thuc?: CachThuc[]
   is_active: boolean
   thoi_gian_tao: string
 }
@@ -163,6 +170,13 @@ export interface GetProcedureByIdResponse {
   pagination: null
 }
 
+export interface GetAllProceduresResponse {
+  success: boolean
+  data: Procedure[]
+  message: string
+  pagination: null
+}
+
 export const proceduresApi = {
   getProcedures: async (
     params: GetProceduresParams = {}
@@ -194,6 +208,22 @@ export const proceduresApi = {
     
     throw new Error(response.data.message || 'Có lỗi xảy ra khi lấy danh sách thủ tục')
   },
+  getAllProcedures: async (): Promise<Procedure[]> => {
+    console.log('🌐 Calling API: /thu-tuc/all')
+    const response = await apiClient.get<GetAllProceduresResponse>('/thu-tuc/all')
+    
+    console.log('📡 Raw API response:', response)
+    console.log('📡 Response data:', response.data)
+    
+    if (response.data.success && Array.isArray(response.data.data)) {
+      console.log('✅ API success - returning', response.data.data.length, 'procedures')
+      return response.data.data
+    }
+    
+    console.error('❌ API response invalid:', response.data)
+    throw new Error(response.data.message || 'Có lỗi xảy ra khi lấy danh sách thủ tục')
+  },
+  
   getProcedureById: async (id: string): Promise<ProcedureDetail> => {
     const response = await apiClient.get<GetProcedureByIdResponse>(
       `/thu-tuc/${id}`

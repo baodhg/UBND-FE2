@@ -8,6 +8,7 @@ import reportMetadataReducer from '../features/report-metadata/store/reportMetad
 import newsReducer from '../features/news/store/newsSlice'
 import newsCategoriesReducer from '../features/news-categories/store/newsCategoriesSlice'
 import proceduresReducer from '../features/procedures/store/proceduresSlice'
+import procedureFieldsReducer from '../features/procedure-fields/store/procedureFieldsSlice'
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -19,6 +20,7 @@ const rootReducer = combineReducers({
   news: newsReducer,
   newsCategories: newsCategoriesReducer,
   procedures: proceduresReducer,
+  procedureFields: procedureFieldsReducer,
   // Add other reducers here
 })
 

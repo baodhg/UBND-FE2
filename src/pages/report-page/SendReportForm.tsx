@@ -36,13 +36,13 @@ const SendReportSchema = Yup.object().shape({
     }),
   video: Yup.mixed<File | null>()
     .nullable()
-    .test('fileSize', 'Mỗi file tối đa 100MB', (file) => {
+    .test('fileSize', 'Mỗi file tối đa 150MB', (file) => {
       if (!file) return true
-      return file.size <= 100 * 1024 * 1024
+      return file.size <= 150 * 1024 * 1024
     })
-    .test('fileType', 'Chỉ chấp nhận file video', (file) => {
+    .test('fileType', 'Chỉ chấp nhận file .mp4', (file) => {
       if (!file) return true
-      return file.type.startsWith('video/')
+      return file.type === 'video/mp4' || file.name.toLowerCase().endsWith('.mp4')
     }),
   location: Yup.string().required('Địa điểm là bắt buộc'),
   priority: Yup.string().required('Mức độ là bắt buộc'),
@@ -138,17 +138,17 @@ export const SendReportForm: React.FC = () => {
       return
     }
 
-    // Check file type
-    if (!file.type.startsWith('video/')) {
-      setErrorMessage('Chỉ chấp nhận file video')
+    // Check file type - only .mp4
+    if (file.type !== 'video/mp4' && !file.name.toLowerCase().endsWith('.mp4')) {
+      setErrorMessage('Chỉ chấp nhận file .mp4')
       setShowErrorModal(true)
       event.target.value = ''
       return
     }
 
-    // Check file size
-    if (file.size > 100 * 1024 * 1024) {
-      setErrorMessage('Mỗi file tối đa 100MB')
+    // Check file size - max 150MB
+    if (file.size > 150 * 1024 * 1024) {
+      setErrorMessage('Mỗi file tối đa 150MB')
       setShowErrorModal(true)
       event.target.value = ''
       return
@@ -582,7 +582,7 @@ export const SendReportForm: React.FC = () => {
             <div className="mt-2">
               <input
                 type="file"
-                accept="video/*"
+                accept=".mp4,video/mp4"
                 id="video"
                 className="hidden"
                 onChange={(e) => handleVideoChange(e, setFieldValue)}
@@ -596,7 +596,7 @@ export const SendReportForm: React.FC = () => {
                   {values.video ? values.video.name : 'Thêm video'}
                 </span>
               </label>
-              <p className="text-xs sm:text-sm text-gray-500 mt-2">Mỗi file tối đa 100MB</p>
+              <p className="text-xs sm:text-sm text-gray-500 mt-2">Chỉ file .mp4, tối đa 150MB</p>
             </div>
 
             {/* Video Preview */}

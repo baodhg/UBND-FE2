@@ -18,6 +18,14 @@ export interface ReportDetail {
   thoi_gian_tao: string
   thoi_gian_cap_nhat: string
   id_video: string[]
+  videos?: {
+    id: string
+    status: string
+    final_mp4_url: string
+    final_hls_url: string
+    created_at: string
+    updated_at: string
+  }[]
   lich_su_trang_thai: {
     ten: string
     thoi_gian_tao: string

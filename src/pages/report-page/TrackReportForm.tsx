@@ -316,7 +316,7 @@ export const TrackReportForm: React.FC = () => {
               {/* Attached Videos */}
               {((report.dinh_kem_phan_anh && report.dinh_kem_phan_anh.length > 0 && 
                  report.dinh_kem_phan_anh.some(file => file.dinh_dang_file.startsWith('video/'))) ||
-                (report.id_video && report.id_video.length > 0)) && (
+                (report.videos && report.videos.length > 0)) && (
                 <div>
                   <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                     <Video size={20} className="text-blue-600" />
@@ -346,28 +346,33 @@ export const TrackReportForm: React.FC = () => {
                         </div>
                       ))}
                     
-                    {/* Videos from id_video array */}
-                    {report.id_video && report.id_video.length > 0 && report.id_video.map((idVideo, index) => {
-                      const baseUrl = 'https://ubnd-api-staging.noah-group.org'
-                      // Try different URL patterns - video might be served from different endpoints
-                      const videoUrls = [
-                        `${baseUrl}/api/video/${idVideo}/stream`,
-                        `${baseUrl}/api/video/${idVideo}/play`,
-                        `${baseUrl}/api/video/${idVideo}`,
-                        `${baseUrl}/video/${idVideo}/stream`,
-                        `${baseUrl}/video/${idVideo}`,
-                      ]
-                      const videoIndex = (report.dinh_kem_phan_anh?.filter(f => f.dinh_dang_file.startsWith('video/')).length || 0) + index + 1
-                      
-                      return (
-                        <VideoPlayer 
-                          key={`id-${idVideo}`} 
-                          idVideo={idVideo} 
-                          videoUrls={videoUrls}
-                          videoIndex={videoIndex}
-                        />
-                      )
-                    })}
+                    {/* Videos from videos array */}
+                    {report.videos && report.videos.length > 0 && report.videos
+                      .filter(video => video.status === 'DONE' && video.final_mp4_url)
+                      .map((video, index) => {
+                        const videoIndex = (report.dinh_kem_phan_anh?.filter(f => f.dinh_dang_file.startsWith('video/')).length || 0) + index + 1
+                        const baseUrl = 'https://ubnd-api-staging.noah-group.org'
+                        
+                        return (
+                          <div key={`video-${video.id}`} className="rounded-lg overflow-hidden border-2 border-gray-200 bg-black">
+                            <video
+                              src={`${baseUrl}${video.final_mp4_url}`}
+                              controls
+                              className="w-full max-h-96 object-contain"
+                              preload="metadata"
+                            >
+                              Trình duyệt của bạn không hỗ trợ video.
+                            </video>
+                            <div className="bg-black/50 text-white text-xs p-2 flex items-center justify-between">
+                              <span className="flex items-center gap-2">
+                                <Video size={14} />
+                                Video {videoIndex}
+                              </span>
+                              <span className="text-green-400">{video.status}</span>
+                            </div>
+                          </div>
+                        )
+                      })}
                   </div>
                 </div>
               )}
@@ -537,7 +542,7 @@ export const TrackReportForm: React.FC = () => {
                   {/* Attached Videos */}
                   {((report.dinh_kem_phan_anh && report.dinh_kem_phan_anh.length > 0 && 
                      report.dinh_kem_phan_anh.some(file => file.dinh_dang_file.startsWith('video/'))) ||
-                    (report.id_video && report.id_video.length > 0)) && (
+                    (report.videos && report.videos.length > 0)) && (
                     <div>
                       <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                         <Video size={20} className="text-blue-600" />
@@ -567,28 +572,33 @@ export const TrackReportForm: React.FC = () => {
                             </div>
                           ))}
                         
-                        {/* Videos from id_video array */}
-                        {report.id_video && report.id_video.length > 0 && report.id_video.map((idVideo, index) => {
-                          const baseUrl = 'https://ubnd-api-staging.noah-group.org'
-                          // Try different URL patterns - video might be served from different endpoints
-                          const videoUrls = [
-                            `${baseUrl}/api/video/${idVideo}/stream`,
-                            `${baseUrl}/api/video/${idVideo}/play`,
-                            `${baseUrl}/api/video/${idVideo}`,
-                            `${baseUrl}/video/${idVideo}/stream`,
-                            `${baseUrl}/video/${idVideo}`,
-                          ]
-                          const videoIndex = (report.dinh_kem_phan_anh?.filter(f => f.dinh_dang_file.startsWith('video/')).length || 0) + index + 1
-                          
-                          return (
-                            <VideoPlayer 
-                              key={`id-${idVideo}`} 
-                              idVideo={idVideo} 
-                              videoUrls={videoUrls}
-                              videoIndex={videoIndex}
-                            />
-                          )
-                        })}
+                        {/* Videos from videos array */}
+                        {report.videos && report.videos.length > 0 && report.videos
+                          .filter(video => video.status === 'DONE' && video.final_mp4_url)
+                          .map((video, index) => {
+                            const videoIndex = (report.dinh_kem_phan_anh?.filter(f => f.dinh_dang_file.startsWith('video/')).length || 0) + index + 1
+                            const baseUrl = 'https://ubnd-api-staging.noah-group.org'
+                            
+                            return (
+                              <div key={`video-${video.id}`} className="rounded-lg overflow-hidden border-2 border-gray-200 bg-black">
+                                <video
+                                  src={`${baseUrl}${video.final_mp4_url}`}
+                                  controls
+                                  className="w-full max-h-96 object-contain"
+                                  preload="metadata"
+                                >
+                                  Trình duyệt của bạn không hỗ trợ video.
+                                </video>
+                                <div className="bg-black/50 text-white text-xs p-2 flex items-center justify-between">
+                                  <span className="flex items-center gap-2">
+                                    <Video size={14} />
+                                    Video {videoIndex}
+                                  </span>
+                                  <span className="text-green-400">{video.status}</span>
+                                </div>
+                              </div>
+                            )
+                          })}
                       </div>
                     </div>
                   )}

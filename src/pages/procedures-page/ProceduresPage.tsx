@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { Card, Button, Tag, Spin, Empty, Row, Col } from 'antd'
-import { ClockCircleOutlined, DollarOutlined, ArrowRightOutlined } from '@ant-design/icons'
+import { Card, Button, Tag, Spin, Empty, Row, Col, Input } from 'antd'
+import { ClockCircleOutlined, DollarOutlined, ArrowRightOutlined, SearchOutlined } from '@ant-design/icons'
 import { useProcedureFields } from '../../features/procedure-fields'
 import { proceduresApi, type Procedure } from '../../features/procedures/api/proceduresApi'
 import { ProcedureDetailModal } from './ProcedureDetailModal'
@@ -25,6 +25,7 @@ export const ProceduresPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false)
   const [allProcedures, setAllProcedures] = useState<Procedure[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Fetch lĩnh vực từ API
   const { fields: linhVucList, isLoading: isLoadingFields } = useProcedureFields()
@@ -60,26 +61,35 @@ export const ProceduresPage: React.FC = () => {
     console.log('🔍 Filtering - activeFilter:', activeFilter)
     console.log('📦 allProcedures count:', allProcedures.length)
     
-    if (activeFilter === 'all') {
-      console.log('✅ Showing all procedures')
-      return allProcedures
+    let filtered = allProcedures
+    
+    // Filter by category
+    if (activeFilter !== 'all') {
+      const selectedField = linhVucList.find(f => f.id === activeFilter)
+      console.log('🏷️ Selected field:', selectedField)
+      
+      if (selectedField) {
+        filtered = filtered.filter(p => 
+          p.linh_vuc && p.linh_vuc.includes(selectedField.ten_linh_vuc)
+        )
+      } else {
+        filtered = []
+      }
     }
     
-    const selectedField = linhVucList.find(f => f.id === activeFilter)
-    console.log('🏷️ Selected field:', selectedField)
-    
-    if (!selectedField) {
-      console.log('⚠️ No field found for filter:', activeFilter)
-      return []
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim()
+      filtered = filtered.filter(p =>
+        p.ten_thu_tuc.toLowerCase().includes(query) ||
+        p.doi_tuong_thuc_hien?.toLowerCase().includes(query) ||
+        p.ma_thu_tuc?.toLowerCase().includes(query)
+      )
     }
     
-    const filtered = allProcedures.filter(p => 
-      p.linh_vuc && p.linh_vuc.includes(selectedField.ten_linh_vuc)
-    )
     console.log('✅ Filtered procedures:', filtered.length)
-    
     return filtered
-  }, [allProcedures, activeFilter, linhVucList])
+  }, [allProcedures, activeFilter, linhVucList, searchQuery])
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredProcedures.length / pageSize)
@@ -145,31 +155,52 @@ export const ProceduresPage: React.FC = () => {
   return (
     <div className="py-12 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Thủ tục hành chính</h1>
-          <p className="text-gray-600">Tra cứu và thực hiện các thủ tục hành chính trực tuyến</p>
-        </div>
+        {/* Header Card với Search và Filters */}
+        <Card 
+          className="mb-8 shadow-md"
+          styles={{
+            body: { padding: '32px' }
+          }}
+        >
+          {/* Title & Description */}
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">Thủ tục hành chính</h1>
+            <p className="text-gray-600">Tra cứu và hướng dẫn các thủ tục hành chính tại phường</p>
+          </div>
 
-        {/* Filter Buttons */}
-        <div className="mb-6 flex flex-wrap gap-3">
-          {isLoadingFields ? (
-            <Spin />
-          ) : (
-            filterButtons.map((filter) => (
-              <button
-                key={filter.key}
-                onClick={() => handleFilterChange(filter.key)}
-                className={
-                  activeFilter === filter.key
-                    ? 'px-6 py-2 rounded-full bg-blue-500 text-white font-semibold border border-blue-500 transition-colors'
-                    : 'px-6 py-2 rounded-full bg-white text-gray-800 font-normal border border-gray-300 hover:text-blue-500 hover:border-blue-500 transition-colors'
-                }
-              >
-                {filter.label} ({filter.count})
-              </button>
-            ))
-          )}
-        </div>
+          {/* Search Bar */}
+          <div className="mb-6">
+            <Input
+              size="large"
+              placeholder="Tìm kiếm thủ tục..."
+              prefix={<SearchOutlined className="text-gray-400" />}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              allowClear
+              className="w-full"
+            />
+          </div>
+
+          {/* Filter Buttons */}
+          <div className="flex flex-wrap gap-3">
+            {isLoadingFields ? (
+              <Spin />
+            ) : (
+              filterButtons.map((filter) => (
+                <button
+                  key={filter.key}
+                  onClick={() => handleFilterChange(filter.key)}
+                  className={
+                    activeFilter === filter.key
+                      ? 'px-6 py-2 rounded-full bg-blue-500 text-white font-semibold border border-blue-500 transition-colors'
+                      : 'px-6 py-2 rounded-full bg-white text-gray-800 font-normal border border-gray-300 hover:text-blue-500 hover:border-blue-500 transition-colors'
+                  }
+                >
+                  {filter.label} ({filter.count})
+                </button>
+              ))
+            )}
+          </div>
 
         {/* Loading State */}
         {isLoading ? (
@@ -183,7 +214,7 @@ export const ProceduresPage: React.FC = () => {
         ) : (
           <>
             {/* Procedures Grid */}
-            <Row gutter={[24, 24]} className="mb-8">
+            <Row gutter={[24, 24]} className="mb-8 mt-8">
               {paginatedProcedures.map((procedure) => (
                 <Col key={procedure.id} xs={24} md={12} lg={8}>
                   <Card
@@ -250,7 +281,7 @@ export const ProceduresPage: React.FC = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex justify-center">
+              <div className="flex justify-center mt-6">
                 <div className="flex items-center gap-2">
                   <Button
                     disabled={page === 1}
@@ -274,6 +305,7 @@ export const ProceduresPage: React.FC = () => {
             )}
           </>
         )}
+        </Card>
       </div>
 
       {/* Procedure Detail Modal */}

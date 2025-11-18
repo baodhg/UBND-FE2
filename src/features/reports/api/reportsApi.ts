@@ -39,7 +39,10 @@ export interface CreateReportResponse {
 }
 
 export const reportsApi = {
-  createReport: async (data: CreateReportRequest, files?: File[]): Promise<CreateReportResponse['data']> => {
+  createReport: async (
+    data: CreateReportRequest, 
+    images?: File[]
+  ): Promise<CreateReportResponse['data']> => {
     const formData = new FormData()
     
     // Append text fields
@@ -62,23 +65,42 @@ export const reportsApi = {
       data.idVideo.forEach(id => formData.append('idVideo', id))
     }
     
-    // Append files
-    if (files && files.length > 0) {
-      files.forEach(file => {
+    // Append image files with field name "file"
+    if (images && images.length > 0) {
+      images.forEach(file => {
         formData.append('file', file)
       })
     }
     
-    const response = await apiClient.post<CreateReportResponse>('/phan-anh', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-    
-    if (response.data.success && response.data.data) {
-      return response.data.data
+    // Debug: Log FormData contents
+    console.log('FormData contents:')
+    for (const [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        console.log(`${key}:`, value.name, `(${(value.size / 1024 / 1024).toFixed(2)} MB)`, value.type)
+      } else {
+        console.log(`${key}:`, value)
+      }
     }
     
-    throw new Error(response.data.message || 'Có lỗi xảy ra khi gửi phản ánh')
+    // Don't set Content-Type header manually - let browser set it with boundary
+    try {
+      const response = await apiClient.post<CreateReportResponse>('/phan-anh', formData)
+      
+      if (response.data.success && response.data.data) {
+        return response.data.data
+      }
+      
+      throw new Error(response.data.message || 'Có lỗi xảy ra khi gửi phản ánh')
+    } catch (error: any) {
+      // Log detailed error information
+      console.error('API Error Details:', {
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        data: error?.response?.data,
+        message: error?.response?.data?.message,
+        errors: error?.response?.data?.errors,
+      })
+      throw error
+    }
   },
 }

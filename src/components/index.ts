@@ -8,11 +8,12 @@ export { QuocHuy } from './atoms/QuocHuy'
 export { SearchBar } from './molecules/SearchBar'
 export { FormField } from './molecules/FormField'
 export { ProcedureCard } from './molecules/ProcedureCard'
-export { NewsCard } from './molecules/NewsCard'
-export { FeaturedNewsCard } from './molecules/FeaturedNewsCard'
 export { StatCard } from './molecules/StatCard'
 
 // Organisms
 export { Header } from './organisms/Header'
 export { Footer } from './organisms/Footer'
+
+// Utilities
+export { ScrollToTop } from './ScrollToTop'
 

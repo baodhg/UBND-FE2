@@ -1,25 +1,31 @@
 import React from 'react'
-import { Flame, Calendar, Eye, ArrowRight } from 'lucide-react'
+import { Flame, Calendar, User, ArrowRight } from 'lucide-react'
 
 interface FeaturedNewsCardProps {
+  id: string
   title: string
   description: string
   date: string
-  views: number
+  author?: string
   category?: string
   image?: string
+  onClick?: () => void
 }
 
 export const FeaturedNewsCard: React.FC<FeaturedNewsCardProps> = ({
   title,
   description,
   date,
-  views,
+  author,
   category,
   image,
+  onClick,
 }) => {
   return (
-    <div className="bg-card text-card-foreground flex flex-col gap-6 rounded-xl overflow-hidden mb-8 border-0 shadow-xl hover:shadow-2xl transition-shadow group cursor-pointer">
+    <div 
+      className="bg-card text-card-foreground flex flex-col gap-6 rounded-xl overflow-hidden mb-8 border-0 shadow-xl hover:shadow-2xl transition-shadow group cursor-pointer"
+      onClick={onClick}
+    >
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
         <div className="relative h-64 lg:h-auto overflow-hidden">
           <img
@@ -39,15 +45,17 @@ export const FeaturedNewsCard: React.FC<FeaturedNewsCardProps> = ({
                 {category}
               </span>
             )}
-            <div className="flex items-center gap-4 text-sm text-gray-500">
+            <div className="flex items-center gap-3 text-sm text-gray-500">
               <span className="flex items-center gap-1">
                 <Calendar size={14} />
                 {date}
               </span>
-              <span className="flex items-center gap-1">
-                <Eye size={14} />
-                {views >= 1000 ? `${(views / 1000).toFixed(1)}k` : views} lượt xem
-              </span>
+              {author && (
+                <span className="flex items-center gap-1">
+                  <User size={14} />
+                  {author}
+                </span>
+              )}
             </div>
           </div>
           <h3 className="text-2xl lg:text-3xl text-gray-800 mb-4 group-hover:text-blue-600 transition-colors">

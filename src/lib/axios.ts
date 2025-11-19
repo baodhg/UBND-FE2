@@ -8,12 +8,54 @@ const apiClient = axios.create({
   },
 })
 
+// Public endpoints that don't require authentication
+const PUBLIC_ENDPOINTS = [
+  '/auths/login',
+  '/auths/register',
+]
+
+// Check if endpoint is public
+const isPublicEndpoint = (url: string | undefined, method?: string): boolean => {
+  if (!url) return false
+  
+  // Auth endpoints are always public
+  if (PUBLIC_ENDPOINTS.some(endpoint => url.includes(endpoint))) {
+    return true
+  }
+  
+  // POST /phan-anh (submit report) is public
+  if (url.includes('/phan-anh') && method?.toLowerCase() === 'post') {
+    return true
+  }
+  
+  // GET /phan-anh/{code}/for-mobile (track report) is public
+  if (url.includes('/phan-anh') && url.includes('/for-mobile') && method?.toLowerCase() === 'get') {
+    return true
+  }
+  
+  return false
+}
+
 // Request interceptor
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+      // Debug: Log token info (first 20 chars only for security)
+      if (import.meta.env.DEV) {
+        console.log('API Request:', {
+          url: config.url,
+          method: config.method,
+          hasToken: !!token,
+          tokenPreview: token.substring(0, 20) + '...',
+        })
+      }
+    } else {
+      // Only warn if endpoint requires authentication
+      if (!isPublicEndpoint(config.url, config.method)) {
+        console.warn('No token found in localStorage for request:', config.url)
+      }
     }
     
     // If data is FormData, remove Content-Type header to let browser set it with boundary
@@ -35,7 +77,43 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       // Handle unauthorized access
       localStorage.removeItem('token')
+      localStorage.removeItem('refresh_token')
       window.location.href = '/login'
+    }
+    if (error.response?.status === 403) {
+      // Handle forbidden access - token might be invalid or user doesn't have permission
+      const errorData = error.response?.data
+      const errorMessage = errorData?.message || 'Bạn không có quyền truy cập tài nguyên này'
+      
+      console.error('403 Forbidden:', {
+        url: error.config?.url,
+        message: errorMessage,
+        data: errorData,
+        hasToken: !!localStorage.getItem('token'),
+      })
+      
+      // Try to decode token to check role
+      try {
+        const token = localStorage.getItem('token')
+        if (token) {
+          const tokenPayload = JSON.parse(atob(token.split('.')[1]))
+          console.log('Token payload:', {
+            userId: tokenPayload.userId,
+            username: tokenPayload.username,
+            role: tokenPayload.role,
+            exp: new Date(tokenPayload.exp * 1000).toISOString(),
+            isExpired: Date.now() > tokenPayload.exp * 1000,
+          })
+        }
+      } catch (e) {
+        console.error('Error decoding token:', e)
+      }
+      
+      // Optionally redirect to login if token is clearly invalid
+      const token = localStorage.getItem('token')
+      if (!token) {
+        window.location.href = '/login'
+      }
     }
     return Promise.reject(error)
   }

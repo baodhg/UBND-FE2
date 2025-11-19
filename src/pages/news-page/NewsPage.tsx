@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { List, Tag, Space, Spin, Card, Tabs } from 'antd'
+import { List, Tag, Space, Spin, Card } from 'antd'
 import { CalendarOutlined, SearchOutlined } from '@ant-design/icons'
 import { useNewsList } from '../../features/news'
 import { useNewsCategories } from '../../features/news-categories'
@@ -10,6 +10,7 @@ export const NewsPage: React.FC = () => {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [activeTab, setActiveTab] = useState('all')
+  const [categoryCounts, setCategoryCounts] = useState<{ [key: string]: number }>({})
   const pageSize = 10
 
   // Reset về tab "Tất cả" mỗi khi vào trang
@@ -31,12 +32,52 @@ export const NewsPage: React.FC = () => {
     idDanhMuc: activeTab !== 'all' ? activeTab : undefined,
   })
 
+  // Fetch counts for all categories
+  useEffect(() => {
+    const fetchCategoryCounts = async () => {
+      const counts: { [key: string]: number } = {}
+      
+      // Fetch total count (all categories)
+      try {
+        const allResponse = await fetch(
+          `https://ubnd-api-staging.noah-group.org/api/tin-tuc?page=1&size=1&isActive=true`
+        )
+        const allData = await allResponse.json()
+        counts['all'] = allData.pagination?.totalItems || 0
+      } catch (error) {
+        console.error('Error fetching all news count:', error)
+        counts['all'] = 0
+      }
+
+      // Fetch count for each category
+      for (const category of categories) {
+        try {
+          const response = await fetch(
+            `https://ubnd-api-staging.noah-group.org/api/tin-tuc?page=1&size=1&isActive=true&idDanhMuc=${category.id}`
+          )
+          const data = await response.json()
+          counts[category.id] = data.pagination?.totalItems || 0
+        } catch (error) {
+          console.error(`Error fetching count for category ${category.id}:`, error)
+          counts[category.id] = 0
+        }
+      }
+
+      setCategoryCounts(counts)
+    }
+
+    if (categories.length > 0) {
+      fetchCategoryCounts()
+    }
+  }, [categories])
+
   console.log('News data:', { 
     newsList, 
     pagination, 
     total: newsList.length,
     activeTab,
     idDanhMuc: activeTab !== 'all' ? activeTab : undefined,
+    categoryCounts,
   })
 
   const formatDate = (dateString: string) => {
@@ -53,14 +94,19 @@ export const NewsPage: React.FC = () => {
     setPage(1)
   }
 
-  const tabItems = useMemo(() => {
-    const allTab = { key: 'all', label: 'Tất cả' }
-    const categoryTabs = categories.map((category) => ({
+  const filterButtons = useMemo(() => {
+    const allButton = { 
+      key: 'all', 
+      label: 'Tất cả',
+      count: categoryCounts['all'] || 0
+    }
+    const categoryButtons = categories.map((category) => ({
       key: category.id,
       label: category.ten_danh_muc,
+      count: categoryCounts[category.id] || 0
     }))
-    return [allTab, ...categoryTabs]
-  }, [categories])
+    return [allButton, ...categoryButtons]
+  }, [categories, categoryCounts])
 
   return (
     <div className="py-12 bg-gray-50 min-h-screen">
@@ -73,9 +119,12 @@ export const NewsPage: React.FC = () => {
           }}
         >
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-800 mb-1">Tin tức & Thông báo</h1>
-            <p className="text-gray-500 text-sm mb-4">Cập nhật thông tin mới nhất từ phường</p>
-            
+            <h2 className="text-2xl mb-1">Tin tức & Thông báo</h2>
+            <p className="text-gray-600">Cập nhật thông tin mới nhất từ phường</p>
+          </div>
+
+          {/* Search Bar */}
+          <div className="mb-6">
             <div className="relative">
               <input
                 type="text"
@@ -93,15 +142,29 @@ export const NewsPage: React.FC = () => {
             </div>
           </div>
 
-          <Tabs
-            activeKey={activeTab}
-            onChange={(key) => {
-              setActiveTab(key)
-              setPage(1)
-            }}
-            items={tabItems}
-            className="mb-4"
-          />
+          {/* Filter Buttons */}
+          <div className="flex flex-wrap gap-3 mb-6">
+            {isCategoriesLoading ? (
+              <Spin />
+            ) : (
+              filterButtons.map((filter) => (
+                <button
+                  key={filter.key}
+                  onClick={() => {
+                    setActiveTab(filter.key)
+                    setPage(1)
+                  }}
+                  className={
+                    activeTab === filter.key
+                      ? 'px-6 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold border border-blue-600 transition-colors'
+                      : 'px-6 py-2 rounded-lg bg-white text-gray-800 font-normal border border-gray-300 hover:text-blue-600 hover:border-blue-600 transition-colors'
+                  }
+                >
+                  {filter.label} ({filter.count})
+                </button>
+              ))
+            )}
+          </div>
 
           {(isLoading || isCategoriesLoading) && page === 1 ? (
             <div className="flex justify-center py-12">

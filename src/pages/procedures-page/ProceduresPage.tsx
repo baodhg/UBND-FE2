@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Card, Button, Tag, Spin, Empty, Row, Col, Input } from 'antd'
 import { ClockCircleOutlined, DollarOutlined, ArrowRightOutlined, SearchOutlined } from '@ant-design/icons'
 import { useProcedureFields } from '../../features/procedure-fields'
@@ -18,6 +19,9 @@ const LINH_VUC_COLORS: { [key: string]: string } = {
   'Khác': 'default',
 }
 export const ProceduresPage: React.FC = () => {
+  const [searchParams] = useSearchParams()
+  const idLinhVucFromUrl = searchParams.get('idLinhVuc')
+  
   const [activeFilter, setActiveFilter] = useState('all')
   const [page, setPage] = useState(1)
   const pageSize = 12
@@ -29,6 +33,16 @@ export const ProceduresPage: React.FC = () => {
 
   // Fetch lĩnh vực từ API
   const { fields: linhVucList, isLoading: isLoadingFields } = useProcedureFields()
+
+  // Set active filter from URL parameter when component mounts or URL changes
+  useEffect(() => {
+    if (idLinhVucFromUrl && linhVucList.length > 0) {
+      const fieldExists = linhVucList.find(f => f.id === idLinhVucFromUrl)
+      if (fieldExists) {
+        setActiveFilter(idLinhVucFromUrl)
+      }
+    }
+  }, [idLinhVucFromUrl, linhVucList])
 
   // Fetch all procedures once
   useEffect(() => {

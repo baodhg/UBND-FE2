@@ -1,25 +1,31 @@
 import React from 'react'
-import { Calendar, Eye } from 'lucide-react'
+import { Calendar, User } from 'lucide-react'
 
 interface NewsCardProps {
+  id: string
   title: string
   description: string
   date: string
-  views: number
+  author?: string
   category?: string
   image?: string
+  onClick?: () => void
 }
 
 export const NewsCard: React.FC<NewsCardProps> = ({
   title,
   description,
   date,
-  views,
+  author,
   category,
   image,
+  onClick,
 }) => {
   return (
-    <div className="bg-card text-card-foreground flex flex-col gap-6 rounded-xl overflow-hidden border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all cursor-pointer group">
+    <div 
+      className="bg-card text-card-foreground flex flex-col gap-6 rounded-xl overflow-hidden border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all cursor-pointer group"
+      onClick={onClick}
+    >
       <div className="relative h-48 overflow-hidden bg-gray-100">
         <img
           src={image || 'https://images.unsplash.com/photo-1544562258-d7a25aa0e669?w=400&h=300&fit=crop'}
@@ -38,10 +44,12 @@ export const NewsCard: React.FC<NewsCardProps> = ({
             <Calendar size={12} />
             {date}
           </span>
-          <span className="flex items-center gap-1">
-            <Eye size={12} />
-            {views >= 1000 ? `${(views / 1000).toFixed(1)}k` : views}
-          </span>
+          {author && (
+            <span className="flex items-center gap-1">
+              <User size={12} />
+              {author}
+            </span>
+          )}
         </div>
         <h4 className="text-lg text-gray-800 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
           {title}
@@ -51,3 +59,4 @@ export const NewsCard: React.FC<NewsCardProps> = ({
     </div>
   )
 }
+

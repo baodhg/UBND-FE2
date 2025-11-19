@@ -10,6 +10,7 @@ import { ProceduresPage } from './pages/procedures-page/ProceduresPage'
 import { NewsPage } from './pages/news-page/NewsPage'
 import { NewsDetailPage } from './pages/news-page/NewsDetailPage'
 import ReportPage from './pages/report-page/ReportPage'
+import { DashboardPage } from './pages/dashboard-page/DashboardPage'
 function App() {
   return (
     <ThemeProvider>
@@ -24,6 +25,7 @@ function App() {
             <Route path="/login" element={<MainLayout><LoginPage /></MainLayout>} />
             <Route path="/profile" element={<MainLayout><ProfilePage /></MainLayout>} />
             <Route path="/report" element={<MainLayout><ReportPage /></MainLayout>} />
+            <Route path="/dashboard" element={<DashboardPage />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

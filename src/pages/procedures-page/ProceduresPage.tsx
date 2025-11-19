@@ -159,12 +159,12 @@ export const ProceduresPage: React.FC = () => {
         <Card 
           className="mb-8 shadow-md"
           styles={{
-            body: { padding: '32px' }
+            body: { padding: '24px' }
           }}
         >
           {/* Title & Description */}
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Thủ tục hành chính</h1>
+            <h2 className="text-2xl mb-1">Thủ tục hành chính</h2>
             <p className="text-gray-600">Tra cứu và hướng dẫn các thủ tục hành chính tại phường</p>
           </div>
 
@@ -192,8 +192,8 @@ export const ProceduresPage: React.FC = () => {
                   onClick={() => handleFilterChange(filter.key)}
                   className={
                     activeFilter === filter.key
-                      ? 'px-6 py-2 rounded-full bg-blue-500 text-white font-semibold border border-blue-500 transition-colors'
-                      : 'px-6 py-2 rounded-full bg-white text-gray-800 font-normal border border-gray-300 hover:text-blue-500 hover:border-blue-500 transition-colors'
+                      ? 'px-6 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold border border-blue-600 transition-colors'
+                      : 'px-6 py-2 rounded-lg bg-white text-gray-800 font-normal border border-gray-300 hover:text-blue-600 hover:border-blue-600 transition-colors'
                   }
                 >
                   {filter.label} ({filter.count})

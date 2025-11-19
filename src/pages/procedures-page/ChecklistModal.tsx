@@ -17,6 +17,8 @@ interface ThanhPhan {
 interface ChecklistModalProps {
   procedureId: string | null
   procedureName: string
+  truongHopId?: string | null
+  truongHopName?: string
   open: boolean
   onClose: () => void
 }
@@ -24,6 +26,8 @@ interface ChecklistModalProps {
 export const ChecklistModal: React.FC<ChecklistModalProps> = ({
   procedureId,
   procedureName,
+  truongHopId,
+  truongHopName,
   open,
   onClose,
 }) => {
@@ -40,10 +44,15 @@ export const ChecklistModal: React.FC<ChecklistModalProps> = ({
       try {
         const procedure: ProcedureDetail = await proceduresApi.getProcedureById(procedureId)
         
-        // Lấy tất cả thanh_phan_ho_so từ các truong_hop_thu_tuc
+        // Lấy thanh_phan_ho_so từ truong_hop_thu_tuc cụ thể hoặc tất cả
         const allThanhPhan: ThanhPhan[] = []
         if (procedure.truong_hop_thu_tuc && procedure.truong_hop_thu_tuc.length > 0) {
-          procedure.truong_hop_thu_tuc.forEach((truongHop) => {
+          // Filter by truongHopId if provided
+          const filteredTruongHop = truongHopId 
+            ? procedure.truong_hop_thu_tuc.filter(th => th.id === truongHopId)
+            : procedure.truong_hop_thu_tuc
+            
+          filteredTruongHop.forEach((truongHop) => {
             if (truongHop.thanh_phan_ho_so && truongHop.thanh_phan_ho_so.length > 0) {
               const processedItems = truongHop.thanh_phan_ho_so.map(item => {
                 // Check if it's optional (contains "nếu Nộp Thay" or similar)
@@ -73,7 +82,7 @@ export const ChecklistModal: React.FC<ChecklistModalProps> = ({
     }
 
     fetchThanhPhan()
-  }, [procedureId, open])
+  }, [procedureId, open, truongHopId])
 
   const handleToggleCheck = (id: string) => {
     setCheckedItems((prev) => {
@@ -153,10 +162,17 @@ export const ChecklistModal: React.FC<ChecklistModalProps> = ({
         <div>
           {/* Header */}
           <div className="mb-6">
-            <div className="text-xs text-blue-500 font-medium mb-2">Thủ tục</div>
+            <div className="text-xs text-blue-500 font-medium mb-2">
+              {truongHopName ? 'Trường hợp' : 'Thủ tục'}
+            </div>
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-              {procedureName}
+              {truongHopName || procedureName}
             </h2>
+            {truongHopName && (
+              <div className="text-sm text-gray-600">
+                Thủ tục: {procedureName}
+              </div>
+            )}
 
             {/* Progress */}
             <div className="mb-2">

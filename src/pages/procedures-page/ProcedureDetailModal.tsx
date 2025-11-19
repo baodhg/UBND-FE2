@@ -27,6 +27,8 @@ export const ProcedureDetailModal: React.FC<ProcedureDetailModalProps> = ({
   const [procedure, setProcedure] = useState<ProcedureDetail | null>(null)
   const [loading, setLoading] = useState(false)
   const [checklistOpen, setChecklistOpen] = useState(false)
+  const [selectedTruongHopId, setSelectedTruongHopId] = useState<string | null>(null)
+  const [selectedTruongHopName, setSelectedTruongHopName] = useState<string>('')
   const [downloading, setDownloading] = useState(false)
 
   useEffect(() => {
@@ -209,40 +211,54 @@ export const ProcedureDetailModal: React.FC<ProcedureDetailModalProps> = ({
               <h3 className="text-base font-semibold text-gray-900 mb-4">Hồ sơ yêu cầu</h3>
               <div className="grid grid-cols-2 gap-4">
                 {procedure.truong_hop_thu_tuc.map((truongHop) => (
-                  <div key={truongHop.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                    {truongHop.ten_truong_hop && (
-                      <div className="text-sm font-semibold text-gray-900 mb-3">
-                        {truongHop.ten_truong_hop}
-                      </div>
-                    )}
-                    {truongHop.mo_ta && (
-                      <div className="text-xs text-gray-600 mb-3 pb-3 border-b border-gray-300">
-                        {truongHop.mo_ta}
-                      </div>
-                    )}
-                    <ul className="space-y-2">
-                      {truongHop.thanh_phan_ho_so.map((item) => (
-                        <li key={item.id} className="flex gap-2 text-sm">
-                          <span className="text-blue-500 mt-1 font-bold">•</span>
-                          <div className="flex-1">
-                            <div className="text-gray-900">{item.ten_thanh_phan}</div>
-                            {item.mo_ta_chi_tiet && (
-                              <div className="text-xs text-gray-500 mt-1">{item.mo_ta_chi_tiet}</div>
-                            )}
-                            {item.ghi_chu && (
-                              <div className="text-xs text-gray-500 italic mt-1">{item.ghi_chu}</div>
-                            )}
-                            {(item.so_luong_ban_chinh > 0 || item.so_luong_ban_sao > 0) && (
-                              <div className="text-xs text-blue-600 mt-1 font-medium">
-                                {item.so_luong_ban_chinh > 0 && `Bản chính: ${item.so_luong_ban_chinh}`}
-                                {item.so_luong_ban_chinh > 0 && item.so_luong_ban_sao > 0 && ' | '}
-                                {item.so_luong_ban_sao > 0 && `Bản sao: ${item.so_luong_ban_sao}`}
-                              </div>
-                            )}
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
+                  <div key={truongHop.id} className="space-y-3">
+                    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                      {truongHop.ten_truong_hop && (
+                        <div className="text-sm font-semibold text-gray-900 mb-3">
+                          {truongHop.ten_truong_hop}
+                        </div>
+                      )}
+                      {truongHop.mo_ta && (
+                        <div className="text-xs text-gray-600 mb-3 pb-3 border-b border-gray-300">
+                          {truongHop.mo_ta}
+                        </div>
+                      )}
+                      <ul className="space-y-2">
+                        {truongHop.thanh_phan_ho_so.map((item) => (
+                          <li key={item.id} className="flex gap-2 text-sm">
+                            <span className="text-blue-500 mt-1 font-bold">•</span>
+                            <div className="flex-1">
+                              <div className="text-gray-900">{item.ten_thanh_phan}</div>
+                              {item.mo_ta_chi_tiet && (
+                                <div className="text-xs text-gray-500 mt-1">{item.mo_ta_chi_tiet}</div>
+                              )}
+                              {item.ghi_chu && (
+                                <div className="text-xs text-gray-500 italic mt-1">{item.ghi_chu}</div>
+                              )}
+                              {(item.so_luong_ban_chinh > 0 || item.so_luong_ban_sao > 0) && (
+                                <div className="text-xs text-blue-600 mt-1 font-medium">
+                                  {item.so_luong_ban_chinh > 0 && `Bản chính: ${item.so_luong_ban_chinh}`}
+                                  {item.so_luong_ban_chinh > 0 && item.so_luong_ban_sao > 0 && ' | '}
+                                  {item.so_luong_ban_sao > 0 && `Bản sao: ${item.so_luong_ban_sao}`}
+                                </div>
+                              )}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    {/* Checklist button outside card */}
+                    <button 
+                      onClick={() => {
+                        setSelectedTruongHopId(truongHop.id)
+                        setSelectedTruongHopName(truongHop.ten_truong_hop || '')
+                        setChecklistOpen(true)
+                      }}
+                      className="w-full px-3 py-2 bg-white text-gray-700 text-sm font-medium border border-gray-300 rounded-md hover:border-blue-500 hover:text-blue-500 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <CheckSquareOutlined />
+                      <span>Danh sách kiểm tra</span>
+                    </button>
                   </div>
                 ))}
               </div>
@@ -329,28 +345,21 @@ export const ProcedureDetailModal: React.FC<ProcedureDetailModalProps> = ({
           )}
 
           {/* Footer Buttons */}
-          <div className="flex gap-3 pt-4 border-t border-gray-200">
-            {procedure.thu_tuc_hanh_chinh_mau_don && procedure.thu_tuc_hanh_chinh_mau_don.length > 0 && (
+          {procedure.thu_tuc_hanh_chinh_mau_don && procedure.thu_tuc_hanh_chinh_mau_don.length > 0 && (
+            <div className="pt-4 border-t border-gray-200">
               <button
                 onClick={() => handleDownloadPdf(
                   procedure.thu_tuc_hanh_chinh_mau_don[0].mau_don.url_file_pdf,
                   procedure.thu_tuc_hanh_chinh_mau_don[0].mau_don.ten_mau_don
                 )}
                 disabled={downloading}
-                className="flex-1 px-4 py-2.5 bg-blue-500 text-white font-medium rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-2.5 bg-blue-500 text-white font-medium rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <DownloadOutlined className={downloading ? 'animate-bounce' : ''} />
                 <span>{downloading ? 'Đang tải...' : 'Tải mẫu đơn'}</span>
               </button>
-            )}
-            <button 
-              onClick={() => setChecklistOpen(true)}
-              className="flex-1 px-4 py-2.5 bg-white text-gray-700 font-medium border border-gray-300 rounded-md hover:border-blue-500 hover:text-blue-500 transition-colors flex items-center justify-center gap-2"
-            >
-              <CheckSquareOutlined />
-              <span>Danh sách kiểm tra</span>
-            </button>
-          </div>
+            </div>
+          )}
         </div>
       ) : null}
 
@@ -358,8 +367,14 @@ export const ProcedureDetailModal: React.FC<ProcedureDetailModalProps> = ({
       <ChecklistModal
         procedureId={procedureId}
         procedureName={procedure?.ten_thu_tuc || ''}
+        truongHopId={selectedTruongHopId}
+        truongHopName={selectedTruongHopName}
         open={checklistOpen}
-        onClose={() => setChecklistOpen(false)}
+        onClose={() => {
+          setChecklistOpen(false)
+          setSelectedTruongHopId(null)
+          setSelectedTruongHopName('')
+        }}
       />
     </Modal>
   )

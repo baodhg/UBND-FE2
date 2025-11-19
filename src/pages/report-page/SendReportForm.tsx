@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
 import { Camera, MapPin, ChevronDown, CheckCircle2, X, Copy, Check, Video } from 'lucide-react'
@@ -389,9 +389,27 @@ export const SendReportForm: React.FC = () => {
       initialValues={initialValues}
       validationSchema={SendReportSchema}
       onSubmit={handleSubmit}
+      validateOnChange={false}
+      validateOnBlur={false}
+      validateOnMount={false}
     >
-      {({ values, setFieldValue }) => (
-        <Form className="space-y-4 sm:space-y-6">
+      {({ values, setFieldValue }) => {
+        // Memoize video URL to prevent re-creating on every render
+        const videoUrl = useMemo(() => {
+          return values.video ? URL.createObjectURL(values.video) : null
+        }, [values.video])
+        
+        // Cleanup video URL when component unmounts or video changes
+        useEffect(() => {
+          return () => {
+            if (videoUrl) {
+              URL.revokeObjectURL(videoUrl)
+            }
+          }
+        }, [videoUrl])
+        
+        return (
+        <Form className="space-y-4 sm:space-y-6" style={{ contain: 'layout' }}>
           {/* Loại phản ánh */}
           <div>
             <label
@@ -406,7 +424,7 @@ export const SendReportForm: React.FC = () => {
                 name="category"
                 id="category"
                 disabled={isLoadingCategories}
-                className="flex w-full items-center justify-between gap-2 rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-sm whitespace-nowrap transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50 h-10 appearance-none pr-10"
+                className="flex w-full items-center justify-between gap-2 rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-sm whitespace-nowrap outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50 h-10 appearance-none pr-10"
               >
                 <option value="">
                   {isLoadingCategories ? 'Đang tải...' : 'Chọn loại phản ánh'}
@@ -422,7 +440,9 @@ export const SendReportForm: React.FC = () => {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none opacity-50"
               />
             </div>
-            <ErrorMessage name="category" component="div" className="text-red-500 text-xs sm:text-sm mt-1" />
+            <div className="h-5 mt-1 overflow-hidden">
+              <ErrorMessage name="category" component="div" className="text-red-500 text-xs sm:text-sm leading-tight" />
+            </div>
           </div>
 
           {/* Tiêu đề */}
@@ -433,15 +453,18 @@ export const SendReportForm: React.FC = () => {
             >
               Tiêu đề <span className="text-red-500">*</span>
             </label>
-            <Field
-              name="title"
-              id="title"
-              type="text"
-              placeholder="Nhập tiêu đề phản ánh (tối đa 200 ký tự)"
-              className="flex w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50 mt-2 h-10"
-            />
-            <p className="text-xs sm:text-sm text-gray-500 mt-1">{values.title.length}/200 ký tự</p>
-            <ErrorMessage name="title" component="div" className="text-red-500 text-xs sm:text-sm mt-1" />
+              <Field
+                name="title"
+                id="title"
+                type="text"
+                placeholder="Nhập tiêu đề phản ánh (tối đa 200 ký tự)"
+                autoComplete="off"
+                className="flex w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50 mt-2 h-10"
+              />
+            <p className="text-xs sm:text-sm text-gray-500 mt-1 h-5 flex items-center">{values.title.length}/200 ký tự</p>
+            <div className="h-5 mt-1 overflow-hidden">
+              <ErrorMessage name="title" component="div" className="text-red-500 text-xs sm:text-sm leading-tight" />
+            </div>
           </div>
 
           {/* Mức độ */}
@@ -457,7 +480,7 @@ export const SendReportForm: React.FC = () => {
                 as="select"
                 name="priority"
                 id="priority"
-                className="flex w-full items-center justify-between gap-2 rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-sm whitespace-nowrap transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50 h-10 appearance-none pr-10"
+                className="flex w-full items-center justify-between gap-2 rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-sm whitespace-nowrap outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50 h-10 appearance-none pr-10"
               >
                 <option value="Thông thường">Thông thường</option>
                 <option value="Khẩn cấp">Khẩn cấp</option>
@@ -467,7 +490,9 @@ export const SendReportForm: React.FC = () => {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none opacity-50"
               />
             </div>
-            <ErrorMessage name="priority" component="div" className="text-red-500 text-xs sm:text-sm mt-1" />
+            <div className="h-5 mt-1 overflow-hidden">
+              <ErrorMessage name="priority" component="div" className="text-red-500 text-xs sm:text-sm leading-tight" />
+            </div>
           </div>
 
           {/* Mô tả chi tiết */}
@@ -478,20 +503,23 @@ export const SendReportForm: React.FC = () => {
             >
               Mô tả chi tiết <span className="text-red-500">*</span>
             </label>
-            <Field
-              name="description"
-              as="textarea"
-              id="description"
-              rows={5}
-              placeholder="Mô tả chi tiết vấn đề (tối đa 2000 ký tự)"
-              className="flex field-sizing-content min-h-16 w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50 mt-2 resize-none"
-            />
-            <p className="text-xs sm:text-sm text-gray-500 mt-1">{values.description.length}/2000 ký tự</p>
-            <ErrorMessage
-              name="description"
-              component="div"
-              className="text-red-500 text-xs sm:text-sm mt-1"
-            />
+              <Field
+                name="description"
+                as="textarea"
+                id="description"
+                rows={5}
+                placeholder="Mô tả chi tiết vấn đề (tối đa 2000 ký tự)"
+                autoComplete="off"
+                className="flex field-sizing-content min-h-16 w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50 mt-2 resize-none"
+              />
+            <p className="text-xs sm:text-sm text-gray-500 mt-1 h-5 flex items-center">{values.description.length}/2000 ký tự</p>
+            <div className="h-5 mt-1 overflow-hidden">
+              <ErrorMessage
+                name="description"
+                component="div"
+                className="text-red-500 text-xs sm:text-sm leading-tight"
+              />
+            </div>
           </div>
 
           {/* Địa điểm */}
@@ -513,10 +541,13 @@ export const SendReportForm: React.FC = () => {
                 type="text"
                 id="location"
                 placeholder="Nhập địa chỉ hoặc khu phố"
-                className="flex h-10 w-full min-w-0 rounded-md border border-gray-300 bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 pl-9 sm:pl-10"
+                autoComplete="off"
+                className="flex h-10 w-full min-w-0 rounded-md border border-gray-300 bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 pl-9 sm:pl-10"
               />
             </div>
-            <ErrorMessage name="location" component="div" className="text-red-500 text-xs sm:text-sm mt-1" />
+            <div className="h-5 mt-1 overflow-hidden">
+              <ErrorMessage name="location" component="div" className="text-red-500 text-xs sm:text-sm leading-tight" />
+            </div>
           </div>
 
           {/* Hình ảnh */}
@@ -545,7 +576,7 @@ export const SendReportForm: React.FC = () => {
 
             {/* Image Preview */}
             {values.images.length > 0 && (
-              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 transition-all duration-200 ease-in-out">
                 {values.images.map((file, index) => (
                   <div key={index} className="relative group">
                     <div 
@@ -571,7 +602,9 @@ export const SendReportForm: React.FC = () => {
               </div>
             )}
 
-            <ErrorMessage name="images" component="div" className="text-red-500 text-xs sm:text-sm mt-1" />
+            <div className="h-5 mt-1 overflow-hidden">
+              <ErrorMessage name="images" component="div" className="text-red-500 text-xs sm:text-sm leading-tight" />
+            </div>
           </div>
 
           {/* Video (Tùy chọn) */}
@@ -603,29 +636,33 @@ export const SendReportForm: React.FC = () => {
             {values.video && (
               <div className="mt-4">
                 <div className="relative group">
-                  <div className="relative rounded-lg overflow-hidden border-2 border-gray-200">
+                  <div className="relative rounded-lg overflow-hidden border-2 border-gray-200 h-64 bg-black flex items-center justify-center">
                     <video
-                      src={URL.createObjectURL(values.video)}
+                      src={videoUrl || undefined}
                       controls
-                      className="w-full max-h-64 object-contain bg-black"
+                      preload="metadata"
+                      className="w-full h-full object-contain"
+                      style={{ minHeight: '256px', maxHeight: '256px' }}
                     />
                   </div>
                   {/* Remove button */}
                   <button
                     type="button"
                     onClick={() => handleRemoveVideo(setFieldValue)}
-                    className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                    className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                   >
                     <X size={16} />
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs text-gray-500 mt-2 h-5">
                   {(values.video.size / (1024 * 1024)).toFixed(2)} MB
                 </p>
               </div>
             )}
 
-            <ErrorMessage name="video" component="div" className="text-red-500 text-xs sm:text-sm mt-1" />
+            <div className="h-5 mt-1 overflow-hidden">
+              <ErrorMessage name="video" component="div" className="text-red-500 text-xs sm:text-sm leading-tight" />
+            </div>
           </div>
 
           
@@ -647,44 +684,69 @@ export const SendReportForm: React.FC = () => {
           </div>
 
           {/* Thông tin cá nhân (hiển thị khi không ẩn danh) */}
-          {!values.isAnonymous && (
-            <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 border border-gray-200 rounded-xl bg-white">
-              <div>
-                <label
-                  htmlFor="name"
-                  className="flex items-center gap-2 text-xs sm:text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
-                >
-                  Họ và tên <span className="text-red-500">*</span>
-                </label>
-                <Field
-                  name="name"
-                  as="input"
-                  type="text"
-                  id="name"
-                  placeholder="Nhập họ và tên"
-                  className="flex h-10 w-full min-w-0 rounded-md border border-gray-300 bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 mt-2"
+          <div 
+            className={`space-y-3 sm:space-y-4 border border-gray-200 rounded-xl bg-white overflow-hidden ${
+              values.isAnonymous 
+                ? 'max-h-0 p-0 border-0 opacity-0 pointer-events-none mt-0' 
+                : 'max-h-[500px] opacity-100 p-3 sm:p-4 mt-0'
+            }`}
+            style={{ 
+              willChange: 'max-height, opacity',
+              transition: 'max-height 200ms ease-in-out, opacity 200ms ease-in-out'
+            }}
+          >
+            <div>
+              <label
+                htmlFor="name"
+                className="flex items-center gap-2 text-xs sm:text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+              >
+                Họ và tên <span className="text-red-500">*</span>
+              </label>
+              <Field
+                name="name"
+                as="input"
+                type="text"
+                id="name"
+                placeholder="Nhập họ và tên"
+                autoComplete="name"
+                disabled={values.isAnonymous}
+                className="flex h-10 w-full min-w-0 rounded-md border border-gray-300 bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 mt-2"
+              />
+              <div className="h-6 mt-1 overflow-hidden">
+                <ErrorMessage 
+                  name="name" 
+                  component="div" 
+                  className="text-red-500 text-xs sm:text-sm leading-tight"
                 />
-                <ErrorMessage name="name" component="div" className="text-red-500 text-xs sm:text-sm mt-1" />
-              </div>
-              <div>
-                <label
-                  htmlFor="phone"
-                  className="flex items-center gap-2 text-xs sm:text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
-                >
-                  Số điện thoại <span className="text-red-500">*</span>
-                </label>
-                <Field
-                  name="phone"
-                  as="input"
-                  type="tel"
-                  id="phone"
-                  placeholder="Nhập số điện thoại"
-                  className="flex h-10 w-full min-w-0 rounded-md border border-gray-300 bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 mt-2"
-                />
-                <ErrorMessage name="phone" component="div" className="text-red-500 text-xs sm:text-sm mt-1" />
               </div>
             </div>
-          )}
+            <div>
+              <label
+                htmlFor="phone"
+                className="flex items-center gap-2 text-xs sm:text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+              >
+                Số điện thoại <span className="text-red-500">*</span>
+              </label>
+              <Field
+                name="phone"
+                as="input"
+                type="tel"
+                id="phone"
+                placeholder="Nhập số điện thoại"
+                autoComplete="tel"
+                inputMode="numeric"
+                disabled={values.isAnonymous}
+                className="flex h-10 w-full min-w-0 rounded-md border border-gray-300 bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 mt-2"
+              />
+              <div className="h-6 mt-1 overflow-hidden">
+                <ErrorMessage 
+                  name="phone" 
+                  component="div" 
+                  className="text-red-500 text-xs sm:text-sm leading-tight"
+                />
+              </div>
+            </div>
+          </div>
 
           {/* Submit Button */}
           <button
@@ -695,7 +757,8 @@ export const SendReportForm: React.FC = () => {
             {isUploadingVideo ? 'Đang upload video...' : isPending ? 'Đang gửi...' : 'Gửi phản ánh'}
           </button>
         </Form>
-      )}
+        )
+      }}
     </Formik>
     </>
   )

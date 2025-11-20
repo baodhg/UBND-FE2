@@ -1,4 +1,5 @@
 import React from 'react'
+import { useLocation } from 'react-router-dom'
 import { Header } from '../components/organisms/Header'
 import { Footer } from '../components/organisms/Footer'
 
@@ -7,13 +8,16 @@ interface MainLayoutProps {
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+  const location = useLocation()
+  const isLoginPage = location.pathname === '/login'
+
   return (
-    <div className="bg-gray-50 min-h-screen flex flex-col">
+    <div className={`bg-gray-50 flex flex-col ${isLoginPage ? 'h-screen' : 'min-h-screen'}`}>
       <Header />
-      <main className="flex-grow px-4 sm:px-6 lg:px-8">
+      <main className={`flex-grow flex flex-col ${isLoginPage ? 'overflow-hidden' : ''} ${isLoginPage ? '' : 'px-4 sm:px-6 lg:px-8'}`}>
         {children}
       </main>
-      <Footer />
+      {!isLoginPage && <Footer />}
     </div>
   )
 }

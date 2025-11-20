@@ -19,11 +19,25 @@ export const useLogin = () => {
       // In production, you might want to decode the JWT properly
       try {
         const tokenPayload = JSON.parse(atob(data.data.access_token.split('.')[1]))
+        
+        // Log token payload for debugging
+        console.log('Token payload:', {
+          userId: tokenPayload.userId,
+          username: tokenPayload.username,
+          email: tokenPayload.email,
+          role: tokenPayload.role,
+          sub: tokenPayload.sub,
+          exp: tokenPayload.exp ? new Date(tokenPayload.exp * 1000).toISOString() : null,
+          allFields: Object.keys(tokenPayload),
+        })
+        
         const user = {
-          id: tokenPayload.userId || null,
-          email: tokenPayload.username || null,
-          name: tokenPayload.username || null,
+          id: tokenPayload.userId || tokenPayload.sub || null,
+          email: tokenPayload.email || tokenPayload.username || null,
+          name: tokenPayload.name || tokenPayload.username || null,
         }
+        
+        console.log('Extracted user info:', user)
         
         dispatch(setCredentials({ user, token: data.data.access_token }))
         

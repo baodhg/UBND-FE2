@@ -33,6 +33,9 @@ const authSlice = createSlice({
       state.user = null
       state.token = null
       state.isAuthenticated = false
+      // Clear tokens from localStorage
+      localStorage.removeItem('token')
+      localStorage.removeItem('refresh_token')
     },
   },
 })

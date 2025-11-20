@@ -25,7 +25,7 @@ export const ProcedureCard: React.FC<ProcedureCardProps> = ({
 }) => {
   return (
     <div
-      className="bg-card text-card-foreground flex flex-col gap-2 sm:gap-3 rounded-lg sm:rounded-xl p-3 sm:p-4 lg:p-5 hover:shadow-lg transition-all cursor-pointer border border-gray-200 hover:border-blue-300 group text-center h-full"
+      className="bg-white flex flex-col gap-2 sm:gap-3 rounded-lg sm:rounded-xl p-3 sm:p-4 lg:p-5 hover:shadow-lg transition-all cursor-pointer border border-gray-200 hover:border-blue-300 group text-center h-full"
       onClick={onClick}
     >
       <div className={`w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 bg-gradient-to-br ${colorClasses[color]} rounded-lg sm:rounded-xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform shadow-md`}>

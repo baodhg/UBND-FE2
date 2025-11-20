@@ -6,6 +6,7 @@ import { Switch } from 'antd'
 import { useReportCategories } from '../../features/report-categories'
 import { useCreateReport } from '../../features/reports'
 import { useUploadVideo } from '../../features/video-upload'
+import { Captcha } from '../../components/Captcha'
 
 interface SendReportFormValues {
   category: string
@@ -69,6 +70,8 @@ export const SendReportForm: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
   const [showErrorModal, setShowErrorModal] = useState(false)
+  const [isCaptchaValid, setIsCaptchaValid] = useState(false)
+  const [resetCaptcha, setResetCaptcha] = useState(0)
 
   const { mutate: createReport, isPending } = useCreateReport()
   const { uploadVideoAsync, isLoading: isUploadingVideo } = useUploadVideo()
@@ -213,6 +216,8 @@ export const SendReportForm: React.FC = () => {
             setTrackingCode(data.ma_phan_anh || '')
             setShowSuccessModal(true)
             resetForm()
+            setIsCaptchaValid(false)
+            setResetCaptcha(prev => prev + 1)
           },
           onError: (error: any) => {
             console.error('Submit error:', error)
@@ -748,13 +753,18 @@ export const SendReportForm: React.FC = () => {
             </div>
           </div>
 
+          {/* Captcha */}
+          <div className="border border-gray-200 rounded-xl bg-white p-4 sm:p-5">
+            <Captcha onValidate={setIsCaptchaValid} reset={resetCaptcha} />
+          </div>
+
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isPending || isUploadingVideo}
+            disabled={isPending || isUploadingVideo || !isCaptchaValid}
             className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive px-4 py-3 sm:py-4 w-full h-12 sm:h-14 bg-blue-600 hover:bg-blue-700 text-base sm:text-lg text-white"
           >
-            {isUploadingVideo ? 'Đang upload video...' : isPending ? 'Đang gửi...' : 'Gửi phản ánh'}
+            {isUploadingVideo ? 'Đang gửi...' : isPending ? 'Đang gửi...' : 'Gửi phản ánh'}
           </button>
         </Form>
         )

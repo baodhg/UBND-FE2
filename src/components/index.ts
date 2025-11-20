@@ -16,4 +16,5 @@ export { Footer } from './organisms/Footer'
 
 // Utilities
 export { ScrollToTop } from './ScrollToTop'
+export { Captcha } from './Captcha'
 

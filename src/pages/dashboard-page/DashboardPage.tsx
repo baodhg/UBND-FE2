@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAppSelector } from '../../store/hooks'
 import { useReportsList } from '../../features/reports/hooks/useReportsList'
+import { DashboardReportModal } from './DashboardReportModal'
 import { 
   MessageSquare, 
   Clock, 
@@ -16,16 +18,19 @@ import {
   House,
   FileText,
   Newspaper,
-  Menu
+  Menu,
+  Plus
 } from 'lucide-react'
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { user, token } = useAppSelector((state) => state.auth)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [showReportModal, setShowReportModal] = useState(false)
   
-  const { reports, pagination, isLoading, error: reportsError } = useReportsList({
+  const { reports, pagination, isLoading, error: reportsError, refetch } = useReportsList({
     page: 1,
     size: 10,
     maPhanAnh: searchQuery || undefined, // Tìm kiếm theo mã phản ánh
@@ -76,6 +81,44 @@ export const DashboardPage: React.FC = () => {
       navigate('/login')
     }
   }, [token, navigate])
+
+  // Refresh reports list when a new report is submitted
+  const handleReportSuccess = async () => {
+    console.log('handleReportSuccess called - refreshing reports list...')
+    
+    // Clear search query first to show all reports including the new one
+    setSearchQuery('')
+    
+    // Wait for state to update and backend to process the new report
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    
+    // Invalidate all reportsList queries to force refresh with new params (no search query)
+    await queryClient.invalidateQueries({ 
+      queryKey: ['reportsList'],
+      refetchType: 'active' // Force refetch active queries
+    })
+    
+    // Also manually refetch to ensure we get the latest data
+    setTimeout(async () => {
+      try {
+        const result = await refetch()
+        console.log('Manual refetch completed')
+        console.log('Reports in state:', reports.length)
+        console.log('Reports from refetch:', result.data?.data?.length || 0)
+        if (result.data?.data) {
+          console.log('Latest reports:', result.data.data.map((r: any) => ({ 
+            ma_phan_anh: r.ma_phan_anh, 
+            tieu_de: r.tieu_de,
+            trang_thai: r.trang_thai 
+          })))
+        }
+      } catch (error) {
+        console.error('Error in manual refetch:', error)
+      }
+    }, 500)
+    
+    console.log('Queries invalidated, React Query will auto-refetch with cleared search')
+  }
 
   if (!token) {
     return null
@@ -270,6 +313,13 @@ export const DashboardPage: React.FC = () => {
                 <option value="Hoàn thành">Hoàn thành</option>
               </select>
             </div>
+            <button
+              onClick={() => setShowReportModal(true)}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium whitespace-nowrap"
+            >
+              <Plus size={18} />
+              <span>Gửi phản ánh</span>
+            </button>
           </div>
         </div>
 
@@ -371,6 +421,13 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
       </main>
+
+      {/* Dashboard Report Modal */}
+      <DashboardReportModal
+        open={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        onSuccess={handleReportSuccess}
+      />
     </div>
   )
 }

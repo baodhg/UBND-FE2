@@ -58,7 +58,7 @@ export const FeaturedNewsCard: React.FC<FeaturedNewsCardProps> = ({
               )}
             </div>
           </div>
-          <h3 className="text-xl sm:text-2xl lg:text-3xl text-gray-800 mb-3 sm:mb-4 group-hover:text-blue-600 transition-colors line-clamp-3">
+          <h3 className="text-xl sm:text-2xl lg:text-3xl text-gray-800 mb-3 sm:mb-4 group-hover:text-blue-600 transition-colors leading-tight">
             {title}
           </h3>
           <p className="text-sm sm:text-base text-gray-600 leading-relaxed mb-4 sm:mb-6 line-clamp-3 sm:line-clamp-4">{description}</p>

@@ -86,10 +86,14 @@ export const getReportsList = async (
   // Priority: user/me endpoint first (for dashboard), then main endpoint
   const endpoints = [
     `/phan-anh/user/me?${queryParams.toString()}`, // Get reports for current user (best for dashboard)
+    `/phan-anh/user?${queryParams.toString()}`, // Alternative user endpoint
     `/phan-anh?${queryParams.toString()}`, // Main endpoint (for admin/web)
     `/phan-anh/for-web?${queryParams.toString()}`, // Web endpoint
     `/phan-anh/for-mobile?${queryParams.toString()}`, // Mobile endpoint
   ]
+  
+  console.log('Fetching reports list with params:', params)
+  console.log('Trying endpoints:', endpoints)
 
   let lastError: any = null
 
@@ -99,6 +103,8 @@ export const getReportsList = async (
 
       if (response.data.success && Array.isArray(response.data.data)) {
         console.log('Successfully fetched reports from:', endpoint)
+        console.log('Reports count:', response.data.data.length)
+        console.log('Reports data:', response.data.data)
         return response.data
       }
 

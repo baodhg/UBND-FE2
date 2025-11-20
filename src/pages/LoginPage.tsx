@@ -7,7 +7,7 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-4">
+    <div className="flex-1 flex items-center justify-center bg-gray-50 px-4 py-8 min-h-0">
       <div className="w-full max-w-sm">
         {/* Back to Home Button */}
         <button
@@ -18,7 +18,7 @@ export const LoginPage: React.FC = () => {
           <span>Quay lại trang chủ</span>
         </button>
 
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="bg-white rounded-xl shadow-md p-5">
           <LoginForm />
         </div>
       </div>

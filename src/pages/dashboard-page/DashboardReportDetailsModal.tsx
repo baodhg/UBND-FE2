@@ -1,5 +1,5 @@
 import React from 'react'
-import { X, Loader2, MapPin, ClipboardList, Paperclip, AlertCircle, Layers, Calendar, User, Phone } from 'lucide-react'
+import { X, Loader2, MapPin, ClipboardList, Paperclip, AlertCircle } from 'lucide-react'
 import { useGetReportByCode } from '../../features/reports'
 
 interface DashboardReportDetailsModalProps {
@@ -8,19 +8,10 @@ interface DashboardReportDetailsModalProps {
   onClose: () => void
 }
 
-const InfoItem: React.FC<{
-  icon: React.ReactNode
-  label: string
-  value?: string | null
-}> = ({ icon, label, value }) => (
-  <div className="flex items-start gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
-      {icon}
-    </div>
-    <div>
-      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{label}</p>
-      <p className="text-sm font-medium text-gray-900">{value?.trim() || 'Chưa cập nhật'}</p>
-    </div>
+const InfoCard: React.FC<{ label: string; value?: string | null }> = ({ label, value }) => (
+  <div className="rounded-2xl border border-slate-100 bg-white px-5 py-4 shadow-sm">
+    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+    <p className="mt-2 text-base font-semibold text-slate-900">{value?.trim() || 'Chưa cập nhật'}</p>
   </div>
 )
 
@@ -66,10 +57,10 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
         className="max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+        <div className="flex items-start justify-between border-b border-gray-100 px-6 py-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Mã phản ánh</p>
-            <h2 className="text-lg font-bold text-gray-900">{code || '---'}</h2>
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Thông tin phản ánh</p>
+            <h2 className="text-2xl font-semibold text-gray-900">Chi tiết phản ánh</h2>
           </div>
           <button
             onClick={onClose}
@@ -112,42 +103,35 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
             </div>
           ) : (
             <>
-              <div className="flex flex-wrap gap-3">
-                <span className="inline-flex items-center rounded-full bg-slate-100 px-4 py-1 text-sm font-semibold text-slate-700">
-                  {report.linh_vuc_phan_anh?.ten || 'Phản ánh cư dân'}
-                </span>
-                <span className={`inline-flex items-center rounded-full px-4 py-1 text-sm font-semibold ${
-                  report.trang_thai_hien_tai?.ten ? 'bg-slate-900 text-white' : 'bg-blue-100 text-blue-700'
-                }`}>
-                  {report.trang_thai_hien_tai?.ten || 'Đang cập nhật'}
-                </span>
-              </div>
-
-              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                <h3 className="text-base font-semibold text-slate-900">{report.tieu_de || 'Không có tiêu đề'}</h3>
-                <p className="mt-1 text-sm text-slate-600">
-                  Nội dung phản ánh của cư dân Khu phố 5 - Mức độ: {report.muc_do || 'Thông thường'}
-                </p>
+              <div className="flex flex-wrap gap-2">
+                {[report.linh_vuc_phan_anh?.ten || 'Phản ánh cư dân', report.trang_thai_hien_tai?.ten || 'Đang cập nhật'].map((badge) => (
+                  <span
+                    key={badge}
+                    className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600"
+                  >
+                    {badge}
+                  </span>
+                ))}
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <InfoItem icon={<Layers size={18} className="text-blue-600" />} label="Mã phản ánh" value={report.ma_phan_anh} />
-                <InfoItem icon={<Calendar size={18} className="text-blue-600" />} label="Ngày gửi" value={formatDateTime(report.thoi_gian_tao, false)} />
-                <InfoItem icon={<User size={18} className="text-blue-600" />} label="Người gửi" value={report.ten_nguoi_phan_anh} />
-                <InfoItem icon={<Phone size={18} className="text-blue-600" />} label="Số điện thoại" value={report.sdt_nguoi_phan_anh} />
+                <InfoCard label="Mã phản ánh" value={report.ma_phan_anh} />
+                <InfoCard label="Ngày gửi" value={formatDateTime(report.thoi_gian_tao, false)} />
+                <InfoCard label="Người gửi" value={report.ten_nguoi_phan_anh} />
+                <InfoCard label="Số điện thoại" value={report.sdt_nguoi_phan_anh} />
               </div>
 
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Địa điểm</p>
-                <div className="mt-2 flex items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50/70 px-4 py-3 text-sm text-blue-900">
+                <p className="text-sm font-semibold text-slate-700">Địa điểm</p>
+                <div className="mt-2 flex items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900">
                   <MapPin size={16} className="text-blue-600" />
                   <span>{report.vi_tri || 'Chưa cập nhật'}</span>
                 </div>
               </div>
 
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Nội dung phản ánh</p>
-                <p className="mt-2 rounded-2xl border border-slate-100 bg-white p-4 text-sm text-slate-700">
+                <p className="text-sm font-semibold text-slate-700">Nội dung phản ánh</p>
+                <p className="mt-2 rounded-2xl bg-slate-50 px-4 py-4 text-sm text-slate-700">
                   {report.mo_ta || 'Người dùng không cung cấp mô tả.'}
                 </p>
               </div>

@@ -35,10 +35,6 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
   const [selectedStatus, setSelectedStatus] = useState('Đang cập nhật')
   const STATUS_OPTIONS = ['Mới', 'Đang xử lý', 'Hoàn thành', 'Từ chối']
 
-  if (!open) {
-    return null
-  }
-
   const statusHistory = report?.lich_su_trang_thai ?? []
   const attachments = report?.dinh_kem_phan_anh ?? []
   const statusLabel = report?.trang_thai_hien_tai?.ten || 'Đang cập nhật'
@@ -68,6 +64,10 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
 
   const handleSaveResponse = () => {
     console.log('save-response', { responseText, selectedStatus })
+  }
+
+  if (!open) {
+    return null
   }
 
   return (

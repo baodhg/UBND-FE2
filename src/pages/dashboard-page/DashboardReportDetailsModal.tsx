@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { X, Loader2, MapPin, ClipboardList, Paperclip, AlertCircle } from 'lucide-react'
 import { useGetReportByCode } from '../../features/reports'
 
@@ -31,6 +31,9 @@ const formatDateTime = (value?: string | null, withTime = true) => {
 
 export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalProps> = ({ open, code, onClose }) => {
   const { data: report, isLoading, error, refetch } = useGetReportByCode(code || '', Boolean(open && code))
+  const [responseText, setResponseText] = useState('')
+  const [selectedStatus, setSelectedStatus] = useState('Đang cập nhật')
+  const STATUS_OPTIONS = ['Mới', 'Đang xử lý', 'Hoàn thành', 'Từ chối']
 
   if (!open) {
     return null
@@ -41,7 +44,8 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
   const statusLabel = report?.trang_thai_hien_tai?.ten || 'Đang cập nhật'
 
   const statusClass = (() => {
-    switch (statusLabel) {
+    const displayStatus = selectedStatus || statusLabel
+    switch (displayStatus) {
       case 'Hoàn thành':
         return 'bg-emerald-100 text-emerald-700'
       case 'Đang xử lý':
@@ -54,6 +58,17 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
         return 'bg-slate-100 text-slate-700'
     }
   })()
+
+  useEffect(() => {
+    if (report) {
+      setResponseText(report.phan_hoi || '')
+      setSelectedStatus(report.trang_thai_hien_tai?.ten || 'Đang cập nhật')
+    }
+  }, [report])
+
+  const handleSaveResponse = () => {
+    console.log('save-response', { responseText, selectedStatus })
+  }
 
   return (
     <div
@@ -141,6 +156,39 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
                 </p>
               </div>
 
+              <div>
+                <h4 className="mb-2 text-sm font-semibold text-slate-900">Phản hồi</h4>
+                <textarea
+                  className="h-28 w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                  placeholder="Nhập nội dung phản hồi..."
+                  value={responseText}
+                  onChange={(e) => setResponseText(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <h4 className="mb-3 text-sm font-semibold text-slate-900">Cập nhật trạng thái</h4>
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                  {STATUS_OPTIONS.map((option) => {
+                    const isActive = (selectedStatus || statusLabel) === option
+                    return (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() => setSelectedStatus(option)}
+                        className={`h-10 rounded-2xl border text-sm font-medium transition ${
+                          isActive
+                            ? 'border-transparent bg-slate-900 text-white shadow-sm'
+                            : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
               <div className="rounded-2xl border border-gray-100 bg-white p-4">
                 <div className="mb-3 flex items-center gap-2">
                   <ClipboardList className="h-5 w-5 text-blue-600" />
@@ -195,6 +243,23 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
                     ))}
                   </div>
                 )}
+              </div>
+
+              <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={handleSaveResponse}
+                  className="inline-flex flex-1 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 sm:flex-none sm:px-8"
+                >
+                  Lưu phản hồi
+                </button>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="inline-flex items-center justify-center rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  Đóng
+                </button>
               </div>
             </>
           )}

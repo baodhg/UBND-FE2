@@ -4,6 +4,7 @@ export interface ReportDetail {
   id: string
   ma_phan_anh: string
   id_linh_vuc_phan_anh: string
+  phan_hoi?: string | null
   tieu_de: string
   mo_ta: string
   vi_tri: string

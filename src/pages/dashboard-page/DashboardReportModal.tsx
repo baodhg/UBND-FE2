@@ -203,6 +203,7 @@ export const DashboardReportModal: React.FC<DashboardReportModalProps> = ({ open
         mucDo: values.priority,
         tenNguoiPhanAnh: user?.name || '',
         soDienThoaiNguoiPhanAnh: userPhone || undefined,
+        userId: user?.id || undefined,
         idVideo: videoId ? [videoId] : undefined,
       }
 

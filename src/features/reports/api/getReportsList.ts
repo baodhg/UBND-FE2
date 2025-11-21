@@ -4,6 +4,7 @@ export interface Report {
   id: string
   ma_phan_anh: string
   id_linh_vuc_phan_anh: string
+  ten_linh_vuc?: string
   tieu_de: string
   mo_ta: string
   vi_tri: string
@@ -20,6 +21,16 @@ export interface Report {
     id: string
     ten_linh_vuc: string
   }
+  trang_thai_hien_tai?: {
+    ten?: string
+    ma_trang_thai?: string
+  } | null
+  lich_su_trang_thai?: Array<{
+    ten?: string
+    trang_thai?: string
+    mo_ta?: string | null
+    thoi_gian?: string
+  }>
 }
 
 export interface Pagination {

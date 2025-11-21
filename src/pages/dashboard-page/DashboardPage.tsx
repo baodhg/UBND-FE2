@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAppSelector } from '../../store/hooks'
 import { useReportsList } from '../../features/reports/hooks/useReportsList'
+import { useReportCategories } from '../../features/report-categories'
+import type { Report } from '../../features/reports/api/getReportsList'
 import { DashboardReportModal } from './DashboardReportModal'
 import { 
   MessageSquare, 
@@ -29,6 +31,11 @@ export const DashboardPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [showReportModal, setShowReportModal] = useState(false)
+  const { categories } = useReportCategories({
+    page: 1,
+    size: 100,
+    isActive: true,
+  })
   
   const { reports, pagination, isLoading, error: reportsError, refetch } = useReportsList({
     page: 1,
@@ -39,11 +46,47 @@ export const DashboardPage: React.FC = () => {
     sortTime: 'desc', // Mới nhất trước
   })
 
+  const categoryMap = useMemo(() => {
+    const map: Record<string, string> = {}
+    categories?.forEach((category) => {
+      map[category.id] = category.ten
+    })
+    return map
+  }, [categories])
+
+  const getReportStatus = (report: Report) => {
+    const directStatus = (report.trang_thai || '').trim()
+    if (directStatus) return directStatus
+
+    const currentStatus = (report.trang_thai_hien_tai?.ten || '').trim()
+    if (currentStatus) return currentStatus
+
+    if (report.lich_su_trang_thai && report.lich_su_trang_thai.length > 0) {
+      const lastHistory = report.lich_su_trang_thai[report.lich_su_trang_thai.length - 1]
+      const historyStatus = (lastHistory?.ten || lastHistory?.trang_thai || '').trim()
+      if (historyStatus) return historyStatus
+    }
+
+    return 'Chờ xử lý'
+  }
+
+  const getCategoryName = (report: Report) => {
+    if (report.linh_vuc?.ten_linh_vuc) return report.linh_vuc.ten_linh_vuc
+    if (report.ten_linh_vuc) return report.ten_linh_vuc
+    if (report.id_linh_vuc_phan_anh && categoryMap[report.id_linh_vuc_phan_anh]) {
+      return categoryMap[report.id_linh_vuc_phan_anh]
+    }
+    return 'Chưa xác định'
+  }
+
   // Calculate summary statistics
-  const totalReports = pagination?.totalItems || 0
-  const pendingReports = reports.filter(r => r.trang_thai === 'Mới' || r.trang_thai === 'Chờ xử lý').length
-  const completedReports = reports.filter(r => r.trang_thai === 'Hoàn thành').length
-  const inProgressReports = reports.filter(r => r.trang_thai === 'Đang xử lý').length
+  const totalReports = reports.length
+  const pendingReports = reports.filter((report) => {
+    const status = getReportStatus(report)
+    return status === 'Mới' || status === 'Chờ xử lý'
+  }).length
+  const completedReports = reports.filter((report) => getReportStatus(report) === 'Hoàn thành').length
+  const inProgressReports = reports.filter((report) => getReportStatus(report) === 'Đang xử lý').length
 
   const handleLogout = () => {
     localStorage.removeItem('token')
@@ -375,46 +418,51 @@ export const DashboardPage: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  reports.map((report) => (
-                    <tr key={report.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {report.ma_phan_anh}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div>
-                          <div className="font-medium">
-                            {report.ten_nguoi_phan_anh || 'N/A'}
+                  reports.map((report) => {
+                    const statusLabel = getReportStatus(report)
+                    const categoryName = getCategoryName(report)
+
+                    return (
+                      <tr key={report.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {report.ma_phan_anh}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <div>
+                            <div className="font-medium">
+                              {report.ten_nguoi_phan_anh || 'N/A'}
+                            </div>
+                            <div className="text-gray-500 text-xs">
+                              {report.sdt_nguoi_phan_anh || 'N/A'}
+                            </div>
                           </div>
-                          <div className="text-gray-500 text-xs">
-                            {report.sdt_nguoi_phan_anh || 'N/A'}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {report.linh_vuc?.ten_linh_vuc || 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {report.vi_tri}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatDate(report.thoi_gian_tao)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeClass(report.trang_thai)}`}>
-                          {report.trang_thai}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <button
-                          onClick={() => navigate(`/report/track?code=${report.ma_phan_anh}`)}
-                          className="flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium"
-                        >
-                          <Eye size={16} />
-                          <span>Xem</span>
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {categoryName}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900">
+                          {report.vi_tri}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {formatDate(report.thoi_gian_tao)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeClass(statusLabel)}`}>
+                            {statusLabel}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <button
+                            onClick={() => navigate(`/report/track?code=${report.ma_phan_anh}`)}
+                            className="flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium"
+                          >
+                            <Eye size={16} />
+                            <span>Xem</span>
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  })
                 )}
               </tbody>
             </table>

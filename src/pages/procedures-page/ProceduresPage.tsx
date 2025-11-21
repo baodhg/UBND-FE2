@@ -160,12 +160,6 @@ export const ProceduresPage: React.FC = () => {
     setSelectedProcedureId(null)
   }
 
-  // Helper function to get first linh vuc name
-  const getFirstLinhVuc = (linhVucArray: string[]) => {
-    if (!linhVucArray || linhVucArray.length === 0) return 'Khác'
-    return linhVucArray[0]
-  }
-
   return (
     <div className="py-12 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 lg:px-8">

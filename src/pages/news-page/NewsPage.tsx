@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { List, Tag, Space, Spin, Card } from 'antd'
 import { CalendarOutlined, SearchOutlined } from '@ant-design/icons'
 import { useNewsList } from '../../features/news'
@@ -7,18 +7,25 @@ import { useNewsCategories } from '../../features/news-categories'
 
 export const NewsPage: React.FC = () => {
   const navigate = useNavigate()
-  const [search, setSearch] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  
+  // Get initial values from URL params
+  const categoryFromUrl = searchParams.get('category') || 'all'
+  const searchFromUrl = searchParams.get('search') || ''
+  
+  const [search, setSearch] = useState(searchFromUrl)
   const [page, setPage] = useState(1)
-  const [activeTab, setActiveTab] = useState('all')
+  const [activeTab, setActiveTab] = useState(categoryFromUrl)
   const [categoryCounts, setCategoryCounts] = useState<{ [key: string]: number }>({})
   const pageSize = 10
 
-  // Reset về tab "Tất cả" mỗi khi vào trang
+  // Sync state with URL params when they change
   useEffect(() => {
-    setActiveTab('all')
-    setSearch('')
-    setPage(1)
-  }, [])
+    const category = searchParams.get('category') || 'all'
+    const searchQuery = searchParams.get('search') || ''
+    setActiveTab(category)
+    setSearch(searchQuery)
+  }, [searchParams])
 
   const { categories, isLoading: isCategoriesLoading } = useNewsCategories({
     isActive: true,
@@ -89,9 +96,24 @@ export const NewsPage: React.FC = () => {
     })
   }
 
+  // Strip HTML tags and get plain text
+  const stripHtml = (html: string) => {
+    const tmp = document.createElement('div')
+    tmp.innerHTML = html
+    return tmp.textContent || tmp.innerText || ''
+  }
+
   const handleSearch = (value: string) => {
     setSearch(value)
     setPage(1)
+    // Update URL params
+    const params = new URLSearchParams(searchParams)
+    if (value) {
+      params.set('search', value)
+    } else {
+      params.delete('search')
+    }
+    setSearchParams(params)
   }
 
   const filterButtons = useMemo(() => {
@@ -153,6 +175,14 @@ export const NewsPage: React.FC = () => {
                   onClick={() => {
                     setActiveTab(filter.key)
                     setPage(1)
+                    // Update URL params
+                    const params = new URLSearchParams(searchParams)
+                    if (filter.key !== 'all') {
+                      params.set('category', filter.key)
+                    } else {
+                      params.delete('category')
+                    }
+                    setSearchParams(params)
                   }}
                   className={
                     activeTab === filter.key
@@ -217,12 +247,9 @@ export const NewsPage: React.FC = () => {
                       <h3 className="text-base font-semibold text-gray-900 hover:text-blue-600 mb-2 line-clamp-2">
                         {item.tieu_de}
                       </h3>
-                      <p 
-                        className="text-sm text-gray-600 line-clamp-2 mb-3"
-                        dangerouslySetInnerHTML={{
-                          __html: item.noi_dung.substring(0, 150) + '...',
-                        }}
-                      />
+                      <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+                        {stripHtml(item.noi_dung).substring(0, 150)}...
+                      </p>
                       <div className="flex items-center justify-between text-xs text-gray-500">
                         <Space size="middle">
                           <Space size={4}>

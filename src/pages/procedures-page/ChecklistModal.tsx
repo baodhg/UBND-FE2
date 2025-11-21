@@ -224,9 +224,14 @@ export const ChecklistModal: React.FC<ChecklistModalProps> = ({
                   <div key={item.id}>
                     {/* Main Item */}
                     <div
-                      className={`p-4 rounded-lg border-2 transition-all ${
-                        item.isOptional ? 'cursor-default' : 'cursor-pointer'
-                      } ${
+                      onClick={() => {
+                        if (!item.isOptional) {
+                          handleToggleCheck(item.id)
+                        } else {
+                          handleToggleProxyDoc(item.id)
+                        }
+                      }}
+                      className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
                         isChecked
                           ? 'bg-white border-gray-800'
                           : 'bg-gray-50 border-gray-200 hover:border-gray-300'
@@ -235,10 +240,7 @@ export const ChecklistModal: React.FC<ChecklistModalProps> = ({
                       <div className="flex gap-3">
                         {/* Checkbox - only for non-optional items */}
                         {!item.isOptional && (
-                          <div 
-                            className="flex-shrink-0 mt-0.5 cursor-pointer"
-                            onClick={() => handleToggleCheck(item.id)}
-                          >
+                          <div className="flex-shrink-0 mt-0.5">
                             <div
                               className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
                                 isChecked
@@ -265,10 +267,7 @@ export const ChecklistModal: React.FC<ChecklistModalProps> = ({
 
                         {/* Plus button for optional items */}
                         {item.isOptional && (
-                          <div 
-                            className="flex-shrink-0 mt-0.5 cursor-pointer"
-                            onClick={() => handleToggleProxyDoc(item.id)}
-                          >
+                          <div className="flex-shrink-0 mt-0.5">
                             <div className="w-5 h-5 rounded border-2 border-blue-500 bg-white flex items-center justify-center transition-all hover:bg-blue-50">
                               <svg
                                 className={`w-3 h-3 text-blue-500 transition-transform ${isProxyExpanded ? 'rotate-45' : ''}`}
@@ -329,7 +328,10 @@ export const ChecklistModal: React.FC<ChecklistModalProps> = ({
                     {item.isOptional && isProxyExpanded && (
                       <div className="ml-8 mt-2">
                         <div
-                          onClick={() => handleToggleCheck(`${item.id}-proxy`)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleToggleCheck(`${item.id}-proxy`)
+                          }}
                           className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
                             isProxyDocChecked
                               ? 'bg-white border-gray-800'

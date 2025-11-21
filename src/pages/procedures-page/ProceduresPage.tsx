@@ -243,11 +243,17 @@ export const ProceduresPage: React.FC = () => {
                       }
                     }}
                   >
-                    {/* Badge */}
-                    <div className="mb-3">
-                      <Tag color={LINH_VUC_COLORS[getFirstLinhVuc(procedure.linh_vuc)] || 'default'}>
-                        {getFirstLinhVuc(procedure.linh_vuc)}
-                      </Tag>
+                    {/* Badges - Show all linh vuc */}
+                    <div className="mb-3 flex flex-wrap gap-2">
+                      {procedure.linh_vuc && procedure.linh_vuc.length > 0 ? (
+                        procedure.linh_vuc.map((linhVuc, index) => (
+                          <Tag key={index} color={LINH_VUC_COLORS[linhVuc] || 'default'}>
+                            {linhVuc}
+                          </Tag>
+                        ))
+                      ) : (
+                        <Tag color="default">Khác</Tag>
+                      )}
                     </div>
 
                     {/* Title */}

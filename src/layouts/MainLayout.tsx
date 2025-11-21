@@ -12,12 +12,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const isLoginPage = location.pathname === '/login'
 
   return (
-    <div className={`bg-gray-50 flex flex-col ${isLoginPage ? 'h-screen' : 'min-h-screen'}`}>
+    <div className={`bg-gray-50 flex flex-col ${isLoginPage ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
       <Header />
-      <main className={`flex-grow flex flex-col ${isLoginPage ? 'overflow-hidden' : ''} ${isLoginPage ? '' : 'px-4 sm:px-6 lg:px-8'}`}>
+      <main className={`flex-grow flex flex-col overflow-hidden ${isLoginPage ? '' : 'px-4 sm:px-6 lg:px-8'}`}>
         {children}
       </main>
-      {!isLoginPage && <Footer />}
+      <Footer />
     </div>
   )
 }

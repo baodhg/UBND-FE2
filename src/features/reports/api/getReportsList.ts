@@ -111,28 +111,28 @@ export const getReportsList = async (
       throw new Error(response.data.message || 'Có lỗi xảy ra khi lấy danh sách phản ánh')
     } catch (error: any) {
       lastError = error
+      const status = error?.response?.status
       
-      // If 403, try next endpoint
-      if (error?.response?.status === 403) {
-        console.warn(`403 Forbidden for endpoint: ${endpoint}, trying next...`)
+      // If 403 or 404, try next endpoint (endpoint might not be available)
+      if (status === 403 || status === 404) {
+        console.warn(`${status} ${status === 403 ? 'Forbidden' : 'Not Found'} for endpoint: ${endpoint}, trying next...`)
         continue
       }
       
-      // For other errors, log and throw immediately
-      if (error?.response?.status !== 403) {
-        console.error('Error fetching reports list:', {
-          endpoint,
-          status: error?.response?.status,
-          message: error?.response?.data?.message,
-        })
-        throw error
-      }
+      // For other errors (network errors, 500, etc.), log and throw immediately
+      console.error('Error fetching reports list:', {
+        endpoint,
+        status,
+        message: error?.response?.data?.message || error?.message,
+      })
+      throw error
     }
   }
 
-  // If all endpoints failed with 403, log and throw
-  if (lastError?.response?.status === 403) {
-    console.error('All endpoints returned 403 Forbidden:', {
+  // If all endpoints failed with 403 or 404, log and throw
+  const finalStatus = lastError?.response?.status
+  if (finalStatus === 403 || finalStatus === 404) {
+    console.error(`All endpoints returned ${finalStatus} ${finalStatus === 403 ? 'Forbidden' : 'Not Found'}:`, {
       triedEndpoints: endpoints,
       params,
       errorData: lastError?.response?.data,

@@ -126,14 +126,16 @@ export const TrackReportForm: React.FC = () => {
   const [searchCode, setSearchCode] = useState('')
   const [showResult, setShowResult] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [validationError, setValidationError] = useState('')
 
   const { data: report, isLoading, error } = useGetReportByCode(searchCode, showResult)
 
   const handleSearch = () => {
     if (!trackingCode.trim()) {
-      alert('Vui lòng nhập mã tra cứu')
+      setValidationError('Vui lòng nhập mã tra cứu')
       return
     }
+    setValidationError('')
     setSearchCode(trackingCode.trim())
     setShowResult(true)
   }
@@ -199,9 +201,16 @@ export const TrackReportForm: React.FC = () => {
           <input
             type="text"
             value={trackingCode}
-            onChange={(e) => setTrackingCode(e.target.value)}
+            onChange={(e) => {
+              setTrackingCode(e.target.value)
+              if (validationError) setValidationError('')
+            }}
             placeholder="Nhập mã phản ánh (VD: 42139SHA)"
-            className="flex h-10 w-full min-w-0 rounded-md border border-gray-300 px-3 py-2.5 text-base bg-gray-100 transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 md:text-sm flex-1"
+            className={`flex h-10 w-full min-w-0 rounded-md border px-3 py-2.5 text-base bg-gray-100 transition-all outline-none md:text-sm flex-1 ${
+              validationError 
+                ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-200' 
+                : 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200'
+            }`}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 handleSearch()
@@ -217,6 +226,12 @@ export const TrackReportForm: React.FC = () => {
             {isLoading ? 'Đang tìm...' : 'Tra cứu'}
           </button>
         </div>
+        {validationError && (
+          <div className="mt-3 flex items-center gap-2 text-red-600 text-sm">
+            <AlertCircle size={16} />
+            <span>{validationError}</span>
+          </div>
+        )}
       </div>
 
       {/* Result Display Below Search */}

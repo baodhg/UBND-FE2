@@ -37,7 +37,7 @@ export const Header: React.FC = () => {
       {/* Top Section with Logo and Title */}
       <div className="bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 lg:px-8 py-4">
-          <div className="flex items-center gap-3">
+          <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer">
             <div className="w-12 h-12 lg:w-14 lg:h-14 flex items-center justify-center">
               <QuocHuy />
             </div>
@@ -49,7 +49,7 @@ export const Header: React.FC = () => {
                 Quận 9, TP. Thủ Đức
               </p>
             </div>
-          </div>
+          </Link>
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

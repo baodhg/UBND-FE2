@@ -344,22 +344,6 @@ export const ProcedureDetailModal: React.FC<ProcedureDetailModalProps> = ({
             </div>
           )}
 
-          {/* Footer Buttons */}
-          {procedure.thu_tuc_hanh_chinh_mau_don && procedure.thu_tuc_hanh_chinh_mau_don.length > 0 && (
-            <div className="pt-4 border-t border-gray-200">
-              <button
-                onClick={() => handleDownloadPdf(
-                  procedure.thu_tuc_hanh_chinh_mau_don[0].mau_don.url_file_pdf,
-                  procedure.thu_tuc_hanh_chinh_mau_don[0].mau_don.ten_mau_don
-                )}
-                disabled={downloading}
-                className="w-full px-4 py-2.5 bg-blue-500 text-white font-medium rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <DownloadOutlined className={downloading ? 'animate-bounce' : ''} />
-                <span>{downloading ? 'Đang tải...' : 'Tải mẫu đơn'}</span>
-              </button>
-            </div>
-          )}
         </div>
       ) : null}
 

@@ -52,7 +52,7 @@ export const NewsDetailPage: React.FC = () => {
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="bg-white rounded-lg shadow-sm p-8 text-center">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Không tìm thấy tin tức</h2>
-            <Button type="primary" onClick={() => navigate('/news')}>
+            <Button type="primary" onClick={() => navigate(-1)}>
               Quay lại danh sách
             </Button>
           </div>
@@ -72,7 +72,7 @@ export const NewsDetailPage: React.FC = () => {
           <Button
             type="text"
             icon={<ArrowLeftOutlined />}
-            onClick={() => navigate('/news')}
+            onClick={() => navigate(-1)}
             className="mb-4"
           >
             Quay lại danh sách tin tức
@@ -109,8 +109,30 @@ export const NewsDetailPage: React.FC = () => {
               {/* Left Column - Content */}
               <Col xs={24} md={14}>
                 <div className="prose prose-lg max-w-none text-gray-700">
-                  <div dangerouslySetInnerHTML={{ __html: news.noi_dung }} />
+                  <div 
+                    dangerouslySetInnerHTML={{ __html: news.noi_dung }}
+                    style={{
+                      // Style for links
+                      '--link-color': '#2563eb',
+                      '--link-hover-color': '#1d4ed8',
+                    } as React.CSSProperties}
+                    className="news-content"
+                  />
                 </div>
+                <style>{`
+                  .news-content a {
+                    color: #2563eb !important;
+                    text-decoration: underline !important;
+                    cursor: pointer !important;
+                  }
+                  .news-content a:hover {
+                    color: #1d4ed8 !important;
+                    text-decoration: underline !important;
+                  }
+                  .news-content img {
+                    border-radius: 8px !important;
+                  }
+                `}</style>
               </Col>
 
               {/* Right Column - Featured Image & Related News */}

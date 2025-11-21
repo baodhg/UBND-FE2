@@ -25,16 +25,20 @@ const SendReportSchema = Yup.object().shape({
   category: Yup.string().required('Loại phản ánh là bắt buộc'),
   title: Yup.string()
     .max(200, 'Tiêu đề không được vượt quá 200 ký tự')
+    .matches(/^[a-zA-Z0-9\sÀ-ỹ,.\-/:()]+$/, 'Tiêu đề không được chứa ký tự đặc biệt')
     .required('Tiêu đề là bắt buộc'),
   description: Yup.string()
     .max(2000, 'Mô tả không được vượt quá 2000 ký tự')
+    .matches(/^[a-zA-Z0-9\sÀ-ỹ,.\-/:()!?\n]+$/, 'Mô tả không được chứa ký tự đặc biệt')
     .required('Mô tả là bắt buộc'),
   images: Yup.array()
+    .min(1, 'Vui lòng tải lên ít nhất 1 hình ảnh')
     .max(5, 'Chỉ được tải lên tối đa 5 hình ảnh')
     .test('fileSize', 'Mỗi file tối đa 3MB', (files) => {
       if (!files) return true
       return files.every((file: any) => file.size <= 3 * 1024 * 1024)
-    }),
+    })
+    .required('Hình ảnh là bắt buộc'),
   video: Yup.mixed()
     .nullable()
     .test('fileSize', 'Mỗi file tối đa 150MB', (file: any) => {
@@ -45,7 +49,10 @@ const SendReportSchema = Yup.object().shape({
       if (!file) return true
       return file.type === 'video/mp4' || file.name.toLowerCase().endsWith('.mp4')
     }),
-  location: Yup.string().required('Địa điểm là bắt buộc'),
+  location: Yup.string()
+    .max(255, 'Địa điểm không được vượt quá 255 ký tự')
+    .matches(/^[a-zA-Z0-9\sÀ-ỹ,.\-/]+$/, 'Địa điểm không được chứa ký tự đặc biệt')
+    .required('Địa điểm là bắt buộc'),
   priority: Yup.string().required('Mức độ là bắt buộc'),
   isAnonymous: Yup.boolean(),
   name: Yup.string().when('isAnonymous', {
@@ -57,7 +64,8 @@ const SendReportSchema = Yup.object().shape({
     is: false,
     then: (schema) =>
       schema
-        .matches(/^[0-9]{10}$/, 'Số điện thoại phải có 10 chữ số')
+        .matches(/^[0-9]+$/, 'Số điện thoại chỉ được chứa chữ số')
+        .matches(/^[0-9]{10}$/, 'Số điện thoại phải có đúng 10 chữ số')
         .required('Số điện thoại là bắt buộc khi không gửi ẩn danh'),
     otherwise: (schema) => schema.notRequired(),
   }),
@@ -68,8 +76,6 @@ export const SendReportForm: React.FC = () => {
   const [trackingCode, setTrackingCode] = useState('')
   const [copied, setCopied] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
-  const [errorMessage, setErrorMessage] = useState('')
-  const [showErrorModal, setShowErrorModal] = useState(false)
   const [isCaptchaValid, setIsCaptchaValid] = useState(false)
   const [resetCaptcha, setResetCaptcha] = useState(0)
 
@@ -105,15 +111,11 @@ export const SendReportForm: React.FC = () => {
     const totalFiles = [...currentImages, ...newFiles]
     
     if (totalFiles.length > 5) {
-      setErrorMessage('Chỉ được tải lên tối đa 5 hình ảnh')
-      setShowErrorModal(true)
       return
     }
 
     const oversizedFiles = newFiles.filter((file) => file.size > 3 * 1024 * 1024)
     if (oversizedFiles.length > 0) {
-      setErrorMessage('Mỗi file tối đa 3MB')
-      setShowErrorModal(true)
       return
     }
 
@@ -143,16 +145,12 @@ export const SendReportForm: React.FC = () => {
 
     // Check file type - only .mp4
     if (file.type !== 'video/mp4' && !file.name.toLowerCase().endsWith('.mp4')) {
-      setErrorMessage('Chỉ chấp nhận file .mp4')
-      setShowErrorModal(true)
       event.target.value = ''
       return
     }
 
     // Check file size - max 150MB
     if (file.size > 150 * 1024 * 1024) {
-      setErrorMessage('Mỗi file tối đa 150MB')
-      setShowErrorModal(true)
       event.target.value = ''
       return
     }
@@ -183,10 +181,6 @@ export const SendReportForm: React.FC = () => {
           console.log('Video uploaded successfully, idVideo:', videoId)
         } catch (videoError: any) {
           console.error('Video upload error:', videoError)
-          const videoErrorMsg =
-            videoError?.response?.data?.message || videoError?.message || 'Có lỗi xảy ra khi upload video'
-          setErrorMessage(videoErrorMsg)
-          setShowErrorModal(true)
           return
         }
       }
@@ -222,36 +216,11 @@ export const SendReportForm: React.FC = () => {
           onError: (error: any) => {
             console.error('Submit error:', error)
             console.error('Error response:', error?.response?.data)
-            
-            // Try to get detailed error message
-            let errorMsg = 'Có lỗi xảy ra khi gửi phản ánh'
-            
-            if (error?.response?.data) {
-              const errorData = error.response.data
-              
-              // Check for validation errors
-              if (errorData.errors && Array.isArray(errorData.errors)) {
-                errorMsg = errorData.errors.map((err: any) => 
-                  typeof err === 'string' ? err : err.message || JSON.stringify(err)
-                ).join('\n')
-              } else if (errorData.message) {
-                errorMsg = errorData.message
-              } else if (typeof errorData === 'string') {
-                errorMsg = errorData
-              }
-            } else if (error?.message) {
-              errorMsg = error.message
-            }
-            
-            setErrorMessage(errorMsg)
-            setShowErrorModal(true)
           },
         }
       )
     } catch (error: any) {
       console.error('Unexpected error:', error)
-      setErrorMessage(error?.message || 'Có lỗi xảy ra')
-      setShowErrorModal(true)
     }
   }
 
@@ -285,44 +254,6 @@ export const SendReportForm: React.FC = () => {
               className="max-w-full max-h-[95vh] sm:max-h-[90vh] object-contain rounded-lg"
               onClick={(e) => e.stopPropagation()}
             />
-          </div>
-        </div>
-      )}
-
-      {/* Error Modal */}
-      {showErrorModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="relative bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 md:p-8 max-w-md w-full mx-2 sm:mx-4 animate-in fade-in zoom-in duration-300">
-            {/* Close button */}
-            <button
-              onClick={() => setShowErrorModal(false)}
-              className="absolute top-2 right-2 sm:top-4 sm:right-4 text-gray-400 hover:text-gray-600 transition-colors p-1"
-            >
-              <X size={20} className="sm:w-6 sm:h-6" />
-            </button>
-
-            {/* Error icon */}
-            <div className="flex justify-center mb-3 sm:mb-4">
-              <div className="bg-red-100 rounded-full p-2 sm:p-3">
-                <X size={36} className="sm:w-12 sm:h-12 text-red-600" />
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="text-center pt-2">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Thông báo</h3>
-              <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 break-words">
-                {errorMessage}
-              </p>
-
-              {/* Action button */}
-              <button
-                onClick={() => setShowErrorModal(false)}
-                className="w-full px-4 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base font-medium rounded-lg transition-colors"
-              >
-                OK
-              </button>
-            </div>
           </div>
         </div>
       )}
@@ -398,7 +329,7 @@ export const SendReportForm: React.FC = () => {
       validateOnBlur={false}
       validateOnMount={false}
     >
-      {({ values, setFieldValue }) => {
+      {({ values, setFieldValue, errors, touched }) => {
         // Memoize video URL to prevent re-creating on every render
         const videoUrl = useMemo(() => {
           return values.video ? URL.createObjectURL(values.video) : null
@@ -462,11 +393,19 @@ export const SendReportForm: React.FC = () => {
                 name="title"
                 id="title"
                 type="text"
-                placeholder="Nhập tiêu đề phản ánh (tối đa 200 ký tự)"
+                placeholder="Nhập tiêu đề phản ánh"
                 autoComplete="off"
-                className="flex w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50 mt-2 h-10"
+                className={`flex w-full rounded-md border bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base outline-none disabled:cursor-not-allowed disabled:opacity-50 mt-2 h-10 ${
+                  values.title.length > 200 || (values.title && !/^[a-zA-Z0-9\sÀ-ỹ,.\-/:()]*$/.test(values.title))
+                    ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-200'
+                    : 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200'
+                }`}
               />
-            <p className="text-xs sm:text-sm text-gray-500 mt-1 h-5 flex items-center">{values.title.length}/200 ký tự</p>
+            <p className={`text-xs sm:text-sm mt-1 h-5 flex items-center ${
+              values.title.length > 200 ? 'text-red-500 font-medium' : 'text-gray-500'
+            }`}>
+              {values.title.length}/200 ký tự
+            </p>
             <div className="h-5 mt-1 overflow-hidden">
               <ErrorMessage name="title" component="div" className="text-red-500 text-xs sm:text-sm leading-tight" />
             </div>
@@ -513,11 +452,19 @@ export const SendReportForm: React.FC = () => {
                 as="textarea"
                 id="description"
                 rows={5}
-                placeholder="Mô tả chi tiết vấn đề (tối đa 2000 ký tự)"
+                placeholder="Mô tả chi tiết vấn đề"
                 autoComplete="off"
-                className="flex field-sizing-content min-h-16 w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50 mt-2 resize-none"
+                className={`flex field-sizing-content min-h-16 w-full rounded-md border bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base outline-none disabled:cursor-not-allowed disabled:opacity-50 mt-2 resize-none ${
+                  values.description.length > 2000 || (values.description && !/^[a-zA-Z0-9\sÀ-ỹ,.\-/:()!?\n]*$/.test(values.description))
+                    ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-200'
+                    : 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200'
+                }`}
               />
-            <p className="text-xs sm:text-sm text-gray-500 mt-1 h-5 flex items-center">{values.description.length}/2000 ký tự</p>
+            <p className={`text-xs sm:text-sm mt-1 h-5 flex items-center ${
+              values.description.length > 2000 ? 'text-red-500 font-medium' : 'text-gray-500'
+            }`}>
+              {values.description.length}/2000 ký tự
+            </p>
             <div className="h-5 mt-1 overflow-hidden">
               <ErrorMessage
                 name="description"
@@ -538,7 +485,11 @@ export const SendReportForm: React.FC = () => {
             <div className="relative mt-2">
               <MapPin
                 size={16}
-                className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none sm:w-[18px] sm:h-[18px]"
+                className={`absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none sm:w-[18px] sm:h-[18px] ${
+                  values.location.length > 255 || !/^[a-zA-Z0-9\sÀ-ỹ,.\-/]*$/.test(values.location)
+                    ? 'text-red-400'
+                    : 'text-gray-400'
+                }`}
               />
               <Field
                 name="location"
@@ -547,9 +498,18 @@ export const SendReportForm: React.FC = () => {
                 id="location"
                 placeholder="Nhập địa chỉ hoặc khu phố"
                 autoComplete="off"
-                className="flex h-10 w-full min-w-0 rounded-md border border-gray-300 bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 pl-9 sm:pl-10"
+                className={`flex h-10 w-full min-w-0 rounded-md border bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 pl-9 sm:pl-10 ${
+                  values.location.length > 255 || (values.location && !/^[a-zA-Z0-9\sÀ-ỹ,.\-/]*$/.test(values.location))
+                    ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-200'
+                    : 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200'
+                }`}
               />
             </div>
+            <p className={`text-xs sm:text-sm mt-1 h-5 flex items-center ${
+              values.location.length > 255 ? 'text-red-500 font-medium' : 'text-gray-500'
+            }`}>
+              {values.location.length}/255 ký tự
+            </p>
             <div className="h-5 mt-1 overflow-hidden">
               <ErrorMessage name="location" component="div" className="text-red-500 text-xs sm:text-sm leading-tight" />
             </div>
@@ -571,10 +531,16 @@ export const SendReportForm: React.FC = () => {
               />
               <label
                 htmlFor="images"
-                className="flex items-center justify-center gap-2 w-full p-4 sm:p-6 border-2 border-gray-300 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all"
+                className={`flex items-center justify-center gap-2 w-full p-4 sm:p-6 border-2 rounded-xl cursor-pointer transition-all ${
+                  errors.images && touched.images
+                    ? 'border-red-500 hover:border-red-600 bg-red-50'
+                    : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
+                }`}
               >
-                <Camera size={20} className="sm:w-6 sm:h-6 text-gray-500" />
-                <span className="text-sm sm:text-base text-gray-600">Thêm ảnh ({values.images.length}/5)</span>
+                <Camera size={20} className={`sm:w-6 sm:h-6 ${errors.images && touched.images ? 'text-red-500' : 'text-gray-500'}`} />
+                <span className={`text-sm sm:text-base ${errors.images && touched.images ? 'text-red-600' : 'text-gray-600'}`}>
+                  Thêm ảnh ({values.images.length}/5)
+                </span>
               </label>
               <p className="text-xs sm:text-sm text-gray-500 mt-2">Mỗi file tối đa 3MB</p>
             </div>
@@ -690,7 +656,7 @@ export const SendReportForm: React.FC = () => {
 
           {/* Thông tin cá nhân (hiển thị khi không ẩn danh) */}
           <div 
-            className={`space-y-3 sm:space-y-4 border border-gray-200 rounded-xl bg-white overflow-hidden ${
+            className={`space-y-0 border border-gray-200 rounded-xl bg-white overflow-hidden ${
               values.isAnonymous 
                 ? 'max-h-0 p-0 border-0 opacity-0 pointer-events-none mt-0' 
                 : 'max-h-[500px] opacity-100 p-3 sm:p-4 mt-0'
@@ -717,18 +683,16 @@ export const SendReportForm: React.FC = () => {
                 disabled={values.isAnonymous}
                 className="flex h-10 w-full min-w-0 rounded-md border border-gray-300 bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 mt-2"
               />
-              <div className="h-6 mt-1 overflow-hidden">
-                <ErrorMessage 
-                  name="name" 
-                  component="div" 
-                  className="text-red-500 text-xs sm:text-sm leading-tight"
-                />
-              </div>
+              <ErrorMessage 
+                name="name" 
+                component="div" 
+                className="text-red-500 text-xs sm:text-sm leading-tight mt-1"
+              />
             </div>
             <div>
               <label
                 htmlFor="phone"
-                className="flex items-center gap-2 text-xs sm:text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+                className="flex items-center gap-2 text-xs sm:text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 mt-8"
               >
                 Số điện thoại <span className="text-red-500">*</span>
               </label>
@@ -741,15 +705,28 @@ export const SendReportForm: React.FC = () => {
                 autoComplete="tel"
                 inputMode="numeric"
                 disabled={values.isAnonymous}
-                className="flex h-10 w-full min-w-0 rounded-md border border-gray-300 bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 mt-2"
+                onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                  // Chỉ cho phép nhập số
+                  if (!/[0-9]/.test(e.key)) {
+                    e.preventDefault()
+                  }
+                }}
+                className={`flex h-10 w-full min-w-0 rounded-md border bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 mt-2 ${
+                  !values.isAnonymous && values.phone && (!/^[0-9]*$/.test(values.phone) || values.phone.length > 10)
+                    ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-200'
+                    : 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200'
+                }`}
               />
-              <div className="h-6 mt-1 overflow-hidden">
-                <ErrorMessage 
-                  name="phone" 
-                  component="div" 
-                  className="text-red-500 text-xs sm:text-sm leading-tight"
-                />
-              </div>
+              <p className={`text-xs sm:text-sm mt-1 h-5 flex items-center ${
+                !values.isAnonymous && values.phone && values.phone.length > 10 ? 'text-red-500 font-medium' : 'text-gray-500'
+              }`}>
+                {!values.isAnonymous && values.phone ? `${values.phone.length}/10 chữ số` : ''}
+              </p>
+              <ErrorMessage 
+                name="phone" 
+                component="div" 
+                className="text-red-500 text-xs sm:text-sm leading-tight mt-1"
+              />
             </div>
           </div>
 

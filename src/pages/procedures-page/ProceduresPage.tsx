@@ -227,7 +227,8 @@ export const ProceduresPage: React.FC = () => {
                 <Col key={procedure.id} xs={24} md={12} lg={8}>
                   <Card
                     hoverable
-                    className="h-full flex flex-col"
+                    className="h-full flex flex-col cursor-pointer"
+                    onClick={() => handleViewDetail(procedure.id)}
                     styles={{
                       body: { 
                         padding: '24px',
@@ -281,13 +282,10 @@ export const ProceduresPage: React.FC = () => {
                     </div>
 
                     {/* Button */}
-                    <button
-                      onClick={() => handleViewDetail(procedure.id)}
-                      className="w-full text-left text-blue-500 hover:text-blue-600 font-normal flex items-center gap-1 transition-colors"
-                    >
+                    <div className="w-full text-left text-blue-500 hover:text-blue-600 font-normal flex items-center gap-1 transition-colors">
                       <span>Xem chi tiết</span>
                       <ArrowRightOutlined className="text-sm" />
-                    </button>
+                    </div>
                   </Card>
                 </Col>
               ))}

@@ -1,5 +1,5 @@
 import React from 'react'
-import { X, Loader2, MapPin, ClipboardList, Paperclip, AlertCircle } from 'lucide-react'
+import { X, Loader2, MapPin, ClipboardList, Paperclip, AlertCircle, Layers, Calendar, User, Phone } from 'lucide-react'
 import { useGetReportByCode } from '../../features/reports'
 
 interface DashboardReportDetailsModalProps {
@@ -8,10 +8,19 @@ interface DashboardReportDetailsModalProps {
   onClose: () => void
 }
 
-const InfoCard: React.FC<{ label: string; value?: string | null }> = ({ label, value }) => (
-  <div className="rounded-2xl bg-[#F6F8FF] px-4 py-4 text-slate-900 shadow-sm">
-    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
-    <p className="mt-1 text-base font-semibold text-slate-900">{value?.trim() || 'Chưa cập nhật'}</p>
+const InfoItem: React.FC<{
+  icon: React.ReactNode
+  label: string
+  value?: string | null
+}> = ({ icon, label, value }) => (
+  <div className="flex items-start gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+      {icon}
+    </div>
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{label}</p>
+      <p className="text-sm font-medium text-gray-900">{value?.trim() || 'Chưa cập nhật'}</p>
+    </div>
   </div>
 )
 
@@ -29,30 +38,24 @@ const formatDateTime = (value?: string | null, withTime = true) => {
   })
 }
 
-export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalProps> = ({ open, code, onClose }) => {
-  const { data: report, isLoading, error, refetch } = useGetReportByCode(code || '', Boolean(open && code))
-  const statusHistory = report?.lich_su_trang_thai ?? []
-  const attachments = report?.dinh_kem_phan_anh ?? []
-  const statusLabel = report?.trang_thai_hien_tai?.ten || 'Đang cập nhật'
-
-  const statusClass = (() => {
-    switch (statusLabel) {
-      case 'Hoàn thành':
-        return 'bg-emerald-100 text-emerald-700'
-      case 'Đang xử lý':
-        return 'bg-indigo-100 text-indigo-700'
-      case 'Mới':
-        return 'bg-slate-900 text-white'
-      case 'Chờ xử lý':
-        return 'bg-amber-100 text-amber-700'
-      default:
-        return 'bg-slate-100 text-slate-700'
-    }
-  })()
+export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalProps> = ({
+  open,
+  code,
+  onClose,
+}) => {
+  const {
+    data: report,
+    isLoading,
+    error,
+    refetch,
+  } = useGetReportByCode(code || '', Boolean(open && code))
 
   if (!open) {
     return null
   }
+
+  const statusHistory = report?.lich_su_trang_thai ?? []
+  const attachments = report?.dinh_kem_phan_anh ?? []
 
   return (
     <div
@@ -60,30 +63,30 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
       onClick={onClose}
     >
       <div
-        className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl"
+        className="max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-start justify-between border-b border-slate-100 px-6 py-5">
+        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
           <div>
-            <p className="text-sm font-semibold text-slate-900">Chi tiết phản ánh</p>
-            <p className="text-xs text-slate-500">Thông tin phản ánh của cư dân</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Mã phản ánh</p>
+            <h2 className="text-lg font-bold text-gray-900">{code || '---'}</h2>
           </div>
           <button
             onClick={onClose}
-            className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-900"
+            className="rounded-full p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-900"
             aria-label="Đóng"
           >
             <X size={20} />
           </button>
         </div>
 
-        <div className="max-h-[calc(90vh-60px)] overflow-y-auto px-6 py-6 space-y-6">
+        <div className="max-h-[calc(90vh-56px)] overflow-y-auto px-6 py-5 space-y-6">
           {!code ? (
-            <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-6 text-center text-sm text-slate-600">
+            <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-6 text-center text-sm text-gray-600">
               Không có mã phản ánh để xem chi tiết.
             </div>
           ) : isLoading ? (
-            <div className="flex flex-col items-center justify-center gap-3 py-16 text-slate-600">
+            <div className="flex flex-col items-center justify-center gap-3 py-16 text-gray-600">
               <Loader2 className="h-6 w-6 animate-spin" />
               <p>Đang tải thông tin phản ánh...</p>
             </div>
@@ -104,7 +107,7 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
               </button>
             </div>
           ) : !report ? (
-            <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-6 text-center text-sm text-slate-600">
+            <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-6 text-center text-sm text-gray-600">
               Không tìm thấy phản ánh tương ứng.
             </div>
           ) : (
@@ -113,16 +116,25 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
                 <span className="inline-flex items-center rounded-full bg-slate-100 px-4 py-1 text-sm font-semibold text-slate-700">
                   {report.linh_vuc_phan_anh?.ten || 'Phản ánh cư dân'}
                 </span>
-                <span className={`inline-flex items-center rounded-full px-4 py-1 text-sm font-semibold ${statusClass}`}>
-                  {statusLabel}
+                <span className={`inline-flex items-center rounded-full px-4 py-1 text-sm font-semibold ${
+                  report.trang_thai_hien_tai?.ten ? 'bg-slate-900 text-white' : 'bg-blue-100 text-blue-700'
+                }`}>
+                  {report.trang_thai_hien_tai?.ten || 'Đang cập nhật'}
                 </span>
               </div>
 
+              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                <h3 className="text-base font-semibold text-slate-900">{report.tieu_de || 'Không có tiêu đề'}</h3>
+                <p className="mt-1 text-sm text-slate-600">
+                  Nội dung phản ánh của cư dân Khu phố 5 - Mức độ: {report.muc_do || 'Thông thường'}
+                </p>
+              </div>
+
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <InfoCard label="Mã phản ánh" value={report.ma_phan_anh} />
-                <InfoCard label="Ngày gửi" value={formatDateTime(report.thoi_gian_tao, false)} />
-                <InfoCard label="Người gửi" value={report.ten_nguoi_phan_anh} />
-                <InfoCard label="Số điện thoại" value={report.sdt_nguoi_phan_anh} />
+                <InfoItem icon={<Layers size={18} className="text-blue-600" />} label="Mã phản ánh" value={report.ma_phan_anh} />
+                <InfoItem icon={<Calendar size={18} className="text-blue-600" />} label="Ngày gửi" value={formatDateTime(report.thoi_gian_tao, false)} />
+                <InfoItem icon={<User size={18} className="text-blue-600" />} label="Người gửi" value={report.ten_nguoi_phan_anh} />
+                <InfoItem icon={<Phone size={18} className="text-blue-600" />} label="Số điện thoại" value={report.sdt_nguoi_phan_anh} />
               </div>
 
               <div>
@@ -135,7 +147,7 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
 
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Nội dung phản ánh</p>
-                <p className="mt-2 rounded-2xl bg-slate-50 px-4 py-4 text-sm text-slate-700">
+                <p className="mt-2 rounded-2xl border border-slate-100 bg-white p-4 text-sm text-slate-700">
                   {report.mo_ta || 'Người dùng không cung cấp mô tả.'}
                 </p>
               </div>
@@ -154,7 +166,11 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
                       return (
                         <div key={`${history.ten}-${history.thoi_gian_tao}-${index}`} className="flex gap-4">
                           <div className="flex flex-col items-center">
-                            <span className={`h-3 w-3 rounded-full ${isLast ? 'bg-green-500' : 'bg-blue-500'}`} />
+                            <span
+                              className={`h-3 w-3 rounded-full ${
+                                isLast ? 'bg-green-500' : 'bg-blue-500'
+                              }`}
+                            />
                             {!isLast && <span className="mt-1 h-full w-px bg-gray-200" />}
                           </div>
                           <div className="flex-1 rounded-xl bg-gray-50/70 p-3">
@@ -195,7 +211,7 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
                   </div>
                 )}
               </div>
-
+            </>
           )}
         </div>
       </div>

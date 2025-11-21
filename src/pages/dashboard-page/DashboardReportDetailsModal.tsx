@@ -1,0 +1,219 @@
+import React from 'react'
+import {
+  X,
+  Loader2,
+  User,
+  Phone,
+  MapPin,
+  Calendar,
+  Layers,
+  Flag,
+  ClipboardList,
+  Paperclip,
+  AlertCircle,
+} from 'lucide-react'
+import { useGetReportByCode } from '../../features/reports'
+
+interface DashboardReportDetailsModalProps {
+  open: boolean
+  code: string | null
+  onClose: () => void
+}
+
+const InfoItem: React.FC<{
+  icon: React.ReactNode
+  label: string
+  value?: string | null
+}> = ({ icon, label, value }) => (
+  <div className="flex items-start gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+      {icon}
+    </div>
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{label}</p>
+      <p className="text-sm font-medium text-gray-900">{value?.trim() || 'Chưa cập nhật'}</p>
+    </div>
+  </div>
+)
+
+const formatDateTime = (value?: string | null, withTime = true) => {
+  if (!value) return 'Chưa cập nhật'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return date.toLocaleString('vi-VN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: withTime ? '2-digit' : undefined,
+    minute: withTime ? '2-digit' : undefined,
+    hour12: false,
+  })
+}
+
+export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalProps> = ({
+  open,
+  code,
+  onClose,
+}) => {
+  const {
+    data: report,
+    isLoading,
+    error,
+    refetch,
+  } = useGetReportByCode(code || '', Boolean(open && code))
+
+  if (!open) {
+    return null
+  }
+
+  const statusHistory = report?.lich_su_trang_thai ?? []
+  const attachments = report?.dinh_kem_phan_anh ?? []
+
+  return (
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Mã phản ánh</p>
+            <h2 className="text-lg font-bold text-gray-900">{code || '---'}</h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-full p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-900"
+            aria-label="Đóng"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="max-h-[calc(90vh-56px)] overflow-y-auto px-6 py-5 space-y-6">
+          {!code ? (
+            <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-6 text-center text-sm text-gray-600">
+              Không có mã phản ánh để xem chi tiết.
+            </div>
+          ) : isLoading ? (
+            <div className="flex flex-col items-center justify-center gap-3 py-16 text-gray-600">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <p>Đang tải thông tin phản ánh...</p>
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center gap-4 rounded-xl border border-red-100 bg-red-50 px-4 py-6 text-center">
+              <AlertCircle className="h-6 w-6 text-red-500" />
+              <div>
+                <p className="font-medium text-red-700">Không thể tải phản ánh</p>
+                <p className="text-sm text-red-600">
+                  {(error as any)?.message || 'Vui lòng thử lại sau hoặc kiểm tra mã phản ánh.'}
+                </p>
+              </div>
+              <button
+                onClick={() => refetch()}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700"
+              >
+                Thử lại
+              </button>
+            </div>
+          ) : !report ? (
+            <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-6 text-center text-sm text-gray-600">
+              Không tìm thấy phản ánh tương ứng.
+            </div>
+          ) : (
+            <>
+              <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-5">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-blue-600">
+                      {report.linh_vuc_phan_anh?.ten || 'Phản ánh cư dân'}
+                    </p>
+                    <h3 className="text-xl font-bold text-gray-900">{report.tieu_de || 'Không có tiêu đề'}</h3>
+                    <p className="text-sm text-gray-600">Mức độ: {report.muc_do || 'Thông thường'}</p>
+                  </div>
+                  <span className="inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-1.5 text-sm font-medium text-white">
+                    {report.trang_thai_hien_tai?.ten || 'Đang cập nhật'}
+                  </span>
+                </div>
+                <p className="mt-4 rounded-xl bg-white/70 p-4 text-sm text-gray-700">
+                  {report.mo_ta || 'Người dùng không cung cấp mô tả.'}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <InfoItem icon={<User size={18} className="text-blue-600" />} label="Người gửi" value={report.ten_nguoi_phan_anh} />
+                <InfoItem icon={<Phone size={18} className="text-blue-600" />} label="Số điện thoại" value={report.sdt_nguoi_phan_anh} />
+                <InfoItem icon={<MapPin size={18} className="text-blue-600" />} label="Địa điểm" value={report.vi_tri} />
+                <InfoItem icon={<Layers size={18} className="text-blue-600" />} label="Loại phản ánh" value={report.linh_vuc_phan_anh?.ten} />
+                <InfoItem icon={<Calendar size={18} className="text-blue-600" />} label="Ngày tiếp nhận" value={formatDateTime(report.thoi_gian_tao, false)} />
+                <InfoItem icon={<Flag size={18} className="text-blue-600" />} label="Mức độ" value={report.muc_do} />
+              </div>
+
+              <div className="rounded-2xl border border-gray-100 bg-white p-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <ClipboardList className="h-5 w-5 text-blue-600" />
+                  <h4 className="text-base font-semibold text-gray-900">Lịch sử trạng thái</h4>
+                </div>
+                {statusHistory.length === 0 ? (
+                  <p className="text-sm text-gray-500">Chưa có lịch sử xử lý.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {statusHistory.map((history, index) => {
+                      const isLast = index === statusHistory.length - 1
+                      return (
+                        <div key={`${history.ten}-${history.thoi_gian_tao}-${index}`} className="flex gap-4">
+                          <div className="flex flex-col items-center">
+                            <span
+                              className={`h-3 w-3 rounded-full ${
+                                isLast ? 'bg-green-500' : 'bg-blue-500'
+                              }`}
+                            />
+                            {!isLast && <span className="mt-1 h-full w-px bg-gray-200" />}
+                          </div>
+                          <div className="flex-1 rounded-xl bg-gray-50/70 p-3">
+                            <p className="text-sm font-semibold text-gray-900">{history.ten || 'Cập nhật trạng thái'}</p>
+                            <p className="text-xs text-gray-500">{formatDateTime(history.thoi_gian_tao)}</p>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-2xl border border-gray-100 bg-white p-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <Paperclip className="h-5 w-5 text-blue-600" />
+                  <h4 className="text-base font-semibold text-gray-900">Tập tin đính kèm</h4>
+                </div>
+                {attachments.length === 0 ? (
+                  <p className="text-sm text-gray-500">Không có tập tin nào được đính kèm.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {attachments.map((file, index) => (
+                      <a
+                        key={`${file.url_file}-${index}`}
+                        href={file.url_file}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-medium text-blue-600 transition hover:border-blue-200 hover:bg-blue-50"
+                      >
+                        <span>
+                          Tập tin {index + 1}{' '}
+                          {file.dinh_dang_file ? `(${file.dinh_dang_file.toUpperCase()})` : ''}
+                        </span>
+                        <span className="text-xs text-gray-500">{file.kich_thuoc_file_mb ? `${file.kich_thuoc_file_mb} MB` : ''}</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

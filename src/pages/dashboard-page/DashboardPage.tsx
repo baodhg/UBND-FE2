@@ -6,6 +6,7 @@ import { useReportsList } from '../../features/reports/hooks/useReportsList'
 import { useReportCategories } from '../../features/report-categories'
 import type { Report } from '../../features/reports/api/getReportsList'
 import { DashboardReportModal } from './DashboardReportModal'
+import { DashboardReportDetailsModal } from './DashboardReportDetailsModal'
 import { 
   MessageSquare, 
   Clock, 
@@ -31,13 +32,14 @@ export const DashboardPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [showReportModal, setShowReportModal] = useState(false)
+  const [selectedReportCode, setSelectedReportCode] = useState<string | null>(null)
   const { categories } = useReportCategories({
     page: 1,
     size: 100,
     isActive: true,
   })
   
-  const { reports, pagination, isLoading, error: reportsError, refetch } = useReportsList({
+  const { reports, isLoading, error: reportsError, refetch } = useReportsList({
     page: 1,
     size: 10,
     maPhanAnh: searchQuery || undefined, // Tìm kiếm theo mã phản ánh
@@ -453,7 +455,7 @@ export const DashboardPage: React.FC = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                           <button
-                            onClick={() => navigate(`/report/track?code=${report.ma_phan_anh}`)}
+                            onClick={() => setSelectedReportCode(report.ma_phan_anh)}
                             className="flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium"
                           >
                             <Eye size={16} />
@@ -475,6 +477,11 @@ export const DashboardPage: React.FC = () => {
         open={showReportModal}
         onClose={() => setShowReportModal(false)}
         onSuccess={handleReportSuccess}
+      />
+      <DashboardReportDetailsModal
+        open={Boolean(selectedReportCode)}
+        code={selectedReportCode}
+        onClose={() => setSelectedReportCode(null)}
       />
     </div>
   )

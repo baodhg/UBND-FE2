@@ -2,12 +2,19 @@ import { useState, useEffect, useRef } from 'react'
 import { useLogin } from '../api/useLogin'
 import { User, Lock, Eye, EyeOff, RefreshCw } from 'lucide-react'
 
-// Generate random captcha code
+// Generate random captcha code - harder version
 const generateCaptcha = (): string => {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // Exclude confusing characters like 0, O, I, 1
+  // Include both uppercase, lowercase, and numbers for more complexity
+  // Exclude confusing characters: 0, O, I, 1, l (lowercase L)
+  const uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ'
+  const lowercase = 'abcdefghjkmnpqrstuvwxyz'
+  const numbers = '23456789'
+  const allChars = uppercase + lowercase + numbers
+  
   let result = ''
-  for (let i = 0; i < 5; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
+  // Increase length from 5 to 6 characters
+  for (let i = 0; i < 6; i++) {
+    result += allChars.charAt(Math.floor(Math.random() * allChars.length))
   }
   return result
 }
@@ -24,15 +31,76 @@ export const LoginForm = () => {
   const [captchaAttempts, setCaptchaAttempts] = useState(0)
   const [isShaking, setIsShaking] = useState(false)
   const captchaInputRef = useRef<HTMLInputElement>(null)
+  const captchaCanvasRef = useRef<HTMLCanvasElement>(null)
   const { mutate: login, isPending } = useLogin()
 
   // Generate captcha on component mount
   useEffect(() => {
-    setCaptchaCode(generateCaptcha())
+    const code = generateCaptcha()
+    setCaptchaCode(code)
   }, [])
 
+  // Draw captcha on canvas when code changes
+  useEffect(() => {
+    if (!captchaCode || !captchaCanvasRef.current) return
+
+    const canvas = captchaCanvasRef.current
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    // Set canvas size
+    canvas.width = 180
+    canvas.height = 50
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    // Background
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+    // Add noise lines
+    for (let i = 0; i < 8; i++) {
+      ctx.strokeStyle = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.4)`
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height)
+      ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height)
+      ctx.stroke()
+    }
+
+    // Draw captcha text with colors
+    ctx.font = 'bold 28px Arial'
+    ctx.textBaseline = 'middle'
+    
+    const chars = captchaCode.split('')
+    const colors = ['#7c3aed', '#059669', '#dc2626', '#ea580c', '#2563eb'] // Purple, Green, Red, Orange, Blue
+    
+    chars.forEach((char, index) => {
+      const x = 15 + index * 28
+      const y = 25 + (Math.random() - 0.5) * 8
+      const rotate = (Math.random() - 0.5) * 0.3
+      
+      ctx.save()
+      ctx.translate(x, y)
+      ctx.rotate(rotate)
+      
+      // Random color for each character
+      ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)]
+      ctx.fillText(char, 0, 0)
+      ctx.restore()
+    })
+
+    // Add noise dots
+    for (let i = 0; i < 60; i++) {
+      ctx.fillStyle = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.6)`
+      ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2)
+    }
+  }, [captchaCode])
+
   const handleRefreshCaptcha = () => {
-    setCaptchaCode(generateCaptcha())
+    const newCode = generateCaptcha()
+    setCaptchaCode(newCode)
     setCaptchaInput('')
     setCaptchaError('')
     setCaptchaAttempts(0)
@@ -55,8 +123,8 @@ export const LoginForm = () => {
     // Clear previous errors
     setLoginError('')
     
-    // Validate captcha
-    if (captchaInput.trim().toUpperCase() !== captchaCode) {
+    // Validate captcha - case sensitive for harder difficulty
+    if (captchaInput.trim() !== captchaCode) {
       const newAttempts = captchaAttempts + 1
       setCaptchaAttempts(newAttempts)
       setCaptchaError('Mã xác nhận không đúng. Vui lòng nhập lại.')
@@ -103,28 +171,28 @@ export const LoginForm = () => {
   return (
     <div className="w-full max-w-sm mx-auto">
       {/* Icon */}
-      <div className="flex justify-center mb-4">
-        <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center">
-          <User size={32} className="text-white" />
+      <div className="flex justify-center mb-3">
+        <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
+          <User size={24} className="text-white" />
         </div>
       </div>
 
       {/* Title */}
-      <h1 className="text-2xl font-bold text-center text-gray-900 mb-1">
+      <h1 className="text-lg font-bold text-center text-gray-900 mb-1">
         Đăng nhập Khu Phố
       </h1>
-      <p className="text-center text-sm text-gray-600 mb-6">
+      <p className="text-center text-xs text-gray-600 mb-4">
         Dành cho cán bộ quản lý khu phố
       </p>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-3">
         {/* Username Input */}
         <div>
-          <label className="block text-sm font-medium text-gray-900 mb-1.5">
+          <label className="block text-xs font-medium text-gray-900 mb-1">
             Tên đăng nhập
           </label>
           <div className="relative">
-            <User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <User size={16} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Nhập tên đăng nhập"
@@ -133,7 +201,7 @@ export const LoginForm = () => {
                 setUsername(e.target.value)
                 setLoginError('')
               }}
-              className="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-100 border-0 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-9 pr-3 py-2 text-xs bg-gray-100 border-0 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
@@ -141,11 +209,11 @@ export const LoginForm = () => {
 
         {/* Password Input */}
         <div>
-          <label className="block text-sm font-medium text-gray-900 mb-1.5">
+          <label className="block text-xs font-medium text-gray-900 mb-1">
             Mật khẩu
           </label>
           <div className="relative">
-            <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Lock size={16} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type={showPassword ? 'text' : 'password'}
               placeholder="Nhập mật khẩu"
@@ -154,59 +222,59 @@ export const LoginForm = () => {
                 setPassword(e.target.value)
                 setLoginError('')
               }}
-              className="w-full pl-10 pr-10 py-2.5 text-sm bg-gray-100 border-0 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-9 pr-9 py-2 text-xs bg-gray-100 border-0 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
         </div>
 
         {/* Remember Me & Forgot Password */}
         <div className="flex items-center justify-between">
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label className="flex items-center gap-1.5 cursor-pointer">
             <input
               type="checkbox"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
-              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className="w-3.5 h-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
-            <span className="text-sm text-gray-700">Ghi nhớ đăng nhập</span>
+            <span className="text-xs text-gray-700">Ghi nhớ đăng nhập</span>
           </label>
-          <a href="#" className="text-sm text-blue-600 hover:text-blue-700">
+          <a href="#" className="text-xs text-blue-600 hover:text-blue-700">
             Quên mật khẩu?
           </a>
         </div>
 
         {/* Captcha */}
         <div>
-          <label className="block text-sm font-medium text-gray-900 mb-1.5">
+          <label className="block text-xs font-medium text-gray-900 mb-1">
             Mã xác nhận
             {captchaAttempts > 0 && (
-              <span className="ml-2 text-xs text-red-600 font-normal">
+              <span className="ml-2 text-[10px] text-red-600 font-normal">
                 (Đã sai {captchaAttempts} lần)
               </span>
             )}
           </label>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-            {/* Captcha Display */}
-            <div className={`flex-1 flex items-center justify-between bg-gray-100 rounded-lg px-3 py-2 border-2 ${
-              captchaError ? 'border-red-300 bg-red-50' : 'border-gray-200'
+          <div className="flex flex-col gap-2">
+            {/* Captcha Display with Canvas */}
+            <div className={`flex items-center gap-2 bg-white rounded-lg px-2.5 py-1.5 border-2 ${
+              captchaError ? 'border-red-300' : 'border-gray-200'
             } transition-colors`}>
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-bold text-gray-800 tracking-wider select-none">
-                  {captchaCode}
-                </span>
-              </div>
+              <canvas
+                ref={captchaCanvasRef}
+                className="flex-shrink-0"
+                style={{ imageRendering: 'pixelated' }}
+              />
               <button
                 type="button"
                 onClick={handleRefreshCaptcha}
-                className="text-gray-500 hover:text-blue-600 transition-colors flex-shrink-0"
+                className="text-gray-500 hover:text-blue-600 transition-colors flex-shrink-0 p-1 rounded hover:bg-gray-100"
                 title="Làm mới mã xác nhận"
               >
                 <RefreshCw size={18} />
@@ -217,13 +285,13 @@ export const LoginForm = () => {
             <input
               ref={captchaInputRef}
               type="text"
-              placeholder="Nhập mã"
+              placeholder="Nhập mã xác thực"
               value={captchaInput}
               onChange={(e) => {
-                setCaptchaInput(e.target.value.toUpperCase())
+                setCaptchaInput(e.target.value)
                 setCaptchaError('')
               }}
-              className={`w-full sm:w-28 px-3 py-2 text-sm bg-gray-100 border-0 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 text-center font-semibold tracking-wider uppercase transition-all ${
+              className={`w-full px-3 py-2 text-xs bg-gray-100 border-0 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
                 captchaError 
                   ? 'bg-red-50 border-2 border-red-300 focus:ring-red-500' 
                   : 'focus:ring-blue-500'
@@ -231,18 +299,18 @@ export const LoginForm = () => {
                 isShaking ? 'animate-shake' : ''
               }`}
               required
-              maxLength={5}
+              maxLength={6}
               autoComplete="off"
             />
           </div>
           {captchaError && (
-            <div className="mt-1.5 flex items-center gap-1">
-              <p className="text-sm text-red-600">{captchaError}</p>
+            <div className="mt-1 flex items-center gap-1">
+              <p className="text-xs text-red-600">{captchaError}</p>
               {captchaAttempts >= 2 && (
                 <button
                   type="button"
                   onClick={handleRefreshCaptcha}
-                  className="text-xs text-blue-600 hover:text-blue-700 underline"
+                  className="text-[10px] text-blue-600 hover:text-blue-700 underline"
                 >
                   Làm mới mã
                 </button>
@@ -253,8 +321,8 @@ export const LoginForm = () => {
 
         {/* Login Error */}
         {loginError && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-2.5">
-            <p className="text-sm text-red-600">{loginError}</p>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-2">
+            <p className="text-xs text-red-600">{loginError}</p>
           </div>
         )}
 
@@ -262,7 +330,7 @@ export const LoginForm = () => {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full py-2.5 text-sm bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-2 text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? 'Đang đăng nhập...' : 'Đăng nhập'}
         </button>

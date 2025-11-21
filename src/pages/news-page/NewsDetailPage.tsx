@@ -131,6 +131,12 @@ export const NewsDetailPage: React.FC = () => {
                   }
                   .news-content img {
                     border-radius: 8px !important;
+                    max-width: 100% !important;
+                    height: auto !important;
+                    max-height: 500px !important;
+                    object-fit: contain !important;
+                    display: block !important;
+                    margin: 1rem auto !important;
                   }
                 `}</style>
               </Col>

@@ -9,7 +9,7 @@ interface DashboardReportDetailsModalProps {
 }
 
 const InfoCard: React.FC<{ label: string; value?: string | null }> = ({ label, value }) => (
-  <div className="rounded-2xl border border-slate-100 bg-white/70 px-4 py-3">
+  <div className="rounded-2xl bg-[#F6F8FF] px-4 py-4 text-slate-900 shadow-sm">
     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
     <p className="mt-1 text-base font-semibold text-slate-900">{value?.trim() || 'Chưa cập nhật'}</p>
   </div>
@@ -64,10 +64,10 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
         className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+        <div className="flex items-start justify-between border-b border-slate-100 px-6 py-5">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Chi tiết phản ánh</p>
-            <h2 className="text-xl font-bold text-slate-900">Thông tin phản ánh của cư dân</h2>
+            <p className="text-sm font-semibold text-slate-900">Chi tiết phản ánh</p>
+            <p className="text-xs text-slate-500">Thông tin phản ánh của cư dân</p>
           </div>
           <button
             onClick={onClose}
@@ -78,7 +78,7 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
           </button>
         </div>
 
-        <div className="max-h-[calc(90vh-56px)] overflow-y-auto px-6 py-6 space-y-6">
+        <div className="max-h-[calc(90vh-60px)] overflow-y-auto px-6 py-6 space-y-6">
           {!code ? (
             <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-6 text-center text-sm text-slate-600">
               Không có mã phản ánh để xem chi tiết.
@@ -126,19 +126,17 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
                 <InfoCard label="Số điện thoại" value={report.sdt_nguoi_phan_anh} />
               </div>
 
-              <div className="rounded-2xl border border-blue-100 bg-blue-50/70 px-4 py-3 text-sm text-blue-900">
-                <div className="flex items-center gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Địa điểm</p>
+                <div className="mt-2 flex items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50/70 px-4 py-3 text-sm text-blue-900">
                   <MapPin size={16} className="text-blue-600" />
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">Địa điểm</p>
-                    <p className="text-sm font-medium">{report.vi_tri || 'Chưa cập nhật'}</p>
-                  </div>
+                  <span>{report.vi_tri || 'Chưa cập nhật'}</span>
                 </div>
               </div>
 
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Nội dung phản ánh</p>
-                <p className="mt-2 rounded-2xl border border-slate-100 bg-white p-4 text-sm text-slate-700">
+                <p className="mt-2 rounded-2xl bg-slate-50 px-4 py-4 text-sm text-slate-700">
                   {report.mo_ta || 'Người dùng không cung cấp mô tả.'}
                 </p>
               </div>

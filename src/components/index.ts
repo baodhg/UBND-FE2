@@ -5,8 +5,6 @@ export { Card } from './atoms/Card'
 export { QuocHuy } from './atoms/QuocHuy'
 
 // Molecules
-export { SearchBar } from './molecules/SearchBar'
-export { FormField } from './molecules/FormField'
 export { ProcedureCard } from './molecules/ProcedureCard'
 export { StatCard } from './molecules/StatCard'
 

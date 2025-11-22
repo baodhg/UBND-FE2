@@ -7,20 +7,23 @@ interface StatCardProps {
   subLabel?: string
 }
 
-export const StatCard: React.FC<StatCardProps> = ({ 
-  icon, 
-  value, 
+export const StatCard: React.FC<StatCardProps> = ({
+  icon,
+  value,
   label,
-  subLabel 
+  subLabel,
 }) => {
   return (
     <div className="text-center">
-      <div className="mb-3">{icon}</div>
-      <div className="text-3xl lg:text-4xl mb-1">{value}</div>
-      <div className="text-blue-100">{label}</div>
+      <div className="mb-3 sm:mb-4">
+        {icon}
+      </div>
+      <div className="text-2xl sm:text-3xl lg:text-4xl mb-1 sm:mb-2" dangerouslySetInnerHTML={{ __html: value }} />
+      <div className="text-sm sm:text-base lg:text-lg opacity-90">{label}</div>
       {subLabel && (
-        <div className="text-sm text-blue-200 opacity-75">{subLabel}</div>
+        <div className="text-xs sm:text-sm opacity-75 mt-1">{subLabel}</div>
       )}
     </div>
   )
 }
+

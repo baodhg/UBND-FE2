@@ -191,7 +191,7 @@ export const NewsPage: React.FC = () => {
                   className="!border-b !border-gray-200 hover:bg-gray-50 transition-colors !px-0 cursor-pointer"
                   onClick={() => navigate(`/news/${item.id}`)}
                 >
-                  <div className="flex gap-4">
+                  <div className="flex gap-4 min-w-0 w-full">
                     {/* Image on the left */}
                     {item.url_anh_dai_dien && (
                       <div className="relative flex-shrink-0">
@@ -213,27 +213,34 @@ export const NewsPage: React.FC = () => {
                     )}
                     
                     {/* Content on the right */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-base font-semibold text-gray-900 hover:text-blue-600 mb-2 line-clamp-2">
+                    <div className="flex-1 min-w-0 overflow-hidden w-0">
+                      <h3 className="text-base font-semibold text-gray-900 hover:text-blue-600 mb-2 line-clamp-2 break-words overflow-hidden">
                         {item.tieu_de}
                       </h3>
-                      <p 
-                        className="text-sm text-gray-600 line-clamp-2 mb-3"
+                      <div 
+                        className="text-sm text-gray-600 line-clamp-2 mb-3 break-words overflow-hidden"
+                        style={{
+                          wordBreak: 'break-word',
+                          overflow: 'hidden',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                        }}
                         dangerouslySetInnerHTML={{
                           __html: item.noi_dung.substring(0, 150) + '...',
                         }}
                       />
-                      <div className="flex items-center justify-between text-xs text-gray-500">
-                        <Space size="middle">
-                          <Space size={4}>
+                      <div className="flex items-center justify-between text-xs text-gray-500 gap-2 min-w-0">
+                        <Space size="middle" className="flex-1 min-w-0">
+                          <Space size={4} className="flex-shrink-0">
                             <CalendarOutlined />
-                            <span>{formatDate(item.thoi_gian_tao)}</span>
+                            <span className="whitespace-nowrap">{formatDate(item.thoi_gian_tao)}</span>
                           </Space>
                           {item.tac_gia && (
-                            <span>Tác giả: {item.tac_gia}</span>
+                            <span className="truncate">Tác giả: {item.tac_gia}</span>
                           )}
                         </Space>
-                        <span className="text-blue-600 hover:text-blue-700 font-medium">
+                        <span className="text-blue-600 hover:text-blue-700 font-medium flex-shrink-0 whitespace-nowrap ml-2">
                           Đọc thêm →
                         </span>
                       </div>

@@ -7,7 +7,7 @@ import { useReportCategories } from '../../features/report-categories'
 import type { Report } from '../../features/reports/api/getReportsList'
 import { DashboardReportModal } from './DashboardReportModal'
 import { DashboardReportDetailsModal } from './DashboardReportDetailsModal'
-import { MessageSquare, Clock, CheckCircle2, Edit, Search, Filter, Eye, User, Phone, LogOut, Plus } from 'lucide-react'
+import { MessageSquare, Clock, CheckCircle2, Edit, Search, Filter, Eye, User, Phone, LogOut, Plus, Check } from 'lucide-react'
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate()
@@ -17,6 +17,7 @@ export const DashboardPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [showReportModal, setShowReportModal] = useState(false)
   const [selectedReportCode, setSelectedReportCode] = useState<string | null>(null)
+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false)
 
   const { categories } = useReportCategories({
     page: 1,
@@ -28,7 +29,6 @@ export const DashboardPage: React.FC = () => {
     page: 1,
     size: 10,
     maPhanAnh: searchQuery || undefined,
-    search: searchQuery || undefined,
     trangThai: statusFilter !== 'all' ? statusFilter : undefined,
     sortTime: 'desc',
   })
@@ -66,6 +66,7 @@ export const DashboardPage: React.FC = () => {
     return 'Chưa xác định'
   }
 
+  // Thống kê dựa trên tất cả reports từ API (không bị ảnh hưởng bởi search)
   const totalReports = reports.length
   const pendingReports = reports.filter((report) => {
     const status = getReportStatus(report)
@@ -73,6 +74,18 @@ export const DashboardPage: React.FC = () => {
   }).length
   const completedReports = reports.filter((report) => getReportStatus(report) === 'Hoàn thành').length
   const inProgressReports = reports.filter((report) => getReportStatus(report) === 'Đang xử lý').length
+
+  // Lọc reports theo mã phản ánh nếu có searchQuery (chỉ dùng cho bảng hiển thị)
+  const filteredReports = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return reports
+    }
+    const query = searchQuery.trim().toUpperCase()
+    return reports.filter((report) => {
+      const maPhanAnh = (report.ma_phan_anh || '').toUpperCase()
+      return maPhanAnh.includes(query)
+    })
+  }, [reports, searchQuery])
 
   const handleLogout = () => {
     localStorage.removeItem('token')
@@ -133,7 +146,7 @@ export const DashboardPage: React.FC = () => {
         <section className="mb-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">Bảng điều khiển khu phố</p>
+              <p className="text-xs font-semibold uppercase tracking-tight text-slate-400">Bảng điều khiển khu phố</p>
               <h1 className="mt-2 text-3xl font-bold text-slate-900">Bảng điều khiển Khu phố</h1>
               <p className="mt-1 text-sm text-slate-500">Quản lý phản ánh từ người dân Phường Tăng Nhơn Phú</p>
             </div>
@@ -163,7 +176,7 @@ export const DashboardPage: React.FC = () => {
                 {user?.name?.charAt(0)?.toUpperCase() || 'N'}
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-white/70">Khu phố 5</p>
+                <p className="text-xs uppercase tracking-tight text-white/70">Khu phố 5</p>
                 <h3 className="text-2xl font-semibold">{user?.name || 'Nguyễn Văn A'}</h3>
                 <p className="text-white/80">Phường Tăng Nhơn Phú · Quận 9, TP. Thủ Đức</p>
               </div>
@@ -209,24 +222,62 @@ export const DashboardPage: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Tìm kiếm theo mã, tên người gửi, loại, địa điểm..."
+              placeholder="Tìm kiếm theo mã phản ánh..."
               className="w-full border-none bg-transparent text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none"
             />
           </div>
           <div className="flex items-center gap-3">
             <div className="relative">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-2.5 pr-10 text-sm font-medium text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              <button
+                type="button"
+                onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+                className="flex items-center gap-2 rounded-2xl border border-blue-500 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
               >
-                <option value="all">Tất cả trạng thái</option>
-                <option value="Mới">Mới</option>
-                <option value="Chờ xử lý">Chờ xử lý</option>
-                <option value="Đang xử lý">Đang xử lý</option>
-                <option value="Hoàn thành">Hoàn thành</option>
-              </select>
-              <Filter className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <span>{statusFilter === 'all' ? 'Tất cả trạng thái' : statusFilter}</span>
+                <Filter size={18} className="text-slate-400" />
+              </button>
+
+              {isFilterDropdownOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setIsFilterDropdownOpen(false)}
+                  />
+                  <div className="absolute right-0 top-full z-20 mt-2 w-48 rounded-2xl border-2 border-blue-500 bg-white shadow-xl">
+                    <div className="py-2">
+                      {[
+                        { value: 'all', label: 'Tất cả trạng thái' },
+                        { value: 'Mới', label: 'Mới' },
+                        { value: 'Chờ xử lý', label: 'Chờ xử lý' },
+                        { value: 'Đang xử lý', label: 'Đang xử lý' },
+                        { value: 'Hoàn thành', label: 'Hoàn thành' },
+                      ].map((option) => {
+                        const isSelected = statusFilter === option.value
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => {
+                              setStatusFilter(option.value)
+                              setIsFilterDropdownOpen(false)
+                            }}
+                            className={`w-full px-4 py-2.5 text-left text-sm font-medium transition ${
+                              isSelected
+                                ? 'bg-blue-50 text-blue-700'
+                                : 'text-slate-700 hover:bg-slate-50'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              {isSelected && <Check size={16} className="text-blue-600" />}
+                              <span>{option.label}</span>
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </section>
@@ -261,14 +312,14 @@ export const DashboardPage: React.FC = () => {
                       </div>
                     </td>
                   </tr>
-                ) : reports.length === 0 ? (
+                ) : filteredReports.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="px-6 py-10 text-center text-slate-500">
-                      Chưa có phản ánh nào
+                      {searchQuery ? `Không tìm thấy phản ánh với mã "${searchQuery}"` : 'Chưa có phản ánh nào'}
                     </td>
                   </tr>
                 ) : (
-                  reports.map((report) => {
+                  filteredReports.map((report) => {
                     const statusLabel = getReportStatus(report)
                     const categoryName = getCategoryName(report)
 

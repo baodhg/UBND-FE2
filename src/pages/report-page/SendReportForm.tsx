@@ -376,9 +376,7 @@ export const SendReportForm: React.FC = () => {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none opacity-50"
               />
             </div>
-            <div className="h-5 mt-1 overflow-hidden">
-              <ErrorMessage name="category" component="div" className="text-red-500 text-xs sm:text-sm leading-tight" />
-            </div>
+            <ErrorMessage name="category" component="div" className="text-red-500 text-xs sm:text-sm leading-tight mt-1" />
           </div>
 
           {/* Tiêu đề */}
@@ -401,14 +399,12 @@ export const SendReportForm: React.FC = () => {
                     : 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200'
                 }`}
               />
-            <p className={`text-xs sm:text-sm mt-1 h-5 flex items-center ${
+            <p className={`text-xs sm:text-sm mt-1 flex items-center ${
               values.title.length > 200 ? 'text-red-500 font-medium' : 'text-gray-500'
             }`}>
               {values.title.length}/200 ký tự
             </p>
-            <div className="h-5 mt-1 overflow-hidden">
-              <ErrorMessage name="title" component="div" className="text-red-500 text-xs sm:text-sm leading-tight" />
-            </div>
+            <ErrorMessage name="title" component="div" className="text-red-500 text-xs sm:text-sm leading-tight mt-1" />
           </div>
 
           {/* Mức độ */}
@@ -434,9 +430,7 @@ export const SendReportForm: React.FC = () => {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none opacity-50"
               />
             </div>
-            <div className="h-5 mt-1 overflow-hidden">
-              <ErrorMessage name="priority" component="div" className="text-red-500 text-xs sm:text-sm leading-tight" />
-            </div>
+            <ErrorMessage name="priority" component="div" className="text-red-500 text-xs sm:text-sm leading-tight mt-1" />
           </div>
 
           {/* Mô tả chi tiết */}
@@ -460,18 +454,16 @@ export const SendReportForm: React.FC = () => {
                     : 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200'
                 }`}
               />
-            <p className={`text-xs sm:text-sm mt-1 h-5 flex items-center ${
+            <p className={`text-xs sm:text-sm mt-1 flex items-center ${
               values.description.length > 2000 ? 'text-red-500 font-medium' : 'text-gray-500'
             }`}>
               {values.description.length}/2000 ký tự
             </p>
-            <div className="h-5 mt-1 overflow-hidden">
-              <ErrorMessage
-                name="description"
-                component="div"
-                className="text-red-500 text-xs sm:text-sm leading-tight"
-              />
-            </div>
+            <ErrorMessage
+              name="description"
+              component="div"
+              className="text-red-500 text-xs sm:text-sm leading-tight mt-1"
+            />
           </div>
 
           {/* Địa điểm */}
@@ -505,14 +497,12 @@ export const SendReportForm: React.FC = () => {
                 }`}
               />
             </div>
-            <p className={`text-xs sm:text-sm mt-1 h-5 flex items-center ${
+            <p className={`text-xs sm:text-sm mt-1 flex items-center ${
               values.location.length > 255 ? 'text-red-500 font-medium' : 'text-gray-500'
             }`}>
               {values.location.length}/255 ký tự
             </p>
-            <div className="h-5 mt-1 overflow-hidden">
-              <ErrorMessage name="location" component="div" className="text-red-500 text-xs sm:text-sm leading-tight" />
-            </div>
+            <ErrorMessage name="location" component="div" className="text-red-500 text-xs sm:text-sm leading-tight mt-1" />
           </div>
 
           {/* Hình ảnh */}
@@ -573,9 +563,7 @@ export const SendReportForm: React.FC = () => {
               </div>
             )}
 
-            <div className="h-5 mt-1 overflow-hidden">
-              <ErrorMessage name="images" component="div" className="text-red-500 text-xs sm:text-sm leading-tight" />
-            </div>
+            <ErrorMessage name="images" component="div" className="text-red-500 text-xs sm:text-sm leading-tight mt-1" />
           </div>
 
           {/* Video (Tùy chọn) */}
@@ -625,15 +613,13 @@ export const SendReportForm: React.FC = () => {
                     <X size={16} />
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-2 h-5">
+                <p className="text-xs text-gray-500 mt-2">
                   {(values.video.size / (1024 * 1024)).toFixed(2)} MB
                 </p>
               </div>
             )}
 
-            <div className="h-5 mt-1 overflow-hidden">
-              <ErrorMessage name="video" component="div" className="text-red-500 text-xs sm:text-sm leading-tight" />
-            </div>
+            <ErrorMessage name="video" component="div" className="text-red-500 text-xs sm:text-sm leading-tight mt-1" />
           </div>
 
           
@@ -717,11 +703,13 @@ export const SendReportForm: React.FC = () => {
                     : 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200'
                 }`}
               />
-              <p className={`text-xs sm:text-sm mt-1 h-5 flex items-center ${
-                !values.isAnonymous && values.phone && values.phone.length > 10 ? 'text-red-500 font-medium' : 'text-gray-500'
-              }`}>
-                {!values.isAnonymous && values.phone ? `${values.phone.length}/10 chữ số` : ''}
-              </p>
+              {!values.isAnonymous && values.phone && (
+                <p className={`text-xs sm:text-sm mt-1 flex items-center ${
+                  values.phone.length > 10 ? 'text-red-500 font-medium' : 'text-gray-500'
+                }`}>
+                  {values.phone.length}/10 chữ số
+                </p>
+              )}
               <ErrorMessage 
                 name="phone" 
                 component="div" 

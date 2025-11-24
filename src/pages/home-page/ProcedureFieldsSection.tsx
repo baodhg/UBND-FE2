@@ -28,6 +28,7 @@ export const ProcedureFieldsSection: React.FC = () => {
 
     const mappedFields = fields
       .filter(field => field.is_active && !field.is_delete)
+      .slice(0, 6) // Limit to 6 items first
       .map((field, index) => {
         // Count procedures that belong to this field
         // Note: procedure.linh_vuc contains field NAMES, not IDs
@@ -42,8 +43,6 @@ export const ProcedureFieldsSection: React.FC = () => {
           color: colors[index % colors.length],
         }
       })
-      .filter(field => field.count > 0) // Only show fields with procedures
-      .slice(0, 6) // Limit to 6 items for display
 
     return mappedFields
   }, [fields, allProcedures])

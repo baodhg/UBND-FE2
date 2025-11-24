@@ -150,12 +150,12 @@ export const ProcedureDetailModal: React.FC<ProcedureDetailModalProps> = ({
             <div className={`grid gap-4 mb-6 ${processingInfo.time && processingInfo.fee ? 'grid-cols-2' : 'grid-cols-1'}`}>
               {/* Time Card */}
               {processingInfo.time && (
-                <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
-                  <div className="flex items-center gap-2 mb-2">
+                <div className="bg-blue-50 rounded-lg p-4 border border-blue-100 h-full flex flex-col">
+                  <div className="flex items-center gap-2 mb-2 flex-shrink-0">
                     <ClockCircleOutlined className="text-blue-500 text-xl" />
                     <div className="text-xs text-gray-600 font-medium">Thời gian xử lý</div>
                   </div>
-                  <div className="text-base font-semibold text-blue-600">
+                  <div className="text-base font-semibold text-blue-600 break-words">
                     {processingInfo.time}
                   </div>
                 </div>
@@ -163,16 +163,16 @@ export const ProcedureDetailModal: React.FC<ProcedureDetailModalProps> = ({
 
               {/* Fee Card */}
               {processingInfo.fee && (
-                <div className="bg-green-50 rounded-lg p-4 border border-green-100">
-                  <div className="flex items-center gap-2 mb-2">
+                <div className="bg-green-50 rounded-lg p-4 border border-green-100 h-full flex flex-col">
+                  <div className="flex items-center gap-2 mb-2 flex-shrink-0">
                     <DollarOutlined className="text-green-500 text-xl" />
                     <div className="text-xs text-gray-600 font-medium">Lệ phí</div>
                   </div>
-                  <div className="text-base font-semibold text-green-600">
+                  <div className="text-base font-semibold text-green-600 break-words">
                     {processingInfo.fee}
                   </div>
                   {processingInfo.feeNote && (
-                    <div className="text-xs text-gray-500 mt-1">{processingInfo.feeNote}</div>
+                    <div className="text-xs text-gray-500 mt-1 break-words line-clamp-2">{processingInfo.feeNote}</div>
                   )}
                 </div>
               )}
@@ -211,32 +211,32 @@ export const ProcedureDetailModal: React.FC<ProcedureDetailModalProps> = ({
               <h3 className="text-base font-semibold text-gray-900 mb-4">Hồ sơ yêu cầu</h3>
               <div className="grid grid-cols-2 gap-4">
                 {procedure.truong_hop_thu_tuc.map((truongHop) => (
-                  <div key={truongHop.id} className="space-y-3">
-                    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <div key={truongHop.id} className="flex flex-col h-full">
+                    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 flex-1 flex flex-col">
                       {truongHop.ten_truong_hop && (
-                        <div className="text-sm font-semibold text-gray-900 mb-3">
+                        <div className="text-sm font-semibold text-gray-900 mb-3 line-clamp-2 min-h-[40px]">
                           {truongHop.ten_truong_hop}
                         </div>
                       )}
                       {truongHop.mo_ta && (
-                        <div className="text-xs text-gray-600 mb-3 pb-3 border-b border-gray-300">
+                        <div className="text-xs text-gray-600 mb-3 pb-3 border-b border-gray-300 line-clamp-2">
                           {truongHop.mo_ta}
                         </div>
                       )}
-                      <ul className="space-y-2">
+                      <ul className="space-y-2 flex-1">
                         {truongHop.thanh_phan_ho_so.map((item) => (
                           <li key={item.id} className="flex gap-2 text-sm">
-                            <span className="text-blue-500 mt-1 font-bold">•</span>
-                            <div className="flex-1">
-                              <div className="text-gray-900">{item.ten_thanh_phan}</div>
+                            <span className="text-blue-500 mt-1 font-bold flex-shrink-0">•</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-gray-900 break-words">{item.ten_thanh_phan}</div>
                               {item.mo_ta_chi_tiet && (
-                                <div className="text-xs text-gray-500 mt-1">{item.mo_ta_chi_tiet}</div>
+                                <div className="text-xs text-gray-500 mt-1 break-words line-clamp-2">{item.mo_ta_chi_tiet}</div>
                               )}
                               {item.ghi_chu && (
-                                <div className="text-xs text-gray-500 italic mt-1">{item.ghi_chu}</div>
+                                <div className="text-xs text-gray-500 italic mt-1 break-words line-clamp-1">{item.ghi_chu}</div>
                               )}
                               {(item.so_luong_ban_chinh > 0 || item.so_luong_ban_sao > 0) && (
-                                <div className="text-xs text-blue-600 mt-1 font-medium">
+                                <div className="text-xs text-blue-600 mt-1 font-medium whitespace-nowrap">
                                   {item.so_luong_ban_chinh > 0 && `Bản chính: ${item.so_luong_ban_chinh}`}
                                   {item.so_luong_ban_chinh > 0 && item.so_luong_ban_sao > 0 && ' | '}
                                   {item.so_luong_ban_sao > 0 && `Bản sao: ${item.so_luong_ban_sao}`}
@@ -254,7 +254,7 @@ export const ProcedureDetailModal: React.FC<ProcedureDetailModalProps> = ({
                         setSelectedTruongHopName(truongHop.ten_truong_hop || '')
                         setChecklistOpen(true)
                       }}
-                      className="w-full px-3 py-2 bg-white text-gray-700 text-sm font-medium border border-gray-300 rounded-md hover:border-blue-500 hover:text-blue-500 transition-colors flex items-center justify-center gap-2"
+                      className="w-full mt-3 px-3 py-2 bg-white text-gray-700 text-sm font-medium border border-gray-300 rounded-md hover:border-blue-500 hover:text-blue-500 transition-colors flex items-center justify-center gap-2 flex-shrink-0"
                     >
                       <CheckSquareOutlined />
                       <span>Danh sách kiểm tra</span>

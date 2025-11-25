@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { X, Loader2, MapPin, ClipboardList, Paperclip, AlertCircle } from 'lucide-react'
 import { useGetReportByCode } from '../../features/reports'
 
@@ -40,6 +40,7 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
     error,
     refetch,
   } = useGetReportByCode(code || '', Boolean(open && code))
+  const [previewFile, setPreviewFile] = useState<{ url: string; name: string } | null>(null)
 
   if (!open) {
     return null
@@ -47,6 +48,13 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
 
   const statusHistory = report?.lich_su_trang_thai ?? []
   const attachments = report?.dinh_kem_phan_anh ?? []
+
+  const resolveFileUrl = (url?: string | null) => {
+    if (!url) return '#'
+    if (/^https?:\/\//i.test(url)) return url
+    const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || ''
+    return `${baseUrl}${url}`
+  }
 
   return (
     <div
@@ -177,21 +185,47 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
                   <p className="text-sm text-gray-500">Không có tập tin nào được đính kèm.</p>
                 ) : (
                   <div className="space-y-2">
-                    {attachments.map((file, index) => (
-                      <a
-                        key={`${file.url_file}-${index}`}
-                        href={file.url_file}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-medium text-blue-600 transition hover:border-blue-200 hover:bg-blue-50"
-                      >
-                        <span>
-                          Tập tin {index + 1}{' '}
-                          {file.dinh_dang_file ? `(${file.dinh_dang_file.toUpperCase()})` : ''}
-                        </span>
-                        <span className="text-xs text-gray-500">{file.kich_thuoc_file_mb ? `${file.kich_thuoc_file_mb} MB` : ''}</span>
-                      </a>
-                    ))}
+                    {attachments.map((file, index) => {
+                      const fileName = `Tập tin ${index + 1}`
+                      const displayName = file.dinh_dang_file
+                        ? `${fileName} (${file.dinh_dang_file.toUpperCase()})`
+                        : fileName
+                      const fileUrl = resolveFileUrl(file.url_file)
+                      const format = (file.dinh_dang_file || '').toLowerCase()
+                      const isImage =
+                        format.includes('image') ||
+                        ['jpg', 'jpeg', 'png', 'gif', 'webp'].some((ext) => file.url_file?.toLowerCase().endsWith(ext))
+
+                      const content = (
+                        <>
+                          <span>{displayName}</span>
+                          <span className="text-xs text-gray-500">
+                            {file.kich_thuoc_file_mb ? `${file.kich_thuoc_file_mb} MB` : ''}
+                          </span>
+                        </>
+                      )
+
+                      return isImage ? (
+                        <button
+                          type="button"
+                          key={`${file.url_file}-${index}`}
+                          onClick={() => setPreviewFile({ url: fileUrl, name: displayName })}
+                          className="flex w-full items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-left text-sm font-medium text-blue-600 transition hover:border-blue-200 hover:bg-blue-50"
+                        >
+                          {content}
+                        </button>
+                      ) : (
+                        <a
+                          key={`${file.url_file}-${index}`}
+                          href={fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-medium text-blue-600 transition hover:border-blue-200 hover:bg-blue-50"
+                        >
+                          {content}
+                        </a>
+                      )
+                    })}
                   </div>
                 )}
               </div>
@@ -199,6 +233,26 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
           )}
         </div>
       </div>
+
+      {previewFile && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 p-4" onClick={() => setPreviewFile(null)}>
+          <div
+            className="relative w-full max-w-3xl rounded-2xl bg-white p-4 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setPreviewFile(null)}
+              className="absolute right-3 top-3 rounded-full bg-white/80 p-1 text-gray-500 transition hover:bg-gray-100 hover:text-gray-900"
+            >
+              <X size={18} />
+            </button>
+            <h4 className="mb-3 text-center text-sm font-semibold text-gray-700">{previewFile.name}</h4>
+            <div className="flex max-h-[70vh] items-center justify-center overflow-hidden rounded-xl bg-gray-50 p-2">
+              <img src={previewFile.url} alt={previewFile.name} className="max-h-[65vh] w-full object-contain" />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

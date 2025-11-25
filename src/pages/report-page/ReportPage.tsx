@@ -1,10 +1,37 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { SendReportForm } from './SendReportForm'
 import { TrackReportForm } from './TrackReportForm'
-import { MessageSquare, Info } from 'lucide-react'
+import { MessageSquare, Info, Lock } from 'lucide-react'
+import { useAppSelector } from '../../store/hooks'
 
 const ReportPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'send' | 'track'>('send')
+  const { isAuthenticated } = useAppSelector((state) => state.auth)
+
+  if (!isAuthenticated) {
+    return (
+      <div className="w-full">
+        <div className="max-w-3xl mx-auto px-4 lg:px-8 py-12">
+          <div className="rounded-2xl border border-blue-100 bg-white p-8 text-center shadow-lg">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+              <Lock size={28} />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Chỉ dành cho cán bộ khu phố</h2>
+            <p className="text-gray-600 mb-6">
+              Vui lòng đăng nhập tài khoản khu phố để gửi hoặc tra cứu phản ánh.
+            </p>
+            <Link
+              to="/login"
+              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-blue-700"
+            >
+              Đăng nhập Khu phố
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="w-full">

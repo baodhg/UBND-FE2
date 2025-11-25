@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAppSelector } from '../../store/hooks'
@@ -13,7 +13,8 @@ export const DashboardPage: React.FC = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { user, token } = useAppSelector((state) => state.auth)
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchInput, setSearchInput] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [showReportModal, setShowReportModal] = useState(false)
   const [selectedReportCode, setSelectedReportCode] = useState<string | null>(null)
@@ -24,14 +25,28 @@ export const DashboardPage: React.FC = () => {
     isActive: true,
   })
 
-  const { reports, isLoading, error: reportsError, refetch } = useReportsList({
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchInput.trim())
+    }, 350)
+    return () => clearTimeout(handler)
+  }, [searchInput])
+
+  const reportsQueryParams = useMemo(() => {
+    const normalizedSearch = debouncedSearch.trim()
+    const isPotentialReportCode = /^[A-Za-z0-9]{6,}$/i.test(normalizedSearch)
+
+    return {
     page: 1,
     size: 10,
-    maPhanAnh: searchQuery || undefined,
-    search: searchQuery || undefined,
+      search: normalizedSearch || undefined,
+      maPhanAnh: isPotentialReportCode ? normalizedSearch.toUpperCase() : undefined,
     trangThai: statusFilter !== 'all' ? statusFilter : undefined,
-    sortTime: 'desc',
-  })
+      sortTime: 'desc' as const,
+    }
+  }, [debouncedSearch, statusFilter])
+
+  const { reports, isLoading, error: reportsError, refetch } = useReportsList(reportsQueryParams)
 
   const categoryMap = useMemo(() => {
     const map: Record<string, string> = {}
@@ -57,14 +72,32 @@ export const DashboardPage: React.FC = () => {
     return 'Chờ xử lý'
   }
 
-  const getCategoryName = (report: Report) => {
+  const getCategoryName = useCallback((report: Report) => {
     if (report.linh_vuc?.ten_linh_vuc) return report.linh_vuc.ten_linh_vuc
     if (report.ten_linh_vuc) return report.ten_linh_vuc
     if (report.id_linh_vuc_phan_anh && categoryMap[report.id_linh_vuc_phan_anh]) {
       return categoryMap[report.id_linh_vuc_phan_anh]
     }
     return 'Chưa xác định'
-  }
+  }, [categoryMap])
+
+  const displayReports = useMemo(() => {
+    const keyword = searchInput.trim().toLowerCase()
+    if (!keyword) return reports
+
+    return reports.filter((report) => {
+      const categoryName = getCategoryName(report)
+      return [
+        report.ma_phan_anh,
+        report.ten_nguoi_phan_anh,
+        report.sdt_nguoi_phan_anh,
+        categoryName,
+        report.vi_tri,
+      ]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(keyword))
+    })
+  }, [reports, searchInput, getCategoryName])
 
   const totalReports = reports.length
   const pendingReports = reports.filter((report) => {
@@ -73,6 +106,25 @@ export const DashboardPage: React.FC = () => {
   }).length
   const completedReports = reports.filter((report) => getReportStatus(report) === 'Hoàn thành').length
   const inProgressReports = reports.filter((report) => getReportStatus(report) === 'Đang xử lý').length
+
+  const statCards = [
+    { title: 'Tổng phản ánh', value: totalReports, icon: <MessageSquare size={20} />, accent: 'text-blue-600 bg-blue-50 ring-blue-100' },
+    { title: 'Chờ xử lý', value: pendingReports, icon: <Clock size={20} />, accent: 'text-amber-600 bg-amber-50 ring-amber-100' },
+    { title: 'Đã hoàn thành', value: completedReports, icon: <CheckCircle2 size={20} />, accent: 'text-emerald-600 bg-emerald-50 ring-emerald-100' },
+    { title: 'Đang xử lý', value: inProgressReports, icon: <Edit size={20} />, accent: 'text-purple-600 bg-purple-50 ring-purple-100' },
+  ]
+
+  const renderStatCard = (card: (typeof statCards)[number], index: number) => (
+    <div key={`${card.title}-${index}`} className="rounded-3xl border border-white/60 bg-white p-5 shadow-sm ring-1 ring-slate-100">
+      <div className="flex items-center justify-between">
+        <h4 className="text-sm font-medium text-slate-500">{card.title}</h4>
+        <span className={`inline-flex items-center justify-center rounded-2xl px-3 py-1 text-sm font-semibold ${card.accent}`}>
+          {card.icon}
+        </span>
+      </div>
+      <p className="mt-3 text-4xl font-semibold text-slate-900">{card.value}</p>
+    </div>
+  )
 
   const handleLogout = () => {
     localStorage.removeItem('token')
@@ -111,7 +163,8 @@ export const DashboardPage: React.FC = () => {
   }, [token, navigate])
 
   const handleReportSuccess = async () => {
-    setSearchQuery('')
+    setSearchInput('')
+    setDebouncedSearch('')
     await new Promise((resolve) => setTimeout(resolve, 1500))
     await queryClient.invalidateQueries({ queryKey: ['reportsList'], refetchType: 'active' })
     setTimeout(async () => {
@@ -133,9 +186,9 @@ export const DashboardPage: React.FC = () => {
         <section className="mb-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">Bảng điều khiển khu phố</p>
-              <h1 className="mt-2 text-3xl font-bold text-slate-900">Bảng điều khiển Khu phố</h1>
-              <p className="mt-1 text-sm text-slate-500">Quản lý phản ánh từ người dân Phường Tăng Nhơn Phú</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Bảng điều khiển khu phố</p>
+              <h1 className="mt-1 text-3xl font-bold text-slate-900">Bảng điều khiển Khu phố</h1>
+              <p className="mt-0.5 text-sm text-slate-500">Quản lý phản ánh từ người dân Phường Tăng Nhơn Phú</p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
               <button
@@ -163,9 +216,9 @@ export const DashboardPage: React.FC = () => {
                 {user?.name?.charAt(0)?.toUpperCase() || 'N'}
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-white/70">Khu phố 5</p>
-                <h3 className="text-2xl font-semibold">{user?.name || 'Nguyễn Văn A'}</h3>
-                <p className="text-white/80">Phường Tăng Nhơn Phú · Quận 9, TP. Thủ Đức</p>
+                <p className="text-xs uppercase tracking-wide text-white/70">Khu phố 5</p>
+                <h3 className="text-2xl font-semibold mt-0.5">{user?.name || 'Nguyễn Văn A'}</h3>
+                <p className="text-white/80 mt-0.5">Phường Tăng Nhơn Phú · Quận 9, TP. Thủ Đức</p>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-3 text-sm">
@@ -181,36 +234,32 @@ export const DashboardPage: React.FC = () => {
           </div>
         </section>
 
-        <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {
-            [
-              { title: 'Tổng phản ánh', value: totalReports, icon: <MessageSquare size={20} />, accent: 'text-blue-600 bg-blue-50 ring-blue-100' },
-              { title: 'Chờ xử lý', value: pendingReports, icon: <Clock size={20} />, accent: 'text-amber-600 bg-amber-50 ring-amber-100' },
-              { title: 'Đã hoàn thành', value: completedReports, icon: <CheckCircle2 size={20} />, accent: 'text-emerald-600 bg-emerald-50 ring-emerald-100' },
-              { title: 'Đang xử lý', value: inProgressReports, icon: <Edit size={20} />, accent: 'text-purple-600 bg-purple-50 ring-purple-100' },
-            ].map((card) => (
-              <div key={card.title} className="rounded-3xl border border-white/60 bg-white p-5 shadow-sm ring-1 ring-slate-100">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium text-slate-500">{card.title}</h4>
-                  <span className={`inline-flex items-center justify-center rounded-2xl px-3 py-1 text-sm font-semibold ${card.accent}`}>
-                    {card.icon}
-                  </span>
-                </div>
-                <p className="mt-3 text-4xl font-semibold text-slate-900">{card.value}</p>
-              </div>
-            ))
-          }
+        <section className="mb-8">
+          <div className="grid grid-cols-2 gap-3 sm:hidden">
+            <div className="space-y-3">
+              {statCards.slice(0, 2).map((card, index) => renderStatCard(card, index))}
+            </div>
+            <div className="space-y-3">
+              {statCards.slice(2).map((card, index) => renderStatCard(card, index + 2))}
+            </div>
+          </div>
+
+          <div className="hidden sm:grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {statCards.map((card, index) => renderStatCard(card, index))}
+          </div>
         </section>
 
-        <section className="mb-6 flex flex-col gap-4 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-100 md:flex-row md:items-center">
-          <div className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 px-4 py-2.5 focus-within:ring-2 focus-within:ring-blue-500">
-            <Search size={18} className="text-slate-400" />
+        <section className="mb-6 md:sticky md:top-4 md:z-20">
+          <div className="flex flex-col gap-3 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-100 md:flex-row md:items-center">
+            <div className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 px-4 py-2.5 focus-within:ring-2 focus-within:ring-blue-500 bg-white">
+              <Search size={18} className="text-slate-400 flex-shrink-0" />
             <input
               type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Tìm kiếm theo mã, tên người gửi, loại, địa điểm..."
               className="w-full border-none bg-transparent text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none"
+                autoComplete="off"
             />
           </div>
           <div className="flex items-center gap-3">
@@ -218,7 +267,7 @@ export const DashboardPage: React.FC = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-2.5 pr-10 text-sm font-medium text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-2.5 pr-10 text-sm font-medium text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-auto"
               >
                 <option value="all">Tất cả trạng thái</option>
                 <option value="Mới">Mới</option>
@@ -227,12 +276,81 @@ export const DashboardPage: React.FC = () => {
                 <option value="Hoàn thành">Hoàn thành</option>
               </select>
               <Filter className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="rounded-3xl bg-white shadow-lg shadow-slate-200/60 ring-1 ring-slate-100">
-          <div className="overflow-x-auto">
+        <section className="rounded-3xl bg-white shadow-lg shadow-slate-200/60 ring-1 ring-slate-100 p-4 md:p-0">
+          {isLoading ? (
+            <div className="px-6 py-10 text-center text-slate-500">Đang tải dữ liệu...</div>
+          ) : reportsError ? (
+            <div className="px-6 py-10">
+              <div className="mx-auto max-w-md rounded-2xl border border-red-100 bg-red-50 p-5 text-center">
+                <p className="text-sm font-semibold text-red-600">Không thể tải dữ liệu</p>
+                <p className="mt-1 text-xs text-red-500">{reportsError}</p>
+              </div>
+            </div>
+          ) : displayReports.length === 0 ? (
+            <div className="px-6 py-10 text-center text-slate-500">Chưa có phản ánh nào</div>
+          ) : (
+            <>
+              {/* Mobile cards */}
+              <div className="space-y-4 md:hidden">
+                {displayReports.map((report) => {
+                  const statusLabel = getReportStatus(report)
+                  const categoryName = getCategoryName(report)
+
+                  return (
+                    <div key={report.id} className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-xs uppercase tracking-wide text-slate-400">Mã phản ánh</p>
+                          <p className="text-lg font-semibold text-slate-900">{report.ma_phan_anh}</p>
+                        </div>
+                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusBadgeClass(statusLabel)}`}>
+                          {statusLabel}
+                        </span>
+                      </div>
+
+                      <div className="mt-4 space-y-3 text-sm text-slate-700">
+                        <div className="flex justify-between gap-4">
+                          <span className="text-slate-500">Người gửi</span>
+                          <div className="text-right">
+                            <p className="font-semibold">{report.ten_nguoi_phan_anh || 'N/A'}</p>
+                            <p className="text-xs text-slate-500">{report.sdt_nguoi_phan_anh || 'N/A'}</p>
+                          </div>
+                        </div>
+                        <div className="flex justify-between gap-4">
+                          <span className="text-slate-500">Loại</span>
+                          <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                            {categoryName}
+                          </span>
+                        </div>
+                        <div className="flex justify-between gap-4">
+                          <span className="text-slate-500">Địa điểm</span>
+                          <span className="text-right text-slate-900">{report.vi_tri || '---'}</span>
+                        </div>
+                        <div className="flex justify-between gap-4">
+                          <span className="text-slate-500">Ngày gửi</span>
+                          <span className="text-slate-900">{formatDate(report.thoi_gian_tao)}</span>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => setSelectedReportCode(report.ma_phan_anh)}
+                        className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-blue-600 transition hover:border-blue-200 hover:bg-blue-50"
+                      >
+                        <Eye size={16} />
+                        Xem chi tiết
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Desktop table */}
+              <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs uppercase tracking-[0.2em] text-slate-400">
@@ -246,29 +364,7 @@ export const DashboardPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
-                {isLoading ? (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-10 text-center text-slate-500">
-                      Đang tải dữ liệu...
-                    </td>
-                  </tr>
-                ) : reportsError ? (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-10">
-                      <div className="mx-auto max-w-md rounded-2xl border border-red-100 bg-red-50 p-5 text-center">
-                        <p className="text-sm font-semibold text-red-600">Không thể tải dữ liệu</p>
-                        <p className="mt-1 text-xs text-red-500">{reportsError}</p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : reports.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-10 text-center text-slate-500">
-                      Chưa có phản ánh nào
-                    </td>
-                  </tr>
-                ) : (
-                  reports.map((report) => {
+                    {displayReports.map((report) => {
                     const statusLabel = getReportStatus(report)
                     const categoryName = getCategoryName(report)
 
@@ -302,11 +398,12 @@ export const DashboardPage: React.FC = () => {
                         </td>
                       </tr>
                     )
-                  })
-                )}
+                    })}
               </tbody>
             </table>
           </div>
+            </>
+          )}
         </section>
       </div>
 

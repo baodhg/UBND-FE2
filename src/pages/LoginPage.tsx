@@ -7,8 +7,8 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate()
 
   return (
-    <div className="flex-1 flex items-center justify-center bg-gray-50 px-4 overflow-hidden">
-      <div className="w-full max-w-[280px]">
+    <div className="flex-1 flex items-center justify-center bg-gray-50 px-4 py-8 sm:py-12 overflow-y-auto">
+      <div className="w-full max-w-[320px]">
         {/* Back to Home Button */}
         <button
           onClick={() => navigate('/')}

@@ -94,24 +94,24 @@ export const HomePage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero Section */}
       <section 
-        className="relative bg-cover bg-center bg-no-repeat text-white overflow-hidden -mx-4 sm:-mx-6 lg:-mx-8 -mt-8"
+        className="relative bg-cover bg-center bg-no-repeat text-white overflow-hidden"
         style={{
           backgroundImage: 'url("https://hochiminhcity.gov.vn/documents/39403/49303/background-trong-dong.png")'
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/25"></div>
-        <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16 lg:py-20">
-          <div className="max-w-7xl mx-auto">
+        <div className="relative z-10 w-full py-4 sm:py-8 md:py-12 lg:py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto text-center mb-6 sm:mb-8">
               <h1 
-                className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 sm:mb-6 lg:mb-8 text-white px-2"
+                className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 sm:mb-6 lg:mb-8 text-white"
                 style={{
                   textShadow: 'rgba(0, 0, 0, 0.6) 3px 3px 10px, rgba(0, 0, 0, 0.4) 0px 0px 30px'
                 }}
               >
                 Cổng thông tin điện tử
               </h1>
-              <div className="inline-block bg-white rounded-xl sm:rounded-2xl px-4 py-4 sm:px-6 sm:py-6 lg:px-10 lg:py-8 shadow-2xl max-w-3xl w-full mx-2 sm:mx-4">
+              <div className="inline-block bg-white rounded-xl sm:rounded-2xl px-4 py-4 sm:px-6 sm:py-6 lg:px-10 lg:py-8 shadow-2xl max-w-3xl w-full">
                 <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl mb-3 sm:mb-4 lg:mb-5 leading-relaxed text-gray-800">
                   Kết nối cư dân với chính quyền địa phương
                 </p>
@@ -125,7 +125,7 @@ export const HomePage: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="max-w-5xl mx-auto px-2 sm:px-0">
+            <div className="max-w-5xl mx-auto">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                 <button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-4 py-4 sm:px-6 sm:py-5 rounded-xl transition-all shadow-lg hover:shadow-xl text-white">
                   <p className="text-center leading-relaxed text-sm sm:text-base">Dịch vụ công trực tuyến</p>
@@ -146,7 +146,7 @@ export const HomePage: React.FC = () => {
       <ProcedureFieldsSection />
 
       {/* News Section + Statistics + Support - All in One Card */}
-      <section className="pb-8 sm:pb-12 bg-gray-50 -mx-4 sm:-mx-6 lg:-mx-8">
+      <section className="pb-6 sm:pb-8 lg:pb-12 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl overflow-hidden">
             {/* News Section */}

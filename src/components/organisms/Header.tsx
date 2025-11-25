@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { QuocHuy } from '../atoms/QuocHuy'
-import { House, FileText, Newspaper, MessageSquare, LogIn, Menu, X, LogOut, User } from 'lucide-react'
+import { House, FileText, Newspaper, LogIn, Menu, X, LogOut, User } from 'lucide-react'
 import { useAppSelector, useAppDispatch } from '../../store/hooks'
 import { logout } from '../../features/authentication/store/authSlice'
 
@@ -27,7 +27,6 @@ export const Header: React.FC = () => {
     { label: 'Trang chủ', path: '/', icon: <House size={18} /> },
     { label: 'Thủ tục hành chính', path: '/procedures', icon: <FileText size={18} /> },
     { label: 'Tin tức', path: '/news', icon: <Newspaper size={18} /> },
-    { label: 'Phản ánh', path: '/report', icon: <MessageSquare size={18} /> },
   ]
 
   const closeMobileMenu = () => setMobileMenuOpen(false)

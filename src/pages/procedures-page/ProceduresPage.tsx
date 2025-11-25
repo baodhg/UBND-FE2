@@ -246,48 +246,48 @@ export const ProceduresPage: React.FC = () => {
                           procedure.linh_vuc.map((linhVuc, index) => (
                             <Tag key={index} color={LINH_VUC_COLORS[linhVuc] || 'default'}>
                               {linhVuc}
-                            </Tag>
+                      </Tag>
                           ))
                         ) : (
                           <Tag color="default">Khác</Tag>
                         )}
-                      </div>
+                    </div>
 
                       {/* Title - Fixed height */}
                       <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 h-[56px] flex items-start">
-                        {procedure.ten_thu_tuc}
-                      </h3>
+                      {procedure.ten_thu_tuc}
+                    </h3>
 
                       {/* Description - Fixed height */}
                       <p className="text-sm text-gray-600 mb-4 line-clamp-2 h-[48px] flex items-start">
-                        {procedure.doi_tuong_thuc_hien || 'Mô tả chi tiết sẽ được cập nhật'}
-                      </p>
+                      {procedure.doi_tuong_thuc_hien || 'Mô tả chi tiết sẽ được cập nhật'}
+                    </p>
 
                       {/* Info - Fixed height */}
                       <div className="space-y-2 mb-4 flex-shrink-0 h-[64px]">
-                        <div className="flex items-center text-sm text-gray-600">
+                      <div className="flex items-center text-sm text-gray-600">
                           <ClockCircleOutlined className="mr-2 text-blue-500 flex-shrink-0" />
                           <span className="line-clamp-1">
-                            {procedure.cach_thuc?.[0]?.thoi_gian_giai_quyet || 'Đang cập nhật thời gian'}
-                          </span>
-                        </div>
-                        <div className="flex items-center text-sm text-gray-600">
+                          {procedure.cach_thuc?.[0]?.thoi_gian_giai_quyet || 'Đang cập nhật thời gian'}
+                        </span>
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
                           <DollarOutlined className="mr-2 text-green-500 flex-shrink-0" />
                           <span className="line-clamp-1">
-                            {procedure.cach_thuc?.[0]?.le_phi 
-                              ? (parseInt(procedure.cach_thuc[0].le_phi) > 0 
-                                  ? `${parseInt(procedure.cach_thuc[0].le_phi).toLocaleString('vi-VN')} đ` 
-                                  : 'Miễn phí')
-                              : 'Đang cập nhật phí'}
-                          </span>
-                        </div>
+                          {procedure.cach_thuc?.[0]?.le_phi 
+                            ? (parseInt(procedure.cach_thuc[0].le_phi) > 0 
+                                ? `${parseInt(procedure.cach_thuc[0].le_phi).toLocaleString('vi-VN')} đ` 
+                                : 'Miễn phí')
+                            : 'Đang cập nhật phí'}
+                        </span>
                       </div>
+                    </div>
 
                       {/* Button - Always at bottom */}
                       <div className="mt-auto pt-2">
                         <div className="w-full text-left text-blue-500 hover:text-blue-600 font-normal flex items-center gap-1 transition-colors">
-                          <span>Xem chi tiết</span>
-                          <ArrowRightOutlined className="text-sm" />
+                      <span>Xem chi tiết</span>
+                      <ArrowRightOutlined className="text-sm" />
                         </div>
                       </div>
                     </div>

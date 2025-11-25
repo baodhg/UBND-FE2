@@ -131,8 +131,8 @@ export const NewsPage: React.FC = () => {
   }, [categories, categoryCounts])
 
   return (
-    <div className="py-12 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 lg:px-8">
+    <div className="py-6 sm:py-8 lg:py-12 bg-gray-50 min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <Card
           bordered={false}
           style={{
@@ -250,17 +250,17 @@ export const NewsPage: React.FC = () => {
                       <p className="text-sm text-gray-600 line-clamp-2 mb-3 break-words overflow-hidden">
                         {stripHtml(item.noi_dung).substring(0, 150)}...
                       </p>
-                      <div className="flex items-center justify-between text-xs text-gray-500 gap-2 min-w-0">
-                        <Space size="middle" className="flex-1 min-w-0">
+                      <div className="flex flex-col gap-2 text-xs text-gray-500">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                           <Space size={4} className="flex-shrink-0">
                             <CalendarOutlined />
                             <span className="whitespace-nowrap">{formatDate(item.thoi_gian_tao)}</span>
                           </Space>
                           {item.tac_gia && (
-                            <span className="truncate">Tác giả: {item.tac_gia}</span>
+                            <span className="break-words">Tác giả: {item.tac_gia}</span>
                           )}
-                        </Space>
-                        <span className="text-blue-600 hover:text-blue-700 font-medium flex-shrink-0 whitespace-nowrap ml-2">
+                        </div>
+                        <span className="text-blue-600 hover:text-blue-700 font-medium whitespace-nowrap self-end">
                           Đọc thêm →
                         </span>
                       </div>

@@ -14,7 +14,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div className={`bg-gray-50 flex flex-col ${isLoginPage ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
       <Header />
-      <main className={`flex-grow flex flex-col overflow-hidden ${isLoginPage ? '' : 'px-4 sm:px-6 lg:px-8'}`}>
+      <main className="flex-grow flex flex-col overflow-hidden">
         {children}
       </main>
       <Footer />

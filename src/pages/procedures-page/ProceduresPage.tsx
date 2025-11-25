@@ -161,8 +161,8 @@ export const ProceduresPage: React.FC = () => {
   }
 
   return (
-    <div className="py-12 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 lg:px-8">
+    <div className="pt-6 sm:pt-8 lg:pt-12 bg-gray-50 min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Card với Search và Filters */}
         <Card 
           className="mb-8 shadow-md"

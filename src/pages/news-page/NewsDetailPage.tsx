@@ -65,8 +65,8 @@ export const NewsDetailPage: React.FC = () => {
   const filteredRelatedNews = relatedNews.filter(item => item.id !== news.id).slice(0, 4)
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-6xl">
+    <div className="min-h-screen bg-gray-50 py-6 sm:py-8 lg:py-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           {/* Back button */}
           <Button

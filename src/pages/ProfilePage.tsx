@@ -6,7 +6,7 @@ export const ProfilePage: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth)
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
       <Card title="User Profile">
         {user ? (
           <div className="space-y-4">

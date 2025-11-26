@@ -242,11 +242,11 @@ export const DashboardPage: React.FC = () => {
             <div className="space-y-3">
               {statCards.slice(2).map((card, index) => renderStatCard(card, index + 2))}
             </div>
-          </div>
+                </div>
 
           <div className="hidden sm:grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {statCards.map((card, index) => renderStatCard(card, index))}
-          </div>
+              </div>
         </section>
 
         <section className="mb-6 md:sticky md:top-4 md:z-20">

@@ -215,15 +215,15 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
                           {content}
                         </button>
                       ) : (
-                        <a
-                          key={`${file.url_file}-${index}`}
+                      <a
+                        key={`${file.url_file}-${index}`}
                           href={fileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-medium text-blue-600 transition hover:border-blue-200 hover:bg-blue-50"
-                        >
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-medium text-blue-600 transition hover:border-blue-200 hover:bg-blue-50"
+                      >
                           {content}
-                        </a>
+                      </a>
                       )
                     })}
                   </div>

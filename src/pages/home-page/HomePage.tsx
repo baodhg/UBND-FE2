@@ -94,7 +94,7 @@ export const HomePage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero Section */}
       <section 
-        className="relative bg-cover bg-center bg-no-repeat text-white overflow-hidden"
+        className="relative bg-cover bg-center bg-no-repeat text-white overflow-hidden min-h-screen flex items-center"
         style={{
           backgroundImage: 'url("https://hochiminhcity.gov.vn/documents/39403/49303/background-trong-dong.png")'
         }}

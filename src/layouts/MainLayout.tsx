@@ -9,12 +9,18 @@ interface MainLayoutProps {
 
 export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const location = useLocation()
-  const isLoginPage = location.pathname === '/login'
+  const pathname = location.pathname
+  const isLoginPage = pathname === '/login'
+  const isDashboardPage = pathname.startsWith('/dashboard')
+  const isHomePage = pathname === '/'
+  const isProceduresPage = pathname.startsWith('/procedures')
+  const isNewsPage = pathname.startsWith('/news')
+  const isFullWidthPage = isLoginPage || isDashboardPage || isHomePage || isProceduresPage || isNewsPage
 
   return (
-    <div className={`bg-gray-50 flex flex-col min-h-screen ${isLoginPage ? 'overflow-x-hidden' : ''}`}>
+    <div className={`bg-gray-50 flex flex-col min-h-screen ${isFullWidthPage ? 'overflow-x-hidden' : ''}`}>
       <Header />
-      <main className={`flex-grow flex flex-col ${isLoginPage ? '' : 'px-4 sm:px-6 lg:px-8'}`}>
+      <main className={`flex-grow flex flex-col ${isFullWidthPage ? '' : 'px-4 sm:px-6 lg:px-8'}`}>
         {children}
       </main>
       <Footer />

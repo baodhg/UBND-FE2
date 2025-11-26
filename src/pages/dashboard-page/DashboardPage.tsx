@@ -16,6 +16,7 @@ export const DashboardPage: React.FC = () => {
   const [searchInput, setSearchInput] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [dateFilter, setDateFilter] = useState<{ from: string; to: string }>({ from: '', to: '' })
   const [showReportModal, setShowReportModal] = useState(false)
   const [selectedReportCode, setSelectedReportCode] = useState<string | null>(null)
 
@@ -56,12 +57,25 @@ export const DashboardPage: React.FC = () => {
     return map
   }, [categories])
 
-  const getReportStatus = (report: Report) => {
-    const directStatus = (report.trang_thai || '').trim()
-    if (directStatus) return directStatus
+  const STATUS_MAP: Record<string, string> = {
+    DA_GUI: 'Đã gửi',
+    DA_TIEP_NHAN: 'Đã tiếp nhận',
+    DANG_XU_LY: 'Đang xử lý',
+    DA_GIAI_QUYET: 'Đã giải quyết',
+    DONG: 'Đóng',
+  }
 
-    const currentStatus = (report.trang_thai_hien_tai?.ten || '').trim()
-    if (currentStatus) return currentStatus
+  const getReportStatus = (report: Report) => {
+    const rawStatus =
+      (report.trang_thai || '').trim() ||
+      (report.trang_thai_hien_tai?.ma_trang_thai || '').trim() ||
+      (report.trang_thai_hien_tai?.ten || '').trim()
+
+    if (rawStatus) {
+      // normalize key-like statuses
+      const normalizedKey = rawStatus.toUpperCase().replace(/\s+/g, '_')
+      return STATUS_MAP[normalizedKey] || rawStatus
+    }
 
     if (report.lich_su_trang_thai && report.lich_su_trang_thai.length > 0) {
       const lastHistory = report.lich_su_trang_thai[report.lich_su_trang_thai.length - 1]
@@ -94,9 +108,25 @@ export const DashboardPage: React.FC = () => {
       const matchesStatus =
         statusFilter === 'all' || getReportStatus(report).toLowerCase() === statusFilter.toLowerCase()
 
-      return matchesKeyword && matchesStatus
+      const sentDate = report.thoi_gian_tao ? new Date(report.thoi_gian_tao) : null
+      let matchesDate = true
+      if (sentDate) {
+        if (dateFilter.from) {
+          const fromDate = new Date(dateFilter.from)
+          matchesDate = matchesDate && sentDate >= fromDate
+        }
+        if (dateFilter.to) {
+          const toDate = new Date(dateFilter.to)
+          toDate.setHours(23, 59, 59, 999)
+          matchesDate = matchesDate && sentDate <= toDate
+        }
+      } else if (dateFilter.from || dateFilter.to) {
+        matchesDate = false
+      }
+
+      return matchesKeyword && matchesStatus && matchesDate
     })
-  }, [reports, searchInput, statusFilter, getCategoryName])
+  }, [reports, searchInput, statusFilter, dateFilter, getCategoryName])
 
   const totalReports = reports.length
   const pendingReports = reports.filter((report) => {
@@ -249,8 +279,8 @@ export const DashboardPage: React.FC = () => {
         </section>
 
         <section className="mb-6 md:sticky md:top-4 md:z-20">
-          <div className="flex flex-col gap-3 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-100 md:flex-row md:items-center">
-            <div className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 px-4 py-2.5 focus-within:ring-2 focus-within:ring-blue-500 bg-white">
+          <div className="flex flex-col gap-3 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-100 md:flex-row md:items-center md:flex-wrap">
+            <div className="flex w-full md:flex-[1.5] items-center gap-3 rounded-2xl border border-slate-200 px-4 py-2.5 focus-within:ring-2 focus-within:ring-blue-500 bg-white">
               <Search size={18} className="text-slate-400 flex-shrink-0" />
             <input
               type="text"
@@ -261,12 +291,12 @@ export const DashboardPage: React.FC = () => {
                 autoComplete="off"
             />
           </div>
-          <div className="flex items-center gap-3">
-            <div className="relative">
+            <div className="flex w-full md:flex-[0.8] items-center gap-3">
+              <div className="relative w-full">
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                  className="appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-2.5 pr-10 text-sm font-medium text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-auto"
+                  className="appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-2.5 pr-10 text-sm font-medium text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
               >
                 <option value="all">Tất cả trạng thái</option>
                 <option value="Mới">Mới</option>
@@ -274,7 +304,42 @@ export const DashboardPage: React.FC = () => {
                 <option value="Đang xử lý">Đang xử lý</option>
                 <option value="Hoàn thành">Hoàn thành</option>
               </select>
-              <Filter className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <Filter className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              </div>
+            </div>
+
+            <div className="flex w-full flex-col gap-2 rounded-2xl border border-slate-200 px-4 py-3 bg-white md:flex-[1.2]">
+              <div className="flex items-center justify-between gap-4 text-xs font-semibold text-slate-500">
+                <span></span>
+                {(dateFilter.from || dateFilter.to) && (
+                  <button
+                    type="button"
+                    className="text-blue-600 hover:text-blue-800"
+                    onClick={() => setDateFilter({ from: '', to: '' })}
+                  >
+                    Xóa
+                  </button>
+                )}
+              </div>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-slate-500">Từ ngày</label>
+                  <input
+                    type="date"
+                    value={dateFilter.from}
+                    onChange={(e) => setDateFilter((prev) => ({ ...prev, from: e.target.value }))}
+                    className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-slate-500">Đến ngày</label>
+                  <input
+                    type="date"
+                    value={dateFilter.to}
+                    onChange={(e) => setDateFilter((prev) => ({ ...prev, to: e.target.value }))}
+                    className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
               </div>
             </div>
           </div>

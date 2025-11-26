@@ -83,21 +83,20 @@ export const DashboardPage: React.FC = () => {
 
   const displayReports = useMemo(() => {
     const keyword = searchInput.trim().toLowerCase()
-    if (!keyword) return reports
-
     return reports.filter((report) => {
       const categoryName = getCategoryName(report)
-      return [
-        report.ma_phan_anh,
-        report.ten_nguoi_phan_anh,
-        report.sdt_nguoi_phan_anh,
-        categoryName,
-        report.vi_tri,
-      ]
-        .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(keyword))
+      const matchesKeyword =
+        keyword.length === 0 ||
+        [report.ma_phan_anh, report.ten_nguoi_phan_anh, report.sdt_nguoi_phan_anh, categoryName, report.vi_tri]
+          .filter(Boolean)
+          .some((value) => String(value).toLowerCase().includes(keyword))
+
+      const matchesStatus =
+        statusFilter === 'all' || getReportStatus(report).toLowerCase() === statusFilter.toLowerCase()
+
+      return matchesKeyword && matchesStatus
     })
-  }, [reports, searchInput, getCategoryName])
+  }, [reports, searchInput, statusFilter, getCategoryName])
 
   const totalReports = reports.length
   const pendingReports = reports.filter((report) => {
@@ -318,7 +317,9 @@ export const DashboardPage: React.FC = () => {
                           <span className="text-slate-500">Người gửi</span>
                           <div className="text-right">
                             <p className="font-semibold">{report.ten_nguoi_phan_anh || 'N/A'}</p>
-                            <p className="text-xs text-slate-500">{report.sdt_nguoi_phan_anh || 'N/A'}</p>
+                            {report.sdt_nguoi_phan_anh && (
+                              <p className="text-xs text-slate-500">{report.sdt_nguoi_phan_anh}</p>
+                            )}
                           </div>
                         </div>
                         <div className="flex justify-between gap-4">
@@ -373,7 +374,9 @@ export const DashboardPage: React.FC = () => {
                         <td className="px-6 py-4 font-semibold text-slate-900">{report.ma_phan_anh}</td>
                         <td className="px-6 py-4">
                           <div className="font-semibold text-slate-900">{report.ten_nguoi_phan_anh || 'N/A'}</div>
-                          <p className="text-xs text-slate-500">{report.sdt_nguoi_phan_anh || 'N/A'}</p>
+                          {report.sdt_nguoi_phan_anh && (
+                            <p className="text-xs text-slate-500">{report.sdt_nguoi_phan_anh}</p>
+                          )}
                         </td>
                         <td className="px-6 py-4">
                           <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">

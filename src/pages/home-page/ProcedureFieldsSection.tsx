@@ -15,6 +15,9 @@ export const ProcedureFieldsSection: React.FC = () => {
     queryKey: ['allProcedures'],
     queryFn: () => proceduresApi.getAllProcedures(),
     staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 15 * 60 * 1000, // 15 minutes
+    refetchOnMount: false, // Don't refetch on component mount if data exists
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
   })
 
   // Color palette for procedure cards

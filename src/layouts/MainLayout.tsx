@@ -2,6 +2,7 @@ import React from 'react'
 import { useLocation } from 'react-router-dom'
 import { Header } from '../components/organisms/Header'
 import { Footer } from '../components/organisms/Footer'
+import { ScrollToTopButton } from '../components/atoms/ScrollToTopButton'
 
 interface MainLayoutProps {
   children: React.ReactNode
@@ -24,6 +25,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         {children}
       </main>
       <Footer />
+      <ScrollToTopButton />
     </div>
   )
 }

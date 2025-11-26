@@ -9,9 +9,11 @@ import { useNewsList } from '../../features/news/hooks/useNewsList'
 import { formatDate } from '../../utils/formatDate'
 import { useQuery } from '@tanstack/react-query'
 import { proceduresApi } from '../../features/procedures/api/proceduresApi'
+import { useAppSelector } from '../../store/hooks'
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate()
+  const { isAuthenticated } = useAppSelector((state) => state.auth)
   
   // Fetch news list - get 7 latest news (1 featured + 6 others)
   const { newsList, isLoading: isLoadingNews } = useNewsList({
@@ -22,9 +24,12 @@ export const HomePage: React.FC = () => {
 
   // Fetch all procedures to count total
   const { data: allProcedures } = useQuery({
-    queryKey: ['allProceduresCount'],
+    queryKey: ['allProcedures'],
     queryFn: () => proceduresApi.getAllProcedures(),
     staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 15 * 60 * 1000, // 15 minutes
+    refetchOnMount: false, // Don't refetch on component mount if data exists
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
   })
 
   // Helper function to strip HTML tags and get plain text
@@ -94,13 +99,13 @@ export const HomePage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero Section */}
       <section 
-        className="relative bg-cover bg-center bg-no-repeat text-white overflow-hidden min-h-screen flex items-center"
+        className="relative bg-cover bg-center bg-no-repeat text-white overflow-hidden flex items-center"
         style={{
           backgroundImage: 'url("https://hochiminhcity.gov.vn/documents/39403/49303/background-trong-dong.png")'
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/25"></div>
-        <div className="relative z-10 w-full py-4 sm:py-8 md:py-12 lg:py-16">
+        <div className="relative z-10 w-full py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto text-center mb-6 sm:mb-8">
               <h1 
@@ -268,7 +273,7 @@ export const HomePage: React.FC = () => {
                 </p>
                 <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 justify-center px-4">
                   <button 
-                    onClick={() => navigate('/report')}
+                    onClick={() => navigate(isAuthenticated ? '/report' : '/login')}
                     className="px-6 py-3 sm:px-8 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
                   >
                     <MessageSquare size={18} className="sm:w-5 sm:h-5" />

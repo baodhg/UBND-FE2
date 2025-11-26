@@ -75,6 +75,12 @@ export const ProceduresPage: React.FC = () => {
     console.log('🔍 Filtering - activeFilter:', activeFilter)
     console.log('📦 allProcedures count:', allProcedures.length)
     
+    // If search query has content but only whitespace, return empty
+    if (searchQuery && !searchQuery.trim()) {
+      console.log('⚠️ Search query contains only whitespace - returning empty')
+      return []
+    }
+    
     let filtered = allProcedures
     
     // Filter by category

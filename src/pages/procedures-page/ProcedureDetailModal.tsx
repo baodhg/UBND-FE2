@@ -358,6 +358,7 @@ export const ProcedureDetailModal: React.FC<ProcedureDetailModalProps> = ({
           setSelectedTruongHopId(null)
           setSelectedTruongHopName('')
         }}
+        procedureData={procedure}
       />
     </Modal>
   )

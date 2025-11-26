@@ -23,7 +23,7 @@ function App() {
             <Route path="/news/:id" element={<MainLayout><NewsDetailPage /></MainLayout>} />
             <Route path="/login" element={<MainLayout><LoginPage /></MainLayout>} />
             <Route path="/profile" element={<MainLayout><ProfilePage /></MainLayout>} />
-            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/dashboard" element={<MainLayout><DashboardPage /></MainLayout>} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

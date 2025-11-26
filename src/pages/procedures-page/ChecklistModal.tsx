@@ -21,6 +21,7 @@ interface ChecklistModalProps {
   truongHopName?: string
   open: boolean
   onClose: () => void
+  procedureData?: ProcedureDetail | null // Add this to receive data from parent
 }
 
 export const ChecklistModal: React.FC<ChecklistModalProps> = ({
@@ -30,15 +31,127 @@ export const ChecklistModal: React.FC<ChecklistModalProps> = ({
   truongHopName,
   open,
   onClose,
+  procedureData,
 }) => {
+  // Generate unique key for sessionStorage based on procedure and truongHop
+  const getStorageKey = () => {
+    return truongHopId 
+      ? `checklist_${procedureId}_${truongHopId}`
+      : `checklist_${procedureId}`
+  }
+
+  const getExpandedStorageKey = () => {
+    return truongHopId 
+      ? `checklist_expanded_${procedureId}_${truongHopId}`
+      : `checklist_expanded_${procedureId}`
+  }
+
+  // Initialize state with data from sessionStorage
   const [thanhPhanList, setThanhPhanList] = useState<ThanhPhan[]>([])
-  const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set())
-  const [expandedProxyDocs, setExpandedProxyDocs] = useState<Set<string>>(new Set())
+  const [checkedItems, setCheckedItems] = useState<Set<string>>(() => {
+    if (procedureId) {
+      const storageKey = truongHopId 
+        ? `checklist_${procedureId}_${truongHopId}`
+        : `checklist_${procedureId}`
+      const savedChecked = sessionStorage.getItem(storageKey)
+      if (savedChecked) {
+        try {
+          return new Set(JSON.parse(savedChecked))
+        } catch (error) {
+          console.error('Error parsing saved checked items:', error)
+        }
+      }
+    }
+    return new Set()
+  })
+  const [expandedProxyDocs, setExpandedProxyDocs] = useState<Set<string>>(() => {
+    if (procedureId) {
+      const expandedKey = truongHopId 
+        ? `checklist_expanded_${procedureId}_${truongHopId}`
+        : `checklist_expanded_${procedureId}`
+      const savedExpanded = sessionStorage.getItem(expandedKey)
+      if (savedExpanded) {
+        try {
+          return new Set(JSON.parse(savedExpanded))
+        } catch (error) {
+          console.error('Error parsing saved expanded items:', error)
+        }
+      }
+    }
+    return new Set()
+  })
   const [loading, setLoading] = useState(false)
 
+  // Save checked items to sessionStorage whenever they change
   useEffect(() => {
-    const fetchThanhPhan = async () => {
-      if (!procedureId || !open) return
+    if (procedureId) {
+      const storageKey = getStorageKey()
+      if (checkedItems.size > 0) {
+        sessionStorage.setItem(storageKey, JSON.stringify(Array.from(checkedItems)))
+      } else {
+        sessionStorage.removeItem(storageKey)
+      }
+    }
+  }, [checkedItems, procedureId, truongHopId])
+
+  // Save expanded proxy docs to sessionStorage whenever they change
+  useEffect(() => {
+    if (procedureId) {
+      const expandedKey = getExpandedStorageKey()
+      if (expandedProxyDocs.size > 0) {
+        sessionStorage.setItem(expandedKey, JSON.stringify(Array.from(expandedProxyDocs)))
+      } else {
+        sessionStorage.removeItem(expandedKey)
+      }
+    }
+  }, [expandedProxyDocs, procedureId, truongHopId])
+
+  useEffect(() => {
+    const processThanhPhan = async () => {
+      if (!open) return
+
+      // If procedureData is provided, use it directly (no API call)
+      if (procedureData) {
+        setLoading(true)
+        try {
+          // Lấy thanh_phan_ho_so từ truong_hop_thu_tuc cụ thể hoặc tất cả
+          const allThanhPhan: ThanhPhan[] = []
+          if (procedureData.truong_hop_thu_tuc && procedureData.truong_hop_thu_tuc.length > 0) {
+            // Filter by truongHopId if provided
+            const filteredTruongHop = truongHopId 
+              ? procedureData.truong_hop_thu_tuc.filter(th => th.id === truongHopId)
+              : procedureData.truong_hop_thu_tuc
+              
+            filteredTruongHop.forEach((truongHop) => {
+              if (truongHop.thanh_phan_ho_so && truongHop.thanh_phan_ho_so.length > 0) {
+                const processedItems = truongHop.thanh_phan_ho_so.map(item => {
+                  // Check if it's optional (contains "nếu Nộp Thay" or similar)
+                  const isOptional = item.ten_thanh_phan.toLowerCase().includes('nếu nộp thay') || 
+                                    item.ten_thanh_phan.toLowerCase().includes('(nếu nộp thay)')
+                  
+                  return {
+                    ...item,
+                    isOptional,
+                    showProxyDoc: false
+                  }
+                })
+                allThanhPhan.push(...processedItems)
+              }
+            })
+          }
+          
+          setThanhPhanList(allThanhPhan)
+        } catch (error) {
+          console.error('Error processing procedure data:', error)
+          setThanhPhanList([])
+        } finally {
+          setLoading(false)
+        }
+        return
+      }
+
+      // Fallback: If no procedureData provided, fetch from API (backward compatibility)
+      if (!procedureId) return
 
       setLoading(true)
       try {
@@ -71,8 +184,7 @@ export const ChecklistModal: React.FC<ChecklistModalProps> = ({
         }
         
         setThanhPhanList(allThanhPhan)
-        setCheckedItems(new Set()) // Reset checked items
-        setExpandedProxyDocs(new Set()) // Reset expanded proxy docs
+        // Don't reset checked items - they will be loaded from sessionStorage
       } catch (error) {
         console.error('Error fetching procedure detail:', error)
         setThanhPhanList([])
@@ -81,8 +193,8 @@ export const ChecklistModal: React.FC<ChecklistModalProps> = ({
       }
     }
 
-    fetchThanhPhan()
-  }, [procedureId, open, truongHopId])
+    processThanhPhan()
+  }, [procedureId, procedureData, open, truongHopId])
 
   const handleToggleCheck = (id: string) => {
     setCheckedItems((prev) => {

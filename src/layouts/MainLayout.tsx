@@ -22,7 +22,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div className={`bg-gray-50 flex flex-col min-h-screen ${isFullWidthPage ? 'overflow-x-hidden' : ''}`}>
       <Header />
-      <main className={`flex-grow flex flex-col ${isFullWidthPage ? '' : 'px-4 sm:px-6 lg:px-8'}`}>
+      <main className={`${isTrackReportPage ? '' : 'flex-grow'} flex flex-col ${isFullWidthPage ? '' : 'px-4 sm:px-6 lg:px-8'}`}>
         {children}
       </main>
       <Footer />

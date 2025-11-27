@@ -7,12 +7,11 @@ import { useNewsCategories } from '../../features/news-categories'
 
 // Component to render a single filter button with its count
 const CategoryButton: React.FC<{
-  filterKey: string
   label: string
   isActive: boolean
   onClick: () => void
   categoryId?: string
-}> = ({ filterKey, label, isActive, onClick, categoryId }) => {
+}> = ({ label, isActive, onClick, categoryId }) => {
   // Fetch count for this category using React Query hook
   const { count } = useNewsCategoryCount(categoryId)
   
@@ -154,7 +153,6 @@ export const NewsPage: React.FC = () => {
               filterButtons.map((filter) => (
                 <CategoryButton
                   key={filter.key}
-                  filterKey={filter.key}
                   label={filter.label}
                   isActive={activeTab === filter.key}
                   categoryId={filter.key !== 'all' ? filter.key : undefined}

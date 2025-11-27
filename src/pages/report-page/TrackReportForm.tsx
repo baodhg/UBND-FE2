@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Search, Calendar, AlertCircle, CheckCircle2, X, Video } from 'lucide-react'
-import { useGetReportByCode } from '../../features/reports'
+import { useSearchReportsByTitle, useGetReportByCode } from '../../features/reports'
 import { videoUploadApi } from '../../features/video-upload'
 
 // Video Player Component with multiple URL fallback
@@ -122,28 +122,66 @@ export const VideoPlayer: React.FC<{ idVideo: string; videoUrls: string[]; video
 }
 
 export const TrackReportForm: React.FC = () => {
-  const [trackingCode, setTrackingCode] = useState('')
-  const [searchCode, setSearchCode] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
   const [showResult, setShowResult] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [validationError, setValidationError] = useState('')
   const [showErrorModal, setShowErrorModal] = useState(false)
+  const [maPhanAnh, setMaPhanAnh] = useState<string>('')
 
-  const { data: report, isLoading, error } = useGetReportByCode(searchCode, showResult)
+  // Step 1: Search by title to get ma_phan_anh
+  const { data: searchResult, isLoading: isSearching, error: searchError } = useSearchReportsByTitle(searchTerm, showResult)
+  
+  // Step 2: Get full report details by ma_phan_anh
+  const { data: report, isLoading: isLoadingDetail, error: detailError } = useGetReportByCode(maPhanAnh, !!maPhanAnh)
+  
+  const isLoading = isSearching || isLoadingDetail
+  const error = searchError || detailError
+
+  // When search result is available, get the ma_phan_anh
+  React.useEffect(() => {
+    console.log('🔍 Search result:', searchResult)
+    console.log('🔍 Is Array:', Array.isArray(searchResult))
+    
+    if (searchResult) {
+      // Backend returns array, get first item
+      const reportData = Array.isArray(searchResult) ? searchResult[0] : searchResult
+      console.log('🔍 Report data:', reportData)
+      console.log('🔍 ma_phan_anh value:', reportData?.ma_phan_anh)
+      
+      if (reportData && reportData.ma_phan_anh) {
+        console.log('✅ Found ma_phan_anh:', reportData.ma_phan_anh)
+        setMaPhanAnh(reportData.ma_phan_anh)
+      } else {
+        console.log('⚠️ No ma_phan_anh found in:', reportData)
+      }
+    }
+  }, [searchResult])
+
+  // Debug report data
+  React.useEffect(() => {
+    console.log('📄 Report data:', report)
+    console.log('⏳ Is loading:', isLoading)
+    console.log('❌ Error:', error)
+  }, [report, isLoading, error])
 
   const handleSearch = () => {
-    if (!trackingCode.trim()) {
-      setValidationError('Vui lòng nhập mã tra cứu')
+    if (!searchQuery.trim()) {
+      setValidationError('Vui lòng nhập từ khóa tìm kiếm')
       return
     }
     setValidationError('')
-    setSearchCode(trackingCode.trim())
+    setMaPhanAnh('') // Reset ma_phan_anh when starting new search
+    setSearchTerm(searchQuery.trim())
     setShowResult(true)
   }
 
   const handleClose = () => {
     setShowResult(false)
     setShowErrorModal(false)
+    setMaPhanAnh('')
+    setSearchTerm('')
   }
 
   // Show error modal when error occurs
@@ -209,12 +247,12 @@ export const TrackReportForm: React.FC = () => {
         <div className="flex gap-3">
           <input
             type="text"
-            value={trackingCode}
+            value={searchQuery}
             onChange={(e) => {
-              setTrackingCode(e.target.value)
+              setSearchQuery(e.target.value)
               if (validationError) setValidationError('')
             }}
-            placeholder="Nhập mã phản ánh (VD: 42139SHA)"
+            placeholder="Nhập tiêu đề phản ánh để tìm kiếm..."
             className={`flex h-10 w-full min-w-0 rounded-md border px-3 py-2.5 text-base bg-gray-100 transition-all outline-none md:text-sm flex-1 ${
               validationError 
                 ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-200' 
@@ -260,7 +298,7 @@ export const TrackReportForm: React.FC = () => {
               <AlertCircle size={48} className="text-red-500 mx-auto mb-4" />
               <h3 className="text-xl font-bold text-gray-900 mb-2">Không tìm thấy</h3>
               <p className="text-gray-600 mb-6">
-                Không tìm thấy phản ánh với mã <strong>{searchCode}</strong>
+                Không tìm thấy phản ánh với từ khóa <strong>{searchTerm}</strong>
               </p>
               <button
                 onClick={handleClose}

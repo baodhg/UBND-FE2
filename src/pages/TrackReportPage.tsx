@@ -15,7 +15,7 @@ export const TrackReportPage: React.FC = () => {
           {/* Title & Description */}
           <div className="mb-6">
             <h2 className="text-2xl mb-1">Tra cứu phản ánh</h2>
-            <p className="text-gray-600">Nhập mã phản ánh để theo dõi tiến độ xử lý</p>
+            <p className="text-gray-600">Tìm kiếm phản ánh theo tiêu đề</p>
           </div>
 
           {/* Track Report Form */}

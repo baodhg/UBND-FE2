@@ -2,8 +2,33 @@ import React, { useState, useMemo, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { List, Tag, Space, Spin, Card } from 'antd'
 import { CalendarOutlined, SearchOutlined } from '@ant-design/icons'
-import { useNewsList } from '../../features/news'
+import { useNewsList, useNewsCategoryCount } from '../../features/news'
 import { useNewsCategories } from '../../features/news-categories'
+
+// Component to render a single filter button with its count
+const CategoryButton: React.FC<{
+  filterKey: string
+  label: string
+  isActive: boolean
+  onClick: () => void
+  categoryId?: string
+}> = ({ filterKey, label, isActive, onClick, categoryId }) => {
+  // Fetch count for this category using React Query hook
+  const { count } = useNewsCategoryCount(categoryId)
+  
+  return (
+    <button
+      onClick={onClick}
+      className={
+        isActive
+          ? 'px-6 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold border border-blue-600 transition-colors'
+          : 'px-6 py-2 rounded-lg bg-white text-gray-800 font-normal border border-gray-300 hover:text-blue-600 hover:border-blue-600 transition-colors'
+      }
+    >
+      {label} ({count})
+    </button>
+  )
+}
 
 export const NewsPage: React.FC = () => {
   const navigate = useNavigate()
@@ -16,7 +41,6 @@ export const NewsPage: React.FC = () => {
   const [search, setSearch] = useState(searchFromUrl)
   const [page, setPage] = useState(1)
   const [activeTab, setActiveTab] = useState(categoryFromUrl)
-  const [categoryCounts, setCategoryCounts] = useState<{ [key: string]: number }>({})
   const pageSize = 10
 
   // Sync state with URL params when they change
@@ -39,52 +63,12 @@ export const NewsPage: React.FC = () => {
     idDanhMuc: activeTab !== 'all' ? activeTab : undefined,
   })
 
-  // Fetch counts for all categories
-  useEffect(() => {
-    const fetchCategoryCounts = async () => {
-      const counts: { [key: string]: number } = {}
-      
-      // Fetch total count (all categories)
-      try {
-        const allResponse = await fetch(
-          `https://ubnd-api-staging.noah-group.org/api/tin-tuc?page=1&size=1&isActive=true`
-        )
-        const allData = await allResponse.json()
-        counts['all'] = allData.pagination?.totalItems || 0
-      } catch (error) {
-        console.error('Error fetching all news count:', error)
-        counts['all'] = 0
-      }
-
-      // Fetch count for each category
-      for (const category of categories) {
-        try {
-          const response = await fetch(
-            `https://ubnd-api-staging.noah-group.org/api/tin-tuc?page=1&size=1&isActive=true&idDanhMuc=${category.id}`
-          )
-          const data = await response.json()
-          counts[category.id] = data.pagination?.totalItems || 0
-        } catch (error) {
-          console.error(`Error fetching count for category ${category.id}:`, error)
-          counts[category.id] = 0
-        }
-      }
-
-      setCategoryCounts(counts)
-    }
-
-    if (categories.length > 0) {
-      fetchCategoryCounts()
-    }
-  }, [categories])
-
   console.log('News data:', { 
     newsList, 
     pagination, 
     total: newsList.length,
     activeTab,
     idDanhMuc: activeTab !== 'all' ? activeTab : undefined,
-    categoryCounts,
   })
 
   const formatDate = (dateString: string) => {
@@ -120,15 +104,13 @@ export const NewsPage: React.FC = () => {
     const allButton = { 
       key: 'all', 
       label: 'Tất cả',
-      count: categoryCounts['all'] || 0
     }
     const categoryButtons = categories.map((category) => ({
       key: category.id,
       label: category.ten_danh_muc,
-      count: categoryCounts[category.id] || 0
     }))
     return [allButton, ...categoryButtons]
-  }, [categories, categoryCounts])
+  }, [categories])
 
   return (
     <div className="py-6 sm:py-8 lg:py-12 bg-gray-50 min-h-screen">
@@ -170,8 +152,12 @@ export const NewsPage: React.FC = () => {
               <Spin />
             ) : (
               filterButtons.map((filter) => (
-                <button
+                <CategoryButton
                   key={filter.key}
+                  filterKey={filter.key}
+                  label={filter.label}
+                  isActive={activeTab === filter.key}
+                  categoryId={filter.key !== 'all' ? filter.key : undefined}
                   onClick={() => {
                     setActiveTab(filter.key)
                     setPage(1)
@@ -184,14 +170,7 @@ export const NewsPage: React.FC = () => {
                     }
                     setSearchParams(params)
                   }}
-                  className={
-                    activeTab === filter.key
-                      ? 'px-6 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold border border-blue-600 transition-colors'
-                      : 'px-6 py-2 rounded-lg bg-white text-gray-800 font-normal border border-gray-300 hover:text-blue-600 hover:border-blue-600 transition-colors'
-                  }
-                >
-                  {filter.label} ({filter.count})
-                </button>
+                />
               ))
             )}
           </div>

@@ -10,6 +10,7 @@ import { ProceduresPage } from './pages/procedures-page/ProceduresPage'
 import { NewsPage } from './pages/news-page/NewsPage'
 import { NewsDetailPage } from './pages/news-page/NewsDetailPage'
 import { DashboardPage } from './pages/dashboard-page/DashboardPage'
+import { TrackReportPage } from './pages/TrackReportPage'
 function App() {
   return (
     <ThemeProvider>
@@ -21,6 +22,7 @@ function App() {
             <Route path="/procedures" element={<MainLayout><ProceduresPage /></MainLayout>} />
             <Route path="/news" element={<MainLayout><NewsPage /></MainLayout>} />
             <Route path="/news/:id" element={<MainLayout><NewsDetailPage /></MainLayout>} />
+            <Route path="/track-report" element={<MainLayout><TrackReportPage /></MainLayout>} />
             <Route path="/login" element={<MainLayout><LoginPage /></MainLayout>} />
             <Route path="/profile" element={<MainLayout><ProfilePage /></MainLayout>} />
             <Route path="/dashboard" element={<MainLayout><DashboardPage /></MainLayout>} />

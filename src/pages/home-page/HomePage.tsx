@@ -4,16 +4,14 @@ import { NewsCard } from './NewsCard'
 import { FeaturedNewsCard } from './FeaturedNewsCard'
 import { ProcedureFieldsSection } from './ProcedureFieldsSection'
 import { StatCard } from '../../components/molecules/StatCard'
-import { ChevronRight, Newspaper, Users, FileText, CircleCheckBig, Clock, MessageSquare, Phone } from 'lucide-react'
+import { ChevronRight, Newspaper, Users, FileText, CircleCheckBig, Clock, Search, Phone } from 'lucide-react'
 import { useNewsList } from '../../features/news/hooks/useNewsList'
 import { formatDate } from '../../utils/formatDate'
 import { useQuery } from '@tanstack/react-query'
 import { proceduresApi } from '../../features/procedures/api/proceduresApi'
-import { useAppSelector } from '../../store/hooks'
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate()
-  const { isAuthenticated } = useAppSelector((state) => state.auth)
   
   // Fetch news list - get 7 latest news (1 featured + 6 others)
   const { newsList, isLoading: isLoadingNews } = useNewsList({
@@ -273,11 +271,11 @@ export const HomePage: React.FC = () => {
                 </p>
                 <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 justify-center px-4">
                   <button 
-                    onClick={() => navigate(isAuthenticated ? '/report' : '/login')}
+                    onClick={() => navigate('/track-report')}
                     className="px-6 py-3 sm:px-8 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
                   >
-                    <MessageSquare size={18} className="sm:w-5 sm:h-5" />
-                    <span>Gửi phản ánh ngay</span>
+                    <Search size={18} className="sm:w-5 sm:h-5" />
+                    <span>Tra cứu phản ánh</span>
                   </button>
                   <a
                     href="tel:02812345678"

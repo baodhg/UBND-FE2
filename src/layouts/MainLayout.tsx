@@ -16,7 +16,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const isHomePage = pathname === '/'
   const isProceduresPage = pathname.startsWith('/procedures')
   const isNewsPage = pathname.startsWith('/news')
-  const isFullWidthPage = isLoginPage || isDashboardPage || isHomePage || isProceduresPage || isNewsPage
+  const isTrackReportPage = pathname.startsWith('/track-report')
+  const isFullWidthPage = isLoginPage || isDashboardPage || isHomePage || isProceduresPage || isNewsPage || isTrackReportPage
 
   return (
     <div className={`bg-gray-50 flex flex-col min-h-screen ${isFullWidthPage ? 'overflow-x-hidden' : ''}`}>

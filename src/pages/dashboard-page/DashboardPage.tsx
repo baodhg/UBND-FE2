@@ -363,16 +363,12 @@ export const DashboardPage: React.FC = () => {
         </section>
 
         <section className="mb-8">
-          <div className="grid grid-cols-2 gap-3 sm:hidden">
-            <div className="space-y-3">
-              {statCards.slice(0, 3).map((card, index) => renderStatCard(card, index))}
-            </div>
-            <div className="space-y-3">
-              {statCards.slice(3).map((card, index) => renderStatCard(card, index + 3))}
-            </div>
-          </div>
-
-          <div className="hidden sm:grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          {/* Responsive stat cards grid:
+              - Mobile: 1 cột
+              - Tablet (sm): 2 cột
+              - Desktop (lg): 3 cột
+              - Extra large (xl): 6 cột */}
+          <div className="grid gap-3 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             {statCards.map((card, index) => renderStatCard(card, index))}
           </div>
         </section>
@@ -489,13 +485,10 @@ export const DashboardPage: React.FC = () => {
 
                       <div className="mt-4 space-y-3 text-sm text-slate-700">
                         <div className="flex justify-between gap-4">
-                          <span className="text-slate-500">Người gửi</span>
-                          <div className="text-right">
-                            <p className="font-semibold">{report.ten_nguoi_phan_anh || 'N/A'}</p>
-                            {report.sdt_nguoi_phan_anh && (
-                              <p className="text-xs text-slate-500">{report.sdt_nguoi_phan_anh}</p>
-                            )}
-                          </div>
+                          <span className="text-slate-500">Tiêu đề</span>
+                          <span className="text-right font-semibold">
+                            {report.tieu_de}
+                          </span>
                         </div>
                         <div className="flex justify-between gap-4">
                           <span className="text-slate-500">Loại</span>

@@ -1,9 +1,8 @@
 import React, { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { QuocHuy } from '../atoms/QuocHuy'
-import { House, FileText, Newspaper, LogIn, Menu, X, LogOut, User, Search } from 'lucide-react'
-import { useAppSelector, useAppDispatch } from '../../store/hooks'
-import { logout } from '../../features/authentication/store/authSlice'
+import { House, FileText, Newspaper, LogIn, Menu, X, User, Search } from 'lucide-react'
+import { useAppSelector } from '../../store/hooks'
 
 interface NavItem {
   label: string
@@ -13,15 +12,8 @@ interface NavItem {
 
 export const Header: React.FC = () => {
   const location = useLocation()
-  const navigate = useNavigate()
-  const dispatch = useAppDispatch()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { user, isAuthenticated } = useAppSelector((state) => state.auth)
-
-  const handleLogout = () => {
-    dispatch(logout())
-    navigate('/')
-  }
 
   const navItems: NavItem[] = [
     { label: 'Trang chủ', path: '/', icon: <House size={18} /> },
@@ -119,14 +111,6 @@ export const Header: React.FC = () => {
                 )}
               </Link>
               
-              {/* Logout Button */}
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-5 py-4 text-blue-50 hover:bg-red-600 hover:text-white transition-all border-l border-blue-500"
-              >
-                <LogOut size={18} />
-                <span>Đăng xuất</span>
-              </button>
             </>
           ) : (
             <Link
@@ -184,16 +168,6 @@ export const Header: React.FC = () => {
                   <User size={18} />
                   <span>Bảng điều khiển</span>
                 </Link>
-                <button
-                  onClick={() => {
-                    handleLogout()
-                    closeMobileMenu()
-                  }}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-all my-1 w-full text-left"
-                >
-                  <LogOut size={18} />
-                  <span>Đăng xuất</span>
-                </button>
               </>
             ) : (
               <Link

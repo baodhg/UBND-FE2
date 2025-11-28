@@ -7,7 +7,7 @@ import { useReportCategories } from '../../features/report-categories'
 import type { Report } from '../../features/reports/api/getReportsList'
 import { DashboardReportModal } from './DashboardReportModal'
 import { DashboardReportDetailsModal } from './DashboardReportDetailsModal'
-import { MessageSquare, Clock, CheckCircle2, Edit, Search, Filter, Eye, User, Phone, LogOut, Plus } from 'lucide-react'
+import { MessageSquare, Clock, CheckCircle2, Edit, Search, Filter, Eye, User, LogOut, Plus } from 'lucide-react'
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate()
@@ -285,10 +285,6 @@ export const DashboardPage: React.FC = () => {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-3 text-sm">
-              <div className="flex items-center gap-2 rounded-2xl bg-white/15 px-4 py-2">
-                <Phone size={16} />
-                <span>{user?.email || '0901234567'}</span>
-              </div>
               <div className="flex items-center gap-2 rounded-2xl bg-white/15 px-4 py-2">
                 <User size={16} />
                 <span>{user?.name || 'Nguyễn Văn A'}</span>

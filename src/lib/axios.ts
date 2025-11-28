@@ -76,9 +76,25 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Handle unauthorized access
-      localStorage.removeItem('token')
-      localStorage.removeItem('refresh_token')
-      window.location.href = '/login'
+      const token = localStorage.getItem('token')
+
+      // Chỉ clear token và redirect khi THỰC SỰ đang có token (token hết hạn / không hợp lệ)
+      if (token) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('refresh_token')
+
+        // Tránh vòng lặp reload vô hạn khi đã ở trang login
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login'
+        }
+      } else {
+        // Không có token mà vẫn bị 401 (đang là user chưa đăng nhập):
+        // -> Không redirect nữa để tránh reload liên tục, chỉ log cảnh báo.
+        console.warn('Received 401 without token, staying on current page:', {
+          url: error.config?.url,
+          path: window.location.pathname,
+        })
+      }
     }
     if (error.response?.status === 403) {
       // Handle forbidden access - token might be invalid or user doesn't have permission
@@ -111,7 +127,7 @@ apiClient.interceptors.response.use(
       
       // Optionally redirect to login if token is clearly invalid
       const token = localStorage.getItem('token')
-      if (!token) {
+      if (!token && window.location.pathname !== '/login') {
         window.location.href = '/login'
       }
     }

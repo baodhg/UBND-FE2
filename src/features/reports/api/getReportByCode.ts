@@ -27,19 +27,24 @@ export interface ReportDetail {
     created_at: string
     updated_at: string
   }[]
-  lich_su_trang_thai: {
-    ten: string
-    thoi_gian_tao: string
-  }[]
+  lich_su_trang_thai: Array<{
+    ten?: string
+    trang_thai?: string
+    mo_ta?: string | null
+    thoi_gian?: string
+    thoi_gian_tao?: string
+  }>
   linh_vuc_phan_anh: {
     id: string
     ten: string
   }
-  trang_thai_hien_tai: {
-    id: string
-    ten: string
-    mo_ta: string
-  }
+  trang_thai_hien_tai?: {
+    id?: string
+    ma_trang_thai?: string
+    ten?: string
+    mo_ta?: string
+  } | null
+  trang_thai?: string | null
   dinh_kem_phan_anh: {
     dinh_dang_file: string
     url_file: string

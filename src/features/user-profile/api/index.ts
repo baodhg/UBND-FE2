@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import apiClient from '../../../lib/axios'
+import { useAppSelector } from '../../../store/hooks'
 
 export interface UserProfile {
   id: string
@@ -19,9 +20,13 @@ const getUserProfile = async (): Promise<UserProfile> => {
 }
 
 export const useUserProfile = () => {
+  const { token } = useAppSelector((state) => state.auth)
+
   return useQuery({
     queryKey: ['userProfile'],
     queryFn: getUserProfile,
+    // Chỉ fetch profile khi đã có token -> tránh 401 "Access token không được cung cấp"
+    enabled: !!token,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
     retry: 1,

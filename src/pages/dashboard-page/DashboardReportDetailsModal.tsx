@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { X, Loader2, MapPin, ClipboardList, Paperclip, AlertCircle, Video } from 'lucide-react'
 import { useGetReportByCode } from '../../features/reports'
+import { useUserProfile } from '../../features/user-profile/api'
 
 interface DashboardReportDetailsModalProps {
   open: boolean
@@ -34,6 +35,17 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
   code,
   onClose,
 }) => {
+  useEffect(() => {
+    if (!open) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [open])
+  const { data: userProfile } = useUserProfile()
   const {
     data: report,
     isLoading,
@@ -55,24 +67,6 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
     (video) => video?.final_mp4_url || video?.final_hls_url
   )
 
-  const getCurrentStatus = useMemo(() => {
-    if (!report) return { label: 'Đang cập nhật', key: 'CHUA_CAP_NHAT' }
-    const candidateStatuses: string[] = []
-    if (statusHistory.length > 0) {
-      const lastHistory = statusHistory[statusHistory.length - 1]
-      if (lastHistory?.trang_thai) candidateStatuses.push(lastHistory.trang_thai)
-      if (lastHistory?.ten) candidateStatuses.push(lastHistory.ten)
-    }
-    if (report.trang_thai_hien_tai?.ma_trang_thai) candidateStatuses.push(report.trang_thai_hien_tai.ma_trang_thai)
-    if (report.trang_thai_hien_tai?.ten) candidateStatuses.push(report.trang_thai_hien_tai.ten)
-    if (report.trang_thai) candidateStatuses.push(report.trang_thai)
-
-    for (const status of candidateStatuses) {
-      if (status) return { label: status, key: status }
-    }
-    return { label: 'Đang cập nhật', key: 'CHUA_CAP_NHAT' }
-  }, [report, statusHistory])
-
   const resolveFileUrl = (url?: string | null) => {
     if (!url) return '#'
     if (/^https?:\/\//i.test(url)) return url
@@ -85,15 +79,12 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
   }
 
   return (
-    <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
       <div
-        className="max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl"
+        className="max-h-[90vh] w-full max-w-4xl rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-start justify-between border-b border-gray-100 px-6 py-4">
+        <div className="flex items-start justify-between border-b border-gray-100 px-6 py-4 flex-shrink-0">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Thông tin phản ánh</p>
             <h2 className="text-2xl font-semibold text-gray-900">Chi tiết phản ánh</h2>
@@ -107,7 +98,7 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
           </button>
         </div>
 
-        <div className="max-h-[calc(90vh-56px)] overflow-y-auto px-6 py-5 space-y-6">
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
           {!code ? (
             <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-6 text-center text-sm text-gray-600">
               Không có mã phản ánh để xem chi tiết.
@@ -143,15 +134,20 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
                 <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
                   {report.linh_vuc_phan_anh?.ten || 'Phản ánh cư dân'}
                 </span>
-                <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                  {getCurrentStatus.label}
-                </span>
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <InfoCard label="Mã phản ánh" value={report.ma_phan_anh} />
+                <InfoCard label="Tiêu đề" value={report.tieu_de} />
+                <InfoCard
+                  label="Người gửi"
+                  value={
+                    userProfile
+                      ? [userProfile.ho_va_ten, userProfile.so_dien_thoai].filter(Boolean).join(' - ')
+                      : null
+                  }
+                />
                 <InfoCard label="Ngày gửi" value={formatDateTime(report.thoi_gian_tao, false)} />
-                <InfoCard label="Người gửi" value={report.ten_nguoi_phan_anh} />
               </div>
 
               <div>

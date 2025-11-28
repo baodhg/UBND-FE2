@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { QuocHuy } from '../atoms/QuocHuy'
-import { House, FileText, Newspaper, LogIn, Menu, X, User, Search } from 'lucide-react'
+import { House, FileText, Newspaper, LogIn, Menu, X, User, Search, LogOut } from 'lucide-react'
 import { useAppSelector } from '../../store/hooks'
+import { useUserProfile } from '../../features/user-profile/api'
 
 interface NavItem {
   label: string
@@ -12,8 +13,17 @@ interface NavItem {
 
 export const Header: React.FC = () => {
   const location = useLocation()
+  const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { user, isAuthenticated } = useAppSelector((state) => state.auth)
+  const { data: userProfile } = useUserProfile()
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('refresh_token')
+    navigate('/login')
+    window.location.reload()
+  }
 
   const navItems: NavItem[] = [
     { label: 'Trang chủ', path: '/', icon: <House size={18} /> },
@@ -90,8 +100,8 @@ export const Header: React.FC = () => {
               <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-100 mr-2">
                 <User size={16} className="text-blue-600" />
                 <div>
-                  <p className="text-sm text-gray-800 font-medium">{user.name || 'Khu phố'}</p>
-                  <p className="text-xs text-gray-500">Khu Phố 5</p>
+                  <p className="text-sm text-gray-800 font-medium">{userProfile?.ho_va_ten || user.name || 'Khu phố'}</p>
+                  <p className="text-xs text-gray-500">{userProfile?.ten_dang_nhap || 'Đang tải...'}</p>
                 </div>
               </div>
               
@@ -110,6 +120,15 @@ export const Header: React.FC = () => {
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-yellow-400"></div>
                 )}
               </Link>
+
+              {/* Logout Button */}
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-5 py-4 text-blue-50 hover:bg-blue-700 hover:text-white transition-all border-l border-blue-500"
+              >
+                <LogOut size={18} />
+                <span>Đăng xuất</span>
+              </button>
               
             </>
           ) : (
@@ -156,8 +175,8 @@ export const Header: React.FC = () => {
                 <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-blue-50 my-1 border-t border-gray-200 mt-2 pt-3">
                   <User size={18} className="text-blue-600" />
                   <div>
-                    <p className="text-sm text-gray-800 font-medium">{user.name || 'Khu phố'}</p>
-                    <p className="text-xs text-gray-500">Khu Phố 5</p>
+                    <p className="text-sm text-gray-800 font-medium">{userProfile?.ho_va_ten}</p>
+                    <p className="text-xs text-gray-500">{userProfile?.ten_dang_nhap}</p>
                   </div>
                 </div>
                 <Link
@@ -168,6 +187,16 @@ export const Header: React.FC = () => {
                   <User size={18} />
                   <span>Bảng điều khiển</span>
                 </Link>
+                <button
+                  onClick={() => {
+                    handleLogout()
+                    closeMobileMenu()
+                  }}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-all my-1 w-full"
+                >
+                  <LogOut size={18} />
+                  <span>Đăng xuất</span>
+                </button>
               </>
             ) : (
               <Link

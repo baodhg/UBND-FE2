@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { Search, Calendar, AlertCircle, CheckCircle2, X, Video } from 'lucide-react'
+import { Search, Calendar, AlertCircle, X, Video, ClipboardList } from 'lucide-react'
 import { useSearchReportsByTitle, useGetReportByCode } from '../../features/reports'
+import type { SearchResultItem } from '../../features/reports/api/searchReportsByTitle'
 import { videoUploadApi } from '../../features/video-upload'
 
 // Video Player Component with multiple URL fallback
@@ -130,8 +131,11 @@ export const TrackReportForm: React.FC = () => {
   const [showErrorModal, setShowErrorModal] = useState(false)
   const [maPhanAnh, setMaPhanAnh] = useState<string>('')
 
-  // Step 1: Search by title to get ma_phan_anh
-  const { data: searchResult, isLoading: isSearching, error: searchError } = useSearchReportsByTitle(searchTerm, showResult)
+  // Step 1: Search by title to get list of reports
+  const { data: searchResult, isLoading: isSearching, error: searchError } = useSearchReportsByTitle(
+    searchTerm,
+    showResult
+  )
   
   // Step 2: Get full report details by ma_phan_anh
   const { data: report, isLoading: isLoadingDetail, error: detailError } = useGetReportByCode(maPhanAnh, !!maPhanAnh)
@@ -139,23 +143,21 @@ export const TrackReportForm: React.FC = () => {
   const isLoading = isSearching || isLoadingDetail
   const error = searchError || detailError
 
-  // When search result is available, get the ma_phan_anh
+  // When search result is available, auto-pick if only 1 result; otherwise wait for user to choose
   React.useEffect(() => {
     console.log('🔍 Search result:', searchResult)
-    console.log('🔍 Is Array:', Array.isArray(searchResult))
-    
-    if (searchResult) {
-      // Backend returns array, get first item
-      const reportData = Array.isArray(searchResult) ? searchResult[0] : searchResult
-      console.log('🔍 Report data:', reportData)
-      console.log('🔍 ma_phan_anh value:', reportData?.ma_phan_anh)
-      
-      if (reportData && reportData.ma_phan_anh) {
-        console.log('✅ Found ma_phan_anh:', reportData.ma_phan_anh)
-        setMaPhanAnh(reportData.ma_phan_anh)
-      } else {
-        console.log('⚠️ No ma_phan_anh found in:', reportData)
-      }
+    if (!searchResult || !Array.isArray(searchResult)) {
+      return
+    }
+
+    if (searchResult.length === 1) {
+      const onlyItem = searchResult[0]
+      console.log('✅ Only one result, auto-select ma_phan_anh:', onlyItem.ma_phan_anh)
+      setMaPhanAnh(onlyItem.ma_phan_anh)
+    } else {
+      // Multiple results: let user choose
+      console.log('ℹ️ Multiple results, waiting for user selection')
+      setMaPhanAnh('')
     }
   }, [searchResult])
 
@@ -210,6 +212,15 @@ export const TrackReportForm: React.FC = () => {
     }
     return priorityMap[priority] || priority
   }
+
+  const statusHistory = React.useMemo(() => {
+    if (!report?.lich_su_trang_thai) return []
+    return [...report.lich_su_trang_thai].sort((a, b) => {
+      const timeA = new Date((a?.thoi_gian_tao || a?.thoi_gian || '') as string).getTime()
+      const timeB = new Date((b?.thoi_gian_tao || b?.thoi_gian || '') as string).getTime()
+      return timeA - timeB
+    })
+  }, [report?.lich_su_trang_thai])
 
   return (
     <>
@@ -312,7 +323,7 @@ export const TrackReportForm: React.FC = () => {
       )}
 
       {/* Result Display Below Search */}
-      {showResult && !error && report && (
+      {showResult && !error && (
         <div className="mt-6 bg-white rounded-xl p-6 border border-gray-200 shadow-lg">
           {isLoading ? (
             <div className="text-center py-8">
@@ -321,6 +332,49 @@ export const TrackReportForm: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-6">
+              {/* Search results list (hide after selecting a specific report) */}
+              {Array.isArray(searchResult) && searchResult.length > 0 && !maPhanAnh && (
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-3">
+                    Kết quả tìm kiếm ({searchResult.length})
+                  </h4>
+                  <div className="space-y-2">
+                    {searchResult.map((item: SearchResultItem) => {
+                      const isSelected = maPhanAnh === item.ma_phan_anh
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => setMaPhanAnh(item.ma_phan_anh)}
+                          className={`w-full text-left rounded-xl border px-4 py-3 transition ${
+                            isSelected
+                              ? 'border-blue-500 bg-blue-50'
+                              : 'border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50/60'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div>
+                              <p className="font-semibold text-gray-900 line-clamp-1">
+                                {item.tieu_de}
+                              </p>
+                              <p className="mt-1 text-xs text-gray-500 line-clamp-1">
+                                {item.mo_ta}
+                              </p>
+                            </div>
+                            <span className="ml-3 shrink-0 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+                              Mã: {item.ma_phan_anh}
+                            </span>
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Report detail - only show when a specific report is selected */}
+              {report && (
+                <>
               {/* Status badges */}
               <div className="flex flex-wrap gap-2">
                 <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded text-sm font-medium">
@@ -457,39 +511,34 @@ export const TrackReportForm: React.FC = () => {
                 </div>
               )}
 
-              {/* Timeline */}
-              {report.lich_su_trang_thai && report.lich_su_trang_thai.length > 0 && (
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-4">Tiến trình xử lý</h4>
-                  <div className="space-y-0">
-                    {report.lich_su_trang_thai.map((history, index) => {
-                      const isLast = index === report.lich_su_trang_thai.length - 1
-                      const isCompleted = index < report.lich_su_trang_thai.length - 1
-
+              {/* Timeline - Tiến trình xử lý (giống Lịch sử trạng thái trong Dashboard) */}
+              {statusHistory.length > 0 && (
+                <div className="rounded-2xl border border-gray-100 bg-white p-4">
+                  <div className="mb-3 flex items-center gap-2">
+                    <ClipboardList className="h-5 w-5 text-blue-600" />
+                    <h4 className="text-base font-semibold text-gray-900">Tiến trình xử lý</h4>
+                  </div>
+                  <div className="space-y-4">
+                    {statusHistory.map((history, index) => {
+                      const isLast = index === statusHistory.length - 1
                       return (
-                        <div key={index} className="flex gap-4">
-                          {/* Timeline indicator */}
-                          <div className="flex flex-col items-center pt-1">
-                            <div
-                              className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                isCompleted
-                                  ? 'bg-blue-600 text-white'
-                                  : isLast
-                                  ? 'bg-gray-300 text-gray-500'
-                                  : 'bg-blue-600 text-white'
+                        <div
+                          key={`${history.ten}-${history.thoi_gian_tao || history.thoi_gian}-${index}`}
+                          className="flex gap-4"
+                        >
+                          <div className="flex flex-col items-center">
+                            <span
+                              className={`h-3 w-3 rounded-full ${
+                                isLast ? 'bg-green-500' : 'bg-blue-500'
                               }`}
-                            >
-                              <CheckCircle2 size={20} />
-                            </div>
-                            {!isLast && (
-                              <div className="w-0.5 h-full bg-blue-200 mt-2 min-h-[60px]"></div>
-                            )}
+                            />
+                            {!isLast && <span className="mt-1 h-full w-px bg-gray-200" />}
                           </div>
-
-                          {/* Content */}
-                          <div className="flex-1 pb-8">
-                            <h5 className="font-semibold text-gray-900 mb-1">{history.ten}</h5>
-                            <p className="text-sm text-gray-500">
+                          <div className="flex-1 rounded-xl bg-gray-50/70 p-3">
+                            <p className="text-sm font-semibold text-gray-900">
+                              {history.ten || 'Cập nhật trạng thái'}
+                            </p>
+                            <p className="text-xs text-gray-500">
                               {(history.thoi_gian_tao || history.thoi_gian)
                                 ? formatDate((history.thoi_gian_tao || history.thoi_gian) as string)
                                 : 'Chưa cập nhật'}
@@ -500,6 +549,8 @@ export const TrackReportForm: React.FC = () => {
                     })}
                   </div>
                 </div>
+              )}
+                </>
               )}
             </div>
           )}

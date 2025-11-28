@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
-import { Camera, MapPin, ChevronDown, CheckCircle2, X, Copy, Check, Video } from 'lucide-react'
+import { Camera, MapPin, ChevronDown, CheckCircle2, X, Video } from 'lucide-react'
 import { useAppSelector } from '../../store/hooks'
 import { useReportCategories } from '../../features/report-categories'
 import { useCreateReport } from '../../features/reports'
@@ -26,14 +26,17 @@ interface DashboardReportFormValues {
 }
 
 const DashboardReportSchema = Yup.object().shape({
-  category: Yup.string().required('Loại phản ánh là bắt buộc'),
+  category: Yup.string().trim().required('Loại phản ánh là bắt buộc'),
   title: Yup.string()
+    .trim()
     .max(200, 'Tiêu đề không được vượt quá 200 ký tự')
     .required('Tiêu đề là bắt buộc'),
   description: Yup.string()
+    .trim()
     .max(2000, 'Mô tả không được vượt quá 2000 ký tự')
     .required('Mô tả là bắt buộc'),
   images: Yup.array()
+    .min(1, 'Vui lòng tải lên ít nhất 1 hình ảnh')
     .max(5, 'Chỉ được tải lên tối đa 5 hình ảnh')
     .test('fileSize', 'Mỗi file tối đa 3MB', (files) => {
       if (!files) return true
@@ -49,8 +52,8 @@ const DashboardReportSchema = Yup.object().shape({
       if (!file) return true
       return file.type === 'video/mp4' || file.name.toLowerCase().endsWith('.mp4')
     }),
-  location: Yup.string().required('Địa điểm là bắt buộc'),
-  priority: Yup.string().required('Mức độ là bắt buộc'),
+  location: Yup.string().trim().required('Địa điểm là bắt buộc'),
+  priority: Yup.string().trim().required('Mức độ là bắt buộc'),
   // name and phone are auto-filled from user account, no validation needed
   name: Yup.string(),
   phone: Yup.string(),
@@ -59,8 +62,6 @@ const DashboardReportSchema = Yup.object().shape({
 export const DashboardReportModal: React.FC<DashboardReportModalProps> = ({ open, onClose, onSuccess }) => {
   const { user } = useAppSelector((state) => state.auth)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
-  const [trackingCode, setTrackingCode] = useState('')
-  const [copied, setCopied] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
   const [showErrorModal, setShowErrorModal] = useState(false)
@@ -217,7 +218,6 @@ export const DashboardReportModal: React.FC<DashboardReportModalProps> = ({ open
           onSuccess: (data) => {
             console.log('API Response:', data)
             console.log('Mã phản ánh:', data.ma_phan_anh)
-            setTrackingCode(data.ma_phan_anh || '')
             setShowSuccessModal(true)
             resetForm()
             // Reset to initial values with user info
@@ -272,11 +272,6 @@ export const DashboardReportModal: React.FC<DashboardReportModalProps> = ({ open
     }
   }
 
-  const handleCopyCode = () => {
-    navigator.clipboard.writeText(trackingCode)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
 
   const handleCloseSuccessModal = () => {
     setShowSuccessModal(false)
@@ -377,32 +372,9 @@ export const DashboardReportModal: React.FC<DashboardReportModalProps> = ({ open
             {/* Content */}
             <div className="text-center pt-2">
               <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Gửi thành công!</h3>
-              <p className="text-sm sm:text-base text-gray-600 mb-4">
+              <p className="text-sm sm:text-base text-gray-600 mb-6">
                 Phản ánh của bạn đã được tiếp nhận. Chúng tôi sẽ xem xét và phản hồi sớm nhất.
               </p>
-
-              {/* Tracking Code */}
-              <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
-                <p className="text-xs sm:text-sm text-gray-600 mb-2">Mã tra cứu của bạn:</p>
-                <div className="flex items-center justify-center gap-2 flex-wrap">
-                  <code className="text-lg sm:text-2xl font-bold text-blue-600 break-all">{trackingCode}</code>
-                  <button
-                    type="button"
-                    onClick={handleCopyCode}
-                    className="p-1.5 sm:p-2 hover:bg-blue-100 rounded-lg transition-colors flex-shrink-0"
-                    title="Sao chép mã"
-                  >
-                    {copied ? (
-                      <Check size={18} className="sm:w-5 sm:h-5 text-green-600" />
-                    ) : (
-                      <Copy size={18} className="sm:w-5 sm:h-5 text-blue-600" />
-                    )}
-                  </button>
-                </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  Vui lòng lưu lại mã này để tra cứu tiến độ xử lý
-                </p>
-              </div>
 
               {/* Action buttons */}
               <div className="flex gap-3">
@@ -421,11 +393,9 @@ export const DashboardReportModal: React.FC<DashboardReportModalProps> = ({ open
       {/* Main Modal */}
       <div 
         className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-        onClick={onClose}
       >
         <div 
           className="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
-          onClick={(e) => e.stopPropagation()}
         >
           {/* Modal Header */}
           <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 flex-shrink-0">
@@ -518,9 +488,10 @@ export const DashboardReportModal: React.FC<DashboardReportModalProps> = ({ open
                           type="text"
                           placeholder="Nhập tiêu đề phản ánh (tối đa 200 ký tự)"
                           autoComplete="off"
+                          maxLength={200}
                           className="flex w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50 mt-2 h-10"
                         />
-                      <p className="text-xs sm:text-sm text-gray-500 mt-1 h-5 flex items-center">{values.title.length}/200 ký tự</p>
+                      <p className="text-xs sm:text-sm text-gray-500 mt-1 h-5 flex items-center">{Math.min(values.title.length, 200)}/200 ký tự</p>
                       <div className="h-5 mt-1 overflow-hidden">
                         <ErrorMessage name="title" component="div" className="text-red-500 text-xs sm:text-sm leading-tight" />
                       </div>
@@ -569,9 +540,10 @@ export const DashboardReportModal: React.FC<DashboardReportModalProps> = ({ open
                           rows={5}
                           placeholder="Mô tả chi tiết vấn đề (tối đa 2000 ký tự)"
                           autoComplete="off"
+                          maxLength={2000}
                           className="flex field-sizing-content min-h-16 w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50 mt-2 resize-none"
                         />
-                      <p className="text-xs sm:text-sm text-gray-500 mt-1 h-5 flex items-center">{values.description.length}/2000 ký tự</p>
+                      <p className="text-xs sm:text-sm text-gray-500 mt-1 h-5 flex items-center">{Math.min(values.description.length, 2000)}/2000 ký tự</p>
                       <div className="h-5 mt-1 overflow-hidden">
                         <ErrorMessage
                           name="description"

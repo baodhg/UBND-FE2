@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { X, Loader2, MapPin, ClipboardList, Paperclip, AlertCircle } from 'lucide-react'
+import React, { useState, useMemo } from 'react'
+import { X, Loader2, MapPin, ClipboardList, Paperclip, AlertCircle, Video } from 'lucide-react'
 import { useGetReportByCode } from '../../features/reports'
 
 interface DashboardReportDetailsModalProps {
@@ -40,20 +40,48 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
     error,
     refetch,
   } = useGetReportByCode(code || '', Boolean(open && code))
-  const [previewFile, setPreviewFile] = useState<{ url: string; name: string } | null>(null)
+  const [previewFile, setPreviewFile] = useState<{ url: string; name: string; type: 'image' | 'video' } | null>(null)
 
-  if (!open) {
-    return null
-  }
-
-  const statusHistory = report?.lich_su_trang_thai ?? []
+  const statusHistory = useMemo(() => {
+    if (!report?.lich_su_trang_thai) return []
+    return [...report.lich_su_trang_thai].sort((a, b) => {
+      const timeA = new Date(a?.thoi_gian_tao || a?.thoi_gian || '').getTime()
+      const timeB = new Date(b?.thoi_gian_tao || b?.thoi_gian || '').getTime()
+      return timeA - timeB
+    })
+  }, [report?.lich_su_trang_thai])
   const attachments = report?.dinh_kem_phan_anh ?? []
+  const videoFiles = (report?.videos || []).filter(
+    (video) => video?.final_mp4_url || video?.final_hls_url
+  )
+
+  const getCurrentStatus = useMemo(() => {
+    if (!report) return { label: 'Đang cập nhật', key: 'CHUA_CAP_NHAT' }
+    const candidateStatuses: string[] = []
+    if (statusHistory.length > 0) {
+      const lastHistory = statusHistory[statusHistory.length - 1]
+      if (lastHistory?.trang_thai) candidateStatuses.push(lastHistory.trang_thai)
+      if (lastHistory?.ten) candidateStatuses.push(lastHistory.ten)
+    }
+    if (report.trang_thai_hien_tai?.ma_trang_thai) candidateStatuses.push(report.trang_thai_hien_tai.ma_trang_thai)
+    if (report.trang_thai_hien_tai?.ten) candidateStatuses.push(report.trang_thai_hien_tai.ten)
+    if (report.trang_thai) candidateStatuses.push(report.trang_thai)
+
+    for (const status of candidateStatuses) {
+      if (status) return { label: status, key: status }
+    }
+    return { label: 'Đang cập nhật', key: 'CHUA_CAP_NHAT' }
+  }, [report, statusHistory])
 
   const resolveFileUrl = (url?: string | null) => {
     if (!url) return '#'
     if (/^https?:\/\//i.test(url)) return url
     const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || ''
     return `${baseUrl}${url}`
+  }
+
+  if (!open) {
+    return null
   }
 
   return (
@@ -112,21 +140,18 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
           ) : (
             <>
               <div className="flex flex-wrap gap-2">
-                {[report.linh_vuc_phan_anh?.ten || 'Phản ánh cư dân', report.trang_thai_hien_tai?.ten || 'Đang cập nhật'].map((badge) => (
-                  <span
-                    key={badge}
-                    className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600"
-                  >
-                    {badge}
-                  </span>
-                ))}
+                <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                  {report.linh_vuc_phan_anh?.ten || 'Phản ánh cư dân'}
+                </span>
+                <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                  {getCurrentStatus.label}
+                </span>
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <InfoCard label="Mã phản ánh" value={report.ma_phan_anh} />
                 <InfoCard label="Ngày gửi" value={formatDateTime(report.thoi_gian_tao, false)} />
                 <InfoCard label="Người gửi" value={report.ten_nguoi_phan_anh} />
-                <InfoCard label="Số điện thoại" value={report.sdt_nguoi_phan_anh} />
               </div>
 
               <div>
@@ -195,6 +220,9 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
                       const isImage =
                         format.includes('image') ||
                         ['jpg', 'jpeg', 'png', 'gif', 'webp'].some((ext) => file.url_file?.toLowerCase().endsWith(ext))
+                      const isVideo =
+                        format.includes('video') ||
+                        ['mp4', 'mov', 'm4v', 'avi', 'mkv', 'webm'].some((ext) => file.url_file?.toLowerCase().endsWith(ext))
 
                       const content = (
                         <>
@@ -205,30 +233,64 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
                         </>
                       )
 
-                      return isImage ? (
-                        <button
-                          type="button"
+                      if (isImage || isVideo) {
+                        return (
+                          <button
+                            type="button"
+                            key={`${file.url_file}-${index}`}
+                            onClick={() => setPreviewFile({ url: fileUrl, name: displayName, type: isImage ? 'image' : 'video' })}
+                            className="flex w-full items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-left text-sm font-medium text-blue-600 transition hover:border-blue-200 hover:bg-blue-50"
+                          >
+                            {content}
+                          </button>
+                        )
+                      }
+
+                      return (
+                        <a
                           key={`${file.url_file}-${index}`}
-                          onClick={() => setPreviewFile({ url: fileUrl, name: displayName })}
-                          className="flex w-full items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-left text-sm font-medium text-blue-600 transition hover:border-blue-200 hover:bg-blue-50"
+                          href={fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-medium text-blue-600 transition hover:border-blue-200 hover:bg-blue-50"
                         >
                           {content}
-                        </button>
-                      ) : (
-                      <a
-                        key={`${file.url_file}-${index}`}
-                          href={fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-medium text-blue-600 transition hover:border-blue-200 hover:bg-blue-50"
-                      >
-                          {content}
-                      </a>
+                        </a>
                       )
                     })}
                   </div>
                 )}
               </div>
+
+              {videoFiles.length > 0 && (
+                <div className="rounded-2xl border border-gray-100 bg-white p-4">
+                  <div className="mb-3 flex items-center gap-2">
+                    <Video className="h-5 w-5 text-blue-600" />
+                    <h4 className="text-base font-semibold text-gray-900">Video đính kèm</h4>
+                  </div>
+                  <div className="space-y-2">
+                    {videoFiles.map((video, index) => {
+                      const videoUrl = video.final_mp4_url || video.final_hls_url
+                      if (!videoUrl) return null
+                      const resolvedUrl = /^https?:\/\//i.test(videoUrl) ? videoUrl : resolveFileUrl(videoUrl)
+                      const label = `Video ${index + 1}`
+                      return (
+                        <button
+                          key={`${video.id || index}-${videoUrl}`}
+                          type="button"
+                          onClick={() => setPreviewFile({ url: resolvedUrl, name: label, type: 'video' })}
+                          className="flex w-full items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-left text-sm font-medium text-blue-600 transition hover:border-blue-200 hover:bg-blue-50"
+                        >
+                          <span>{label}</span>
+                          <span className="text-xs text-gray-500">
+                            {video.created_at ? formatDateTime(video.created_at) : ''}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -247,8 +309,16 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
               <X size={18} />
             </button>
             <h4 className="mb-3 text-center text-sm font-semibold text-gray-700">{previewFile.name}</h4>
-            <div className="flex max-h-[70vh] items-center justify-center overflow-hidden rounded-xl bg-gray-50 p-2">
-              <img src={previewFile.url} alt={previewFile.name} className="max-h-[65vh] w-full object-contain" />
+            <div className="flex max-h-[70vh] w-full items-center justify-center overflow-hidden rounded-xl bg-gray-50 p-2">
+              {previewFile.type === 'image' ? (
+                <img src={previewFile.url} alt={previewFile.name} className="max-h-[65vh] w-full object-contain" />
+              ) : (
+                <video
+                  src={previewFile.url}
+                  controls
+                  className="max-h-[65vh] w-full rounded-xl bg-black"
+                />
+              )}
             </div>
           </div>
         </div>

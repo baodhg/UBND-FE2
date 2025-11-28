@@ -7,7 +7,7 @@ import { useReportCategories } from '../../features/report-categories'
 import type { Report } from '../../features/reports/api/getReportsList'
 import { DashboardReportModal } from './DashboardReportModal'
 import { DashboardReportDetailsModal } from './DashboardReportDetailsModal'
-import { MessageSquare, Clock, CheckCircle2, Edit, Search, Filter, Eye, User, Phone, LogOut, Plus } from 'lucide-react'
+import { MessageSquare, Clock, CheckCircle2, Edit, Search, Filter, Eye, User, LogOut, Plus } from 'lucide-react'
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate()
@@ -57,6 +57,13 @@ export const DashboardPage: React.FC = () => {
     return map
   }, [categories])
 
+  const normalizeStatusKey = (value: string) =>
+    value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toUpperCase()
+      .replace(/\s+/g, '_')
+
   const STATUS_MAP: Record<string, string> = {
     DA_GUI: 'Đã gửi',
     DA_TIEP_NHAN: 'Đã tiếp nhận',
@@ -65,25 +72,48 @@ export const DashboardPage: React.FC = () => {
     DONG: 'Đóng',
   }
 
-  const getReportStatus = (report: Report) => {
-    const rawStatus =
-      (report.trang_thai || '').trim() ||
-      (report.trang_thai_hien_tai?.ma_trang_thai || '').trim() ||
-      (report.trang_thai_hien_tai?.ten || '').trim()
+  const getReportStatus = (report: Report): { key: string; label: string } => {
+    const candidateStatuses: string[] = []
 
-    if (rawStatus) {
-      // normalize key-like statuses
-      const normalizedKey = rawStatus.toUpperCase().replace(/\s+/g, '_')
-      return STATUS_MAP[normalizedKey] || rawStatus
+    const historyEntries = report.lich_su_trang_thai ?? []
+    if (historyEntries.length > 0) {
+      const latestHistory = historyEntries.reduce((latest, entry) => {
+        const entryTime = entry?.thoi_gian_tao || entry?.thoi_gian
+        if (!entryTime) return latest
+        if (!latest) return entry
+        const latestTime = latest?.thoi_gian_tao || latest?.thoi_gian
+        if (!latestTime) return entry
+        return new Date(entryTime) > new Date(latestTime) ? entry : latest
+      }, null as (typeof historyEntries)[number] | null)
+
+      if (latestHistory?.trang_thai) candidateStatuses.push(latestHistory.trang_thai)
+      if (latestHistory?.ten) candidateStatuses.push(latestHistory.ten)
     }
 
-    if (report.lich_su_trang_thai && report.lich_su_trang_thai.length > 0) {
-      const lastHistory = report.lich_su_trang_thai[report.lich_su_trang_thai.length - 1]
-      const historyStatus = (lastHistory?.ten || lastHistory?.trang_thai || '').trim()
-      if (historyStatus) return historyStatus
+    if (report.trang_thai_hien_tai?.ma_trang_thai) candidateStatuses.push(report.trang_thai_hien_tai.ma_trang_thai)
+    if (report.trang_thai_hien_tai?.ten) candidateStatuses.push(report.trang_thai_hien_tai.ten)
+
+    if (report.trang_thai) candidateStatuses.push(report.trang_thai)
+
+    for (const statusValue of candidateStatuses) {
+      const trimmed = statusValue?.trim()
+      if (!trimmed) continue
+
+      const normalizedKey = normalizeStatusKey(trimmed)
+      const label = STATUS_MAP[normalizedKey]
+      if (label) return { key: normalizedKey, label }
+
+      const matchedLabelEntry = Object.entries(STATUS_MAP).find(
+        ([, labelValue]) => labelValue.toLowerCase() === trimmed.toLowerCase()
+      )
+      if (matchedLabelEntry) {
+        return { key: matchedLabelEntry[0], label: matchedLabelEntry[1] }
+      }
+
+      return { key: normalizedKey, label: trimmed }
     }
 
-    return 'Chờ xử lý'
+    return { key: 'CHUA_CAP_NHAT', label: 'Chờ xử lý' }
   }
 
   const getCategoryName = useCallback((report: Report) => {
@@ -105,8 +135,9 @@ export const DashboardPage: React.FC = () => {
           .filter(Boolean)
           .some((value) => String(value).toLowerCase().includes(keyword))
 
+      const reportStatus = getReportStatus(report)
       const matchesStatus =
-        statusFilter === 'all' || getReportStatus(report).toLowerCase() === statusFilter.toLowerCase()
+        statusFilter === 'all' || reportStatus.key === statusFilter
 
       const sentDate = report.thoi_gian_tao ? new Date(report.thoi_gian_tao) : null
       let matchesDate = true
@@ -131,10 +162,13 @@ export const DashboardPage: React.FC = () => {
   const totalReports = reports.length
   const pendingReports = reports.filter((report) => {
     const status = getReportStatus(report)
-    return status === 'Mới' || status === 'Chờ xử lý'
+    return status.key === 'DA_GUI' || status.key === 'DA_TIEP_NHAN'
   }).length
-  const completedReports = reports.filter((report) => getReportStatus(report) === 'Hoàn thành').length
-  const inProgressReports = reports.filter((report) => getReportStatus(report) === 'Đang xử lý').length
+  const completedReports = reports.filter((report) => {
+    const status = getReportStatus(report)
+    return status.key === 'DA_GIAI_QUYET' || status.key === 'DONG'
+  }).length
+  const inProgressReports = reports.filter((report) => getReportStatus(report).key === 'DANG_XU_LY').length
 
   const statCards = [
     { title: 'Tổng phản ánh', value: totalReports, icon: <MessageSquare size={20} />, accent: 'text-blue-600 bg-blue-50 ring-blue-100' },
@@ -252,10 +286,6 @@ export const DashboardPage: React.FC = () => {
             </div>
             <div className="flex flex-wrap items-center gap-3 text-sm">
               <div className="flex items-center gap-2 rounded-2xl bg-white/15 px-4 py-2">
-                <Phone size={16} />
-                <span>{user?.email || '0901234567'}</span>
-              </div>
-              <div className="flex items-center gap-2 rounded-2xl bg-white/15 px-4 py-2">
                 <User size={16} />
                 <span>{user?.name || 'Nguyễn Văn A'}</span>
               </div>
@@ -299,10 +329,11 @@ export const DashboardPage: React.FC = () => {
                   className="appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-2.5 pr-10 text-sm font-medium text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
               >
                 <option value="all">Tất cả trạng thái</option>
-                <option value="Mới">Mới</option>
-                <option value="Chờ xử lý">Chờ xử lý</option>
-                <option value="Đang xử lý">Đang xử lý</option>
-                <option value="Hoàn thành">Hoàn thành</option>
+                <option value="DA_GUI">Đã gửi</option>
+                <option value="DA_TIEP_NHAN">Đã tiếp nhận</option>
+                <option value="DANG_XU_LY">Đang xử lý</option>
+                <option value="DA_GIAI_QUYET">Đã giải quyết</option>
+                <option value="DONG">Đóng</option>
               </select>
                 <Filter className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
               </div>
@@ -362,7 +393,7 @@ export const DashboardPage: React.FC = () => {
               {/* Mobile cards */}
               <div className="space-y-4 md:hidden">
                 {displayReports.map((report) => {
-                  const statusLabel = getReportStatus(report)
+                          const status = getReportStatus(report)
                   const categoryName = getCategoryName(report)
 
                   return (
@@ -372,8 +403,8 @@ export const DashboardPage: React.FC = () => {
                           <p className="text-xs uppercase tracking-wide text-slate-400">Mã phản ánh</p>
                           <p className="text-lg font-semibold text-slate-900">{report.ma_phan_anh}</p>
                         </div>
-                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusBadgeClass(statusLabel)}`}>
-                          {statusLabel}
+                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusBadgeClass(status.label)}`}>
+                          {status.label}
                         </span>
                       </div>
 
@@ -431,13 +462,13 @@ export const DashboardPage: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
                     {displayReports.map((report) => {
-                    const statusLabel = getReportStatus(report)
+                        const status = getReportStatus(report)
                     const categoryName = getCategoryName(report)
 
                     return (
                       <tr key={report.id} className="transition hover:bg-slate-50/70">
                         <td className="px-6 py-4 font-semibold text-slate-900">{report.ma_phan_anh}</td>
-                        <td className="px-6 py-4">
+                          <td className="px-6 py-4">
                           <div className="font-semibold text-slate-900">{report.ten_nguoi_phan_anh || 'N/A'}</div>
                           {report.sdt_nguoi_phan_anh && (
                             <p className="text-xs text-slate-500">{report.sdt_nguoi_phan_anh}</p>
@@ -450,9 +481,9 @@ export const DashboardPage: React.FC = () => {
                         </td>
                         <td className="px-6 py-4 text-slate-900">{report.vi_tri || '---'}</td>
                         <td className="px-6 py-4 text-slate-900">{formatDate(report.thoi_gian_tao)}</td>
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusBadgeClass(statusLabel)}`}>
-                            {statusLabel}
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusBadgeClass(status.label)}`}>
+                              {status.label}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">

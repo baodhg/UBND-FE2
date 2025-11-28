@@ -30,6 +30,7 @@ export interface Report {
     trang_thai?: string
     mo_ta?: string | null
     thoi_gian?: string
+    thoi_gian_tao?: string
   }>
 }
 

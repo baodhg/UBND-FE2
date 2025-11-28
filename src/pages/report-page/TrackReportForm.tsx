@@ -490,7 +490,9 @@ export const TrackReportForm: React.FC = () => {
                           <div className="flex-1 pb-8">
                             <h5 className="font-semibold text-gray-900 mb-1">{history.ten}</h5>
                             <p className="text-sm text-gray-500">
-                              {formatDate(history.thoi_gian_tao)}
+                              {(history.thoi_gian_tao || history.thoi_gian)
+                                ? formatDate((history.thoi_gian_tao || history.thoi_gian) as string)
+                                : 'Chưa cập nhật'}
                             </p>
                           </div>
                         </div>

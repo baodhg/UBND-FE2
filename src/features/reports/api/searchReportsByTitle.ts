@@ -14,7 +14,8 @@ export interface SearchReportsByTitleResponse {
   pagination: null
 }
 
-export const searchReportsByTitle = async (search: string): Promise<SearchResultItem> => {
+// Trả về toàn bộ danh sách kết quả để UI có thể cho người dùng chọn
+export const searchReportsByTitle = async (search: string): Promise<SearchResultItem[]> => {
   const response = await apiClient.get<SearchReportsByTitleResponse>(
     `/phan-anh/search-by-tieu-de`,
     {
@@ -23,8 +24,7 @@ export const searchReportsByTitle = async (search: string): Promise<SearchResult
   )
 
   if (response.data.success && response.data.data && response.data.data.length > 0) {
-    // Return first item from array
-    return response.data.data[0]
+    return response.data.data
   }
 
   throw new Error(response.data.message || 'Không tìm thấy phản ánh')

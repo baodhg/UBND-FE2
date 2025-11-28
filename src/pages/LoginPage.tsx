@@ -7,8 +7,8 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate()
 
   // Nếu đã đăng nhập thì không cho vào trang đăng nhập nữa
-  // và điều hướng về trang chủ (hoặc trang bạn mong muốn)
-  useAuthRedirect('/')
+  // và điều hướng về trang Dashboard
+  useAuthRedirect('/dashboard')
 
   return (
     <div className="flex-1 flex items-center justify-center bg-gray-50 px-4 py-8 sm:py-12 overflow-y-auto">

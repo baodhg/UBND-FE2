@@ -1,10 +1,14 @@
 import React from 'react'
-import { LoginForm } from '../features/authentication'
+import { LoginForm, useAuthRedirect } from '../features/authentication'
 import { ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate()
+
+  // Nếu đã đăng nhập thì không cho vào trang đăng nhập nữa
+  // và điều hướng về trang chủ (hoặc trang bạn mong muốn)
+  useAuthRedirect('/')
 
   return (
     <div className="flex-1 flex items-center justify-center bg-gray-50 px-4 py-8 sm:py-12 overflow-y-auto">

@@ -71,7 +71,7 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy') { 
             steps {
                 sh """
                     APP_NAME_UNIQUE="${APP_NAME}-${ENVIRONMENT_NAME}"

@@ -35,7 +35,6 @@ pipeline {
         stage('Build') {
             steps {
                 withCredentials([file(credentialsId: env.ENV_CRED_ID, variable: 'ENV_FILE')]) {
-
                     sh """
                         echo "--- Loading .env"
                         set -a

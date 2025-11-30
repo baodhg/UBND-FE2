@@ -36,15 +36,22 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: env.ENV_CRED_ID, variable: 'ENV_FILE')]) {
                     sh """
-                        echo "--- Loading .env"
+                        echo "--- RAW FILE ---------------------"
+                        cat "$ENV_FILE"
+                        echo "----------------------------------"
+
+                        echo "--- Load .env --------------------"
                         set -a
                         . "$ENV_FILE"
                         set +a
+                        echo "----------------------------------"
 
-                        echo "VITE_API_URL=\$VITE_API_URL"
+                        echo "--- CHECK VARIABLES --------------"
+                        env | grep VITE || true
+                        echo "----------------------------------"
 
                         DOCKER_BUILDKIT=1 docker build --pull \
-                            --build-arg VITE_API_URL=\${VITE_API_URL} \
+                            --build-arg VITE_API_BASE_URL=\${VITE_API_BASE_URL} \
                             -t ${env.IMAGE_TAG} .
                     """
                 }

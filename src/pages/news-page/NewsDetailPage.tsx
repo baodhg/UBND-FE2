@@ -4,6 +4,7 @@ import { Spin, Tag, Space, Divider, Button, Row, Col, List } from 'antd'
 import { CalendarOutlined, ArrowLeftOutlined, UserOutlined } from '@ant-design/icons'
 import { useNewsById } from '../../features/news'
 import { useNewsList } from '../../features/news'
+import { resolveToAbsoluteUrl } from '../../utils/url'
 
 export const NewsDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -147,7 +148,7 @@ export const NewsDetailPage: React.FC = () => {
                 {news.url_anh_dai_dien && (
                   <div className="mb-6">
                     <img
-                      src={`https://ubnd-api-staging.noah-group.org${news.url_anh_dai_dien}`}
+                      src={resolveToAbsoluteUrl(news.url_anh_dai_dien)}
                       alt={news.tieu_de}
                       className="w-full rounded-lg object-cover"
                       style={{ maxHeight: '300px' }}
@@ -178,7 +179,7 @@ export const NewsDetailPage: React.FC = () => {
                                   width={80}
                                   height={60}
                                   alt={item.tieu_de}
-                                  src={`https://ubnd-api-staging.noah-group.org${item.url_anh_dai_dien}`}
+                                  src={resolveToAbsoluteUrl(item.url_anh_dai_dien)}
                                   className="rounded object-cover flex-shrink-0"
                                   style={{ width: 80, height: 60 }}
                                 />

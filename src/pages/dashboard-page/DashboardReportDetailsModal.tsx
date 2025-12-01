@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react'
 import { X, Loader2, MapPin, ClipboardList, Paperclip, AlertCircle, Video } from 'lucide-react'
 import { useGetReportByCode } from '../../features/reports'
 import { useUserProfile } from '../../features/user-profile/api'
+import { resolveToAbsoluteUrl } from '../../utils/url'
 
 interface DashboardReportDetailsModalProps {
   open: boolean
@@ -67,12 +68,7 @@ export const DashboardReportDetailsModal: React.FC<DashboardReportDetailsModalPr
     (video) => video?.final_mp4_url || video?.final_hls_url
   )
 
-  const resolveFileUrl = (url?: string | null) => {
-    if (!url) return '#'
-    if (/^https?:\/\//i.test(url)) return url
-    const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || ''
-    return `${baseUrl}${url}`
-  }
+  const resolveFileUrl = (url?: string | null) => resolveToAbsoluteUrl(url) || '#'
 
   if (!open) {
     return null

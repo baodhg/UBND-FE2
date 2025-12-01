@@ -226,12 +226,6 @@ export const ChecklistModal: React.FC<ChecklistModalProps> = ({
     })
   }
 
-  const progress = thanhPhanList.length > 0 
-    ? Math.round((checkedItems.size / getTotalRequiredItems()) * 100) 
-    : 0
-
-  const isComplete = thanhPhanList.length > 0 && checkedItems.size === getTotalRequiredItems()
-
   // Calculate total required items (excluding optional ones that are not expanded)
   function getTotalRequiredItems() {
     let total = 0
@@ -246,6 +240,30 @@ export const ChecklistModal: React.FC<ChecklistModalProps> = ({
     })
     return total
   }
+
+  // Calculate checked required items (only count non-optional items and expanded proxy docs)
+  function getCheckedRequiredItems() {
+    let checked = 0
+    thanhPhanList.forEach((item) => {
+      // Count non-optional items that are checked
+      if (!item.isOptional && checkedItems.has(item.id)) {
+        checked += 1
+      }
+      // Count proxy docs of optional items that are expanded and checked
+      if (item.isOptional && expandedProxyDocs.has(item.id) && checkedItems.has(`${item.id}-proxy`)) {
+        checked += 1
+      }
+    })
+    return checked
+  }
+
+  const totalRequired = getTotalRequiredItems()
+  const checkedRequired = getCheckedRequiredItems()
+  const progress = totalRequired > 0 
+    ? Math.round((checkedRequired / totalRequired) * 100) 
+    : 0
+
+  const isComplete = totalRequired > 0 && checkedRequired === totalRequired
 
   return (
     <Modal
@@ -291,7 +309,7 @@ export const ChecklistModal: React.FC<ChecklistModalProps> = ({
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-gray-600 font-medium">Tiến độ chuẩn bị</span>
                 <span className="text-sm font-semibold text-blue-600">
-                  {checkedItems.size}/{thanhPhanList.length}
+                  {checkedRequired}/{totalRequired}
                 </span>
               </div>
               <Progress 
@@ -317,7 +335,7 @@ export const ChecklistModal: React.FC<ChecklistModalProps> = ({
                 <div>
                   <div className="text-sm font-semibold text-yellow-800">Cần hoàn thiện</div>
                   <div className="text-sm text-yellow-700">
-                    Bạn còn {getTotalRequiredItems() - checkedItems.size} giấy tờ bắt buộc chưa chuẩn bị
+                    Bạn còn {totalRequired - checkedRequired} giấy tờ bắt buộc chưa chuẩn bị
                   </div>
                 </div>
               </div>

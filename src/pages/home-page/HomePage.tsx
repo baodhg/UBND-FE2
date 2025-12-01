@@ -9,6 +9,7 @@ import { useNewsList } from '../../features/news/hooks/useNewsList'
 import { formatDate } from '../../utils/formatDate'
 import { useQuery } from '@tanstack/react-query'
 import { proceduresApi } from '../../features/procedures/api/proceduresApi'
+import { resolveToAbsoluteUrl } from '../../utils/url'
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate()
@@ -50,17 +51,7 @@ export const HomePage: React.FC = () => {
   // Helper function to get full image URL
   const getImageUrl = (url: string | null) => {
     if (!url) return defaultNewsImage
-    
-    // If URL is already absolute (starts with http:// or https://), return as is
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url
-    }
-    
-    // If URL is relative, prepend the base URL
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
-    // Remove /api from base URL if it exists
-    const cleanBaseUrl = baseUrl.replace('/api', '')
-    return `${cleanBaseUrl}${url.startsWith('/') ? '' : '/'}${url}`
+    return resolveToAbsoluteUrl(url) || defaultNewsImage
   }
 
   // Map news from API to component props
@@ -277,13 +268,12 @@ export const HomePage: React.FC = () => {
                     <Search size={18} className="sm:w-5 sm:h-5" />
                     <span>Tra cứu phản ánh</span>
                   </button>
-                  <a
-                    href="tel:02812345678"
-                    className="px-6 py-3 sm:px-8 bg-white text-gray-700 border-2 border-gray-300 rounded-lg hover:border-blue-600 hover:text-blue-600 transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
+                  <div
+                    className="px-6 py-3 sm:px-8 bg-white text-gray-700 border-2 border-gray-300 rounded-lg flex items-center justify-center gap-2 text-sm sm:text-base cursor-default"
                   >
                     <Phone size={18} className="text-green-600 sm:w-5 sm:h-5" />
                     <span>Hotline: (028) 1234 5678</span>
-                  </a>
+                  </div>
                 </div>
               </div>
             </div>

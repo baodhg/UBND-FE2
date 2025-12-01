@@ -9,6 +9,7 @@ import { useNewsList } from '../../features/news/hooks/useNewsList'
 import { formatDate } from '../../utils/formatDate'
 import { useQuery } from '@tanstack/react-query'
 import { proceduresApi } from '../../features/procedures/api/proceduresApi'
+import { resolveToAbsoluteUrl } from '../../utils/url'
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate()
@@ -50,17 +51,7 @@ export const HomePage: React.FC = () => {
   // Helper function to get full image URL
   const getImageUrl = (url: string | null) => {
     if (!url) return defaultNewsImage
-    
-    // If URL is already absolute (starts with http:// or https://), return as is
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url
-    }
-    
-    // If URL is relative, prepend the base URL
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
-    // Remove /api from base URL if it exists
-    const cleanBaseUrl = baseUrl.replace('/api', '')
-    return `${cleanBaseUrl}${url.startsWith('/') ? '' : '/'}${url}`
+    return resolveToAbsoluteUrl(url) || defaultNewsImage
   }
 
   // Map news from API to component props

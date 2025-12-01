@@ -12,6 +12,7 @@ import {
 } from '@ant-design/icons'
 import { proceduresApi, type ProcedureDetail } from '../../features/procedures/api/proceduresApi'
 import { ChecklistModal } from './ChecklistModal'
+import { resolveToAbsoluteUrl } from '../../utils/url'
 
 interface ProcedureDetailModalProps {
   procedureId: string | null
@@ -52,7 +53,7 @@ export const ProcedureDetailModal: React.FC<ProcedureDetailModalProps> = ({
   const handleDownloadPdf = async (url: string, fileName: string) => {
     try {
       setDownloading(true)
-      const fullUrl = url.startsWith('http') ? url : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '')}${url}`
+      const fullUrl = resolveToAbsoluteUrl(url) || url
       
       const response = await fetch(fullUrl)
       const blob = await response.blob()

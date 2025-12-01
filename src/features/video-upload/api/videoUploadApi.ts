@@ -1,4 +1,5 @@
 import apiClient from '../../../lib/axios'
+import { resolveToAbsoluteUrl, getAssetBaseUrl } from '../../../utils/url'
 
 // Generate UUID v4
 const generateUUID = (): string => {
@@ -37,7 +38,14 @@ export interface UploadVideoResponse {
 
 export const videoUploadApi = {
   getVideoUrl: async (idVideo: string): Promise<string | null> => {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'https://ubnd-api-staging.noah-group.org'
+    const assetBaseUrl = getAssetBaseUrl()
+    const toAbsoluteUrl = (url?: string | null): string | null => {
+      if (!url) return null
+      const resolved = resolveToAbsoluteUrl(url)
+      if (resolved) return resolved
+      const normalizedPath = url.startsWith('/') ? url : `/${url}`
+      return `${assetBaseUrl}${normalizedPath}`
+    }
     
     // First, try to get video info/metadata from API
     try {
@@ -58,25 +66,14 @@ export const videoUploadApi = {
             // If response has URL field
             if (response.data.url || response.data.videoUrl || response.data.streamUrl) {
               const videoUrl = response.data.url || response.data.videoUrl || response.data.streamUrl
-              // If it's a relative URL, make it absolute
-              if (videoUrl.startsWith('/')) {
-                return `${baseUrl}${videoUrl}`
-              }
-              // If it's already absolute, return as is
-              if (videoUrl.startsWith('http')) {
-                return videoUrl
-              }
+              const absoluteUrl = toAbsoluteUrl(videoUrl)
+              if (absoluteUrl) return absoluteUrl
             }
             
             // If response has data.url
             if (response.data.data?.url) {
-              const videoUrl = response.data.data.url
-              if (videoUrl.startsWith('/')) {
-                return `${baseUrl}${videoUrl}`
-              }
-              if (videoUrl.startsWith('http')) {
-                return videoUrl
-              }
+              const absoluteUrl = toAbsoluteUrl(response.data.data.url)
+              if (absoluteUrl) return absoluteUrl
             }
           }
         } catch (err) {

@@ -265,10 +265,10 @@ export const ProcedureDetailModal: React.FC<ProcedureDetailModalProps> = ({
             </div>
           )}
 
-          {/* Biểu mẫu tài về */}
+          {/* Biểu mẫu tải về */}
           {procedure.thu_tuc_hanh_chinh_mau_don && procedure.thu_tuc_hanh_chinh_mau_don.length > 0 && (
             <div className="mb-6">
-              <h3 className="text-base font-semibold text-gray-900 mb-4">Biểu mẫu tài về</h3>
+              <h3 className="text-base font-semibold text-gray-900 mb-4">Biểu mẫu tải về</h3>
               <div className="space-y-2">
                 {procedure.thu_tuc_hanh_chinh_mau_don.map((item: any) => (
                   <button

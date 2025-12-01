@@ -4,6 +4,7 @@ import { List, Tag, Space, Spin, Card } from 'antd'
 import { CalendarOutlined, SearchOutlined } from '@ant-design/icons'
 import { useNewsList, useNewsCategoryCount } from '../../features/news'
 import { useNewsCategories } from '../../features/news-categories'
+import { resolveToAbsoluteUrl } from '../../utils/url'
 
 // Component to render a single filter button with its count
 const CategoryButton: React.FC<{
@@ -206,7 +207,7 @@ export const NewsPage: React.FC = () => {
                           width={140}
                           height={100}
                           alt={item.tieu_de}
-                          src={`https://ubnd-api-staging.noah-group.org${item.url_anh_dai_dien}`}
+                          src={resolveToAbsoluteUrl(item.url_anh_dai_dien)}
                           className="rounded-lg object-cover"
                           style={{ width: 140, height: 100 }}
                         />

@@ -3,6 +3,7 @@ import { Search, Calendar, AlertCircle, X, Video, ClipboardList } from 'lucide-r
 import { useSearchReportsByTitle, useGetReportByCode } from '../../features/reports'
 import type { SearchResultItem } from '../../features/reports/api/searchReportsByTitle'
 import { videoUploadApi } from '../../features/video-upload'
+import { resolveToAbsoluteUrl } from '../../utils/url'
 
 // Video Player Component with multiple URL fallback
 export const VideoPlayer: React.FC<{ idVideo: string; videoUrls: string[]; videoIndex: number }> = ({ 
@@ -250,7 +251,7 @@ export const TrackReportForm: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white text-card-foreground rounded-xl p-6 border border-gray-200 shadow-lg">
+      <div className="bg-white text-card-foreground rounded-xl p-6 border border-gray-200 shadow-lg overflow-hidden">
         <h3 className="mb-6 flex items-center gap-2">
           <Search size={24} className="text-blue-600" />
           <span className="text-lg font-semibold">Tra cứu tiến độ</span>
@@ -324,7 +325,7 @@ export const TrackReportForm: React.FC = () => {
 
       {/* Result Display Below Search */}
       {showResult && !error && (
-        <div className="mt-6 bg-white rounded-xl p-6 border border-gray-200 shadow-lg">
+        <div className="mt-6 bg-white rounded-xl p-6 border border-gray-200 shadow-lg overflow-hidden">
           {isLoading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
@@ -345,7 +346,10 @@ export const TrackReportForm: React.FC = () => {
                         <button
                           key={item.id}
                           type="button"
-                          onClick={() => setMaPhanAnh(item.ma_phan_anh)}
+                          onClick={() => {
+                            setMaPhanAnh(item.ma_phan_anh)
+                            window.scrollTo({ top: 0, behavior: 'smooth' })
+                          }}
                           className={`w-full text-left rounded-xl border px-4 py-3 transition ${
                             isSelected
                               ? 'border-blue-500 bg-blue-50'
@@ -353,15 +357,15 @@ export const TrackReportForm: React.FC = () => {
                           }`}
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <div>
-                              <p className="font-semibold text-gray-900 line-clamp-1">
+                            <div className="flex-1 min-w-0 overflow-hidden">
+                              <p className="font-semibold text-gray-900 line-clamp-1 truncate">
                                 {item.tieu_de}
                               </p>
-                              <p className="mt-1 text-xs text-gray-500 line-clamp-1">
+                              <p className="mt-1 text-xs text-gray-500 line-clamp-1 truncate">
                                 {item.mo_ta}
                               </p>
                             </div>
-                            <span className="ml-3 shrink-0 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+                            <span className="ml-3 shrink-0 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 whitespace-nowrap">
                               Mã: {item.ma_phan_anh}
                             </span>
                           </div>
@@ -427,22 +431,25 @@ export const TrackReportForm: React.FC = () => {
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {report.dinh_kem_phan_anh
                       .filter((file) => file.dinh_dang_file.startsWith('image/'))
-                      .map((file, index) => (
-                        <div
-                          key={index}
-                          className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200"
-                        >
-                          <img
-                            src={`https://ubnd-api-staging.noah-group.org${file.url_file}`}
-                            alt={`Đính kèm ${index + 1}`}
-                            className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
-                            onClick={() => setSelectedImage(`https://ubnd-api-staging.noah-group.org${file.url_file}`)}
-                          />
+                      .map((file, index) => {
+                        const imageUrl = resolveToAbsoluteUrl(file.url_file)
+                        return (
+                          <div
+                            key={index}
+                            className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200"
+                          >
+                            <img
+                              src={imageUrl}
+                              alt={`Đính kèm ${index + 1}`}
+                              className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
+                              onClick={() => setSelectedImage(imageUrl)}
+                            />
                           <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 text-center">
                             {file.kich_thuoc_file_mb} MB
                           </div>
-                        </div>
-                      ))}
+                          </div>
+                        )
+                      })}
                   </div>
                 </div>
               )}
@@ -463,7 +470,7 @@ export const TrackReportForm: React.FC = () => {
                       .map((file, index) => (
                         <div key={`file-${index}`} className="rounded-lg overflow-hidden border-2 border-gray-200 bg-black">
                           <video
-                            src={`https://ubnd-api-staging.noah-group.org${file.url_file}`}
+                            src={resolveToAbsoluteUrl(file.url_file)}
                             controls
                             className="w-full max-h-96 object-contain"
                             preload="metadata"
@@ -485,12 +492,12 @@ export const TrackReportForm: React.FC = () => {
                       .filter(video => video.status === 'DONE' && video.final_mp4_url)
                       .map((video, index) => {
                         const videoIndex = (report.dinh_kem_phan_anh?.filter(f => f.dinh_dang_file.startsWith('video/')).length || 0) + index + 1
-                        const baseUrl = 'https://ubnd-api-staging.noah-group.org'
+                        const videoUrl = resolveToAbsoluteUrl(video.final_mp4_url || video.final_hls_url || '')
                         
                         return (
                           <div key={`video-${video.id}`} className="rounded-lg overflow-hidden border-2 border-gray-200 bg-black">
                             <video
-                              src={`${baseUrl}${video.final_mp4_url}`}
+                              src={videoUrl}
                               controls
                               className="w-full max-h-96 object-contain"
                               preload="metadata"

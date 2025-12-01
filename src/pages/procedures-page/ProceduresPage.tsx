@@ -49,16 +49,44 @@ export const ProceduresPage: React.FC = () => {
     const fetchAllProcedures = async () => {
       setIsLoading(true)
       try {
-        console.log('🔄 Fetching all procedures from /thu-tuc/all...')
-        const data = await proceduresApi.getAllProcedures()
-        console.log('✅ API Response - Total procedures:', data.length)
-        console.log('📊 Sample procedure:', data[0])
+        console.log('🔄 Fetching all procedures with pagination...')
         
-        // Không filter is_active nữa, lấy tất cả procedures
-        console.log('✅ Setting all procedures:', data.length)
-        console.log('📋 All procedures list:', data)
+        // Lấy trang đầu tiên để biết tổng số
+        const firstResponse = await proceduresApi.getProcedures({
+          page: 1,
+          size: 100, // Thử lấy 100 items/page
+          isActive: true
+        })
         
-        setAllProcedures(data)
+        console.log('✅ First page - Total items:', firstResponse.pagination?.totalItems)
+        console.log('📊 Pagination info:', firstResponse.pagination)
+        
+        let allProceduresData = [...firstResponse.data]
+        
+        // Nếu có nhiều trang, lấy tiếp các trang còn lại
+        if (firstResponse.pagination && firstResponse.pagination.totalPages > 1) {
+          const totalPages = firstResponse.pagination.totalPages
+          console.log(`📄 Fetching remaining ${totalPages - 1} pages...`)
+          
+          const promises = []
+          for (let page = 2; page <= totalPages; page++) {
+            promises.push(
+              proceduresApi.getProcedures({
+                page,
+                size: 100,
+                isActive: true
+              })
+            )
+          }
+          
+          const remainingResponses = await Promise.all(promises)
+          remainingResponses.forEach(response => {
+            allProceduresData = [...allProceduresData, ...response.data]
+          })
+        }
+        
+        console.log('✅ Total procedures fetched:', allProceduresData.length)
+        setAllProcedures(allProceduresData)
       } catch (error) {
         console.error('❌ Error fetching procedures:', error)
         setAllProcedures([])

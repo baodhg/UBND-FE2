@@ -10,14 +10,52 @@ export const ProcedureFieldsSection: React.FC = () => {
   const navigate = useNavigate()
   const { fields, isLoading: isLoadingFields } = useProcedureFields()
   
-  // Fetch all procedures to count them by field
+  // Fetch all procedures to count them by field - lấy nhiều trang để đảm bảo có đủ data
   const { data: allProcedures } = useQuery({
     queryKey: ['allProcedures'],
-    queryFn: () => proceduresApi.getAllProcedures(),
+    queryFn: async () => {
+      console.log('🔄 Fetching all procedures for counting...')
+      
+      // Lấy trang đầu tiên
+      const firstResponse = await proceduresApi.getProcedures({
+        page: 1,
+        size: 100,
+        isActive: true
+      })
+      
+      console.log('✅ First page - Total items:', firstResponse.pagination?.totalItems)
+      
+      let allProceduresData = [...firstResponse.data]
+      
+      // Nếu có nhiều trang, lấy tiếp
+      if (firstResponse.pagination && firstResponse.pagination.totalPages > 1) {
+        const totalPages = firstResponse.pagination.totalPages
+        console.log(`📄 Fetching remaining ${totalPages - 1} pages...`)
+        
+        const promises = []
+        for (let page = 2; page <= totalPages; page++) {
+          promises.push(
+            proceduresApi.getProcedures({
+              page,
+              size: 100,
+              isActive: true
+            })
+          )
+        }
+        
+        const remainingResponses = await Promise.all(promises)
+        remainingResponses.forEach(response => {
+          allProceduresData = [...allProceduresData, ...response.data]
+        })
+      }
+      
+      console.log('✅ Total procedures for counting:', allProceduresData.length)
+      return allProceduresData
+    },
     staleTime: 10 * 60 * 1000, // 10 minutes
     gcTime: 15 * 60 * 1000, // 15 minutes
-    refetchOnMount: false, // Don't refetch on component mount if data exists
-    refetchOnWindowFocus: false, // Don't refetch when window regains focus
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   })
 
   // Color palette for procedure cards

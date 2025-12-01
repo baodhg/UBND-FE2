@@ -24,6 +24,26 @@ const isPublicEndpoint = (url: string | undefined, method?: string): boolean => 
     return true
   }
   
+  // GET /tin-tuc* (news) endpoints are public
+  if (url.includes('/tin-tuc') && method?.toLowerCase() === 'get') {
+    return true
+  }
+  
+  // GET /danh-muc-tin-tuc* (news categories) endpoints are public
+  if (url.includes('/danh-muc-tin-tuc') && method?.toLowerCase() === 'get') {
+    return true
+  }
+  
+  // GET /thu-tuc-hanh-chinh* (procedures) endpoints are public
+  if (url.includes('/thu-tuc-hanh-chinh') && method?.toLowerCase() === 'get') {
+    return true
+  }
+  
+  // GET /linh-vuc* (procedure fields) endpoints are public
+  if (url.includes('/linh-vuc') && method?.toLowerCase() === 'get') {
+    return true
+  }
+  
   // POST /phan-anh (submit report) is public
   if (url.includes('/phan-anh') && method?.toLowerCase() === 'post') {
     return true

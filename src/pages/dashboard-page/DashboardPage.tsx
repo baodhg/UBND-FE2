@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
+import { useFormik } from 'formik'
+import * as Yup from 'yup'
 import { useAppSelector } from '../../store/hooks'
 import { useReportsList } from '../../features/reports/hooks/useReportsList'
 import { useReportCategories } from '../../features/report-categories'
@@ -17,10 +19,50 @@ export const DashboardPage: React.FC = () => {
   const { data: userProfile, isLoading: isLoadingProfile } = useUserProfile()
   const updateProfileMutation = useUpdateUserProfile()
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
-  const [profileForm, setProfileForm] = useState({
-    ho_va_ten: '',
-    so_dien_thoai: '',
+
+  // Validation schema for profile update
+  const profileValidationSchema = Yup.object({
+    ho_va_ten: Yup.string()
+      .required('Vui lòng nhập họ và tên')
+      .matches(/^[a-zA-ZÀ-ỹ\s]+$/, 'Tên không được chứa ký tự đặc biệt hoặc số')
+      .trim()
+      .min(2, 'Họ và tên phải có ít nhất 2 ký tự'),
+    so_dien_thoai: Yup.string()
+      .required('Vui lòng nhập số điện thoại')
+      .matches(/^[0-9]+$/, 'Số điện thoại chỉ được chứa số')
+      .length(10, 'Số điện thoại phải có đúng 10 số'),
   })
+
+  const profileFormik = useFormik({
+    initialValues: {
+      ho_va_ten: '',
+      so_dien_thoai: '',
+    },
+    validationSchema: profileValidationSchema,
+    enableReinitialize: false,
+    validateOnChange: true,
+    validateOnBlur: true,
+    onSubmit: async (values) => {
+      try {
+        await updateProfileMutation.mutateAsync({
+          hoVaTen: values.ho_va_ten,
+          soDienThoai: values.so_dien_thoai,
+        })
+        setIsProfileModalOpen(false)
+      } catch (error) {
+        console.error('Update profile failed', error)
+      }
+    },
+  })
+
+  // Check if form has changes
+  const hasProfileChanges = useMemo(() => {
+    return (
+      profileFormik.values.ho_va_ten !== (userProfile?.ho_va_ten || '') ||
+      profileFormik.values.so_dien_thoai !== (userProfile?.so_dien_thoai || '')
+    )
+  }, [profileFormik.values, userProfile])
+
   const [searchInput, setSearchInput] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -41,21 +83,14 @@ export const DashboardPage: React.FC = () => {
     return () => clearTimeout(handler)
   }, [searchInput])
 
-  const reportsQueryParams = useMemo(() => {
-    const normalizedSearch = debouncedSearch.trim()
-    const isPotentialReportCode = /^[A-Za-z0-9]{6,}$/i.test(normalizedSearch)
+  // Query để lấy TẤT CẢ reports - chỉ chạy 1 lần khi mount
+  const allReportsQueryParams = useMemo(() => ({
+    page: 1,
+    size: 1000, // Lấy nhiều để đảm bảo có đủ data
+    sortTime: 'desc' as const,
+  }), [])
 
-    return {
-      page: 1,
-      size: 10,
-      search: normalizedSearch || undefined,
-      maPhanAnh: isPotentialReportCode ? normalizedSearch.toUpperCase() : undefined,
-      // Không filter trạng thái ở API, để client tự filter
-      sortTime: 'desc' as const,
-    }
-  }, [debouncedSearch])
-
-  const { reports, isLoading, error: reportsError, refetch } = useReportsList(reportsQueryParams)
+  const { reports: allReports, isLoading, error: reportsError, refetch } = useReportsList(allReportsQueryParams)
 
   const categoryMap = useMemo(() => {
     const map: Record<string, string> = {}
@@ -133,11 +168,11 @@ export const DashboardPage: React.FC = () => {
     return 'Chưa xác định'
   }, [categoryMap])
 
-  // Danh sách hiển thị chịu ảnh hưởng của search + trạng thái + ngày
+  // Danh sách hiển thị: filter trên allReports (client-side) - KHÔNG gọi API mới
   const displayReports = useMemo(() => {
-    const keyword = searchInput.trim().toLowerCase()
+    const keyword = debouncedSearch.toLowerCase()
 
-    return reports.filter((report) => {
+    return allReports.filter((report) => {
       const categoryName = getCategoryName(report)
       const matchesKeyword =
         keyword.length === 0 ||
@@ -167,85 +202,105 @@ export const DashboardPage: React.FC = () => {
 
       return matchesKeyword && matchesStatus && matchesDate
     })
-  }, [reports, searchInput, statusFilter, dateFilter, getCategoryName])
+  }, [allReports, debouncedSearch, statusFilter, dateFilter, getCategoryName])
 
-  // Count cho các statCards: luôn dựa trên toàn bộ danh sách reports (không phụ thuộc filter)
-  const totalReports = reports.length
-  const daGuiCount = reports.filter((report) => getReportStatus(report).key === 'DA_GUI').length
-  const daTiepNhanCount = reports.filter((report) => getReportStatus(report).key === 'DA_TIEP_NHAN').length
-  const dangXuLyCount = reports.filter((report) => getReportStatus(report).key === 'DANG_XU_LY').length
-  const daGiaiQuyetCount = reports.filter((report) => getReportStatus(report).key === 'DA_GIAI_QUYET').length
-  const dongCount = reports.filter((report) => getReportStatus(report).key === 'DONG').length
+  // Count cho các statCards: dựa trên allReports từ API (không bị ảnh hưởng bởi search/filter UI)
+  const statCounts = useMemo(() => {
+    const totalReports = allReports.length
+    const daGuiCount = allReports.filter((report) => getReportStatus(report).key === 'DA_GUI').length
+    const daTiepNhanCount = allReports.filter((report) => getReportStatus(report).key === 'DA_TIEP_NHAN').length
+    const dangXuLyCount = allReports.filter((report) => getReportStatus(report).key === 'DANG_XU_LY').length
+    const daGiaiQuyetCount = allReports.filter((report) => getReportStatus(report).key === 'DA_GIAI_QUYET').length
+    const dongCount = allReports.filter((report) => getReportStatus(report).key === 'DONG').length
 
-  const statCards = [
+    return {
+      totalReports,
+      daGuiCount,
+      daTiepNhanCount,
+      dangXuLyCount,
+      daGiaiQuyetCount,
+      dongCount,
+    }
+  }, [allReports])
+
+  const statCards = useMemo(() => [
     { 
       title: 'Tổng phản ánh', 
-      value: totalReports, 
-      icon: <MessageSquare size={20} />, 
+      value: statCounts.totalReports, 
+      iconType: 'message' as const,
       accent: 'text-blue-600 bg-blue-50 ring-blue-100',
       filterKey: 'all' as const,
     },
     { 
       title: 'Đã gửi', 
-      value: daGuiCount, 
-      icon: <Clock size={20} />, 
+      value: statCounts.daGuiCount, 
+      iconType: 'clock' as const,
       accent: 'text-amber-600 bg-amber-50 ring-amber-100',
       filterKey: 'DA_GUI' as const,
     },
     { 
       title: 'Đã tiếp nhận', 
-      value: daTiepNhanCount, 
-      icon: <CheckCircle2 size={20} />, 
+      value: statCounts.daTiepNhanCount, 
+      iconType: 'check' as const,
       accent: 'text-green-600 bg-green-50 ring-green-100',
       filterKey: 'DA_TIEP_NHAN' as const,
     },
     { 
       title: 'Đang xử lý', 
-      value: dangXuLyCount, 
-      icon: <Edit size={20} />, 
+      value: statCounts.dangXuLyCount, 
+      iconType: 'edit' as const,
       accent: 'text-purple-600 bg-purple-50 ring-purple-100',
       filterKey: 'DANG_XU_LY' as const,
     },
     { 
       title: 'Đã giải quyết', 
-      value: daGiaiQuyetCount, 
-      icon: <CheckCircle2 size={20} />, 
+      value: statCounts.daGiaiQuyetCount, 
+      iconType: 'check' as const,
       accent: 'text-emerald-600 bg-emerald-50 ring-emerald-100',
       filterKey: 'DA_GIAI_QUYET' as const,
     },
     { 
       title: 'Đóng', 
-      value: dongCount, 
-      icon: <CheckCircle2 size={20} />, 
+      value: statCounts.dongCount, 
+      iconType: 'check' as const,
       accent: 'text-slate-600 bg-slate-50 ring-slate-100',
       filterKey: 'DONG' as const,
     },
-  ]
+  ], [statCounts])
 
-  const renderStatCard = (card: (typeof statCards)[number], index: number) => {
-    const isActive = statusFilter === card.filterKey || (card.filterKey === 'all' && statusFilter === 'all')
+  const getIcon = useCallback((iconType: string) => {
+    switch (iconType) {
+      case 'message': return <MessageSquare size={20} />
+      case 'clock': return <Clock size={20} />
+      case 'check': return <CheckCircle2 size={20} />
+      case 'edit': return <Edit size={20} />
+      default: return null
+    }
+  }, [])
+
+  const renderStatCard = useCallback((card: (typeof statCards)[number]) => {
+    const isActive = statusFilter === card.filterKey
 
     return (
-      <button
-        key={`${card.title}-${index}`}
-        type="button"
+      <div
+        key={card.filterKey}
         onClick={() => setStatusFilter(card.filterKey)}
-        className={`text-left rounded-3xl border bg-white p-5 shadow-sm ring-1 transition transform ${
+        className={`cursor-pointer text-left rounded-3xl border bg-white p-5 shadow-sm ring-1 ${
           isActive
-            ? 'border-blue-200 ring-blue-100 bg-blue-50/80 -translate-y-0.5'
-            : 'border-white/60 ring-slate-100 hover:border-blue-100 hover:ring-blue-50 hover:-translate-y-0.5'
+            ? 'border-blue-200 ring-blue-100 bg-blue-50/80'
+            : 'border-white/60 ring-slate-100 hover:border-blue-100 hover:ring-blue-50'
         }`}
       >
         <div className="flex items-center justify-between">
           <h4 className="text-sm font-medium text-slate-500">{card.title}</h4>
           <span className={`inline-flex items-center justify-center rounded-2xl px-3 py-1 text-sm font-semibold ${card.accent}`}>
-            {card.icon}
+            {getIcon(card.iconType)}
           </span>
         </div>
         <p className="mt-3 text-4xl font-semibold text-slate-900">{card.value}</p>
-      </button>
+      </div>
     )
-  }
+  }, [statusFilter, getIcon])
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -348,10 +403,11 @@ export const DashboardPage: React.FC = () => {
             <button
               type="button"
               onClick={() => {
-                setProfileForm({
+                profileFormik.setValues({
                   ho_va_ten: userProfile?.ho_va_ten || '',
                   so_dien_thoai: userProfile?.so_dien_thoai || '',
                 })
+                profileFormik.setTouched({}, false)
                 setIsProfileModalOpen(true)
               }}
               className="mt-4 inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-50 md:mt-0"
@@ -369,7 +425,7 @@ export const DashboardPage: React.FC = () => {
               - Desktop (lg): 3 cột
               - Extra large (xl): 6 cột */}
           <div className="grid gap-3 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-            {statCards.map((card, index) => renderStatCard(card, index))}
+            {statCards.map((card) => renderStatCard(card))}
           </div>
         </section>
 
@@ -591,54 +647,68 @@ export const DashboardPage: React.FC = () => {
         <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
             <h3 className="text-lg font-semibold text-slate-900 mb-4">Cập nhật hồ sơ</h3>
-            <div className="space-y-3">
+            <form onSubmit={profileFormik.handleSubmit} className="space-y-3">
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-slate-500">Họ và tên</label>
                 <input
                   type="text"
-                  value={profileForm.ho_va_ten}
-                  onChange={(e) => setProfileForm((prev) => ({ ...prev, ho_va_ten: e.target.value }))}
-                  className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  name="ho_va_ten"
+                  value={profileFormik.values.ho_va_ten}
+                  onChange={(e) => {
+                    profileFormik.handleChange(e)
+                    profileFormik.setFieldTouched('ho_va_ten', true, false)
+                  }}
+                  onBlur={profileFormik.handleBlur}
+                  className={`rounded-xl border px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 ${
+                    profileFormik.touched.ho_va_ten && profileFormik.errors.ho_va_ten
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-200'
+                      : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500'
+                  }`}
                 />
+                {profileFormik.touched.ho_va_ten && profileFormik.errors.ho_va_ten && (
+                  <p className="text-xs text-red-600 mt-1">{profileFormik.errors.ho_va_ten}</p>
+                )}
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-slate-500">Số điện thoại</label>
                 <input
-                  type="tel"
-                  value={profileForm.so_dien_thoai}
-                  onChange={(e) => setProfileForm((prev) => ({ ...prev, so_dien_thoai: e.target.value }))}
-                  className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  type="text"
+                  name="so_dien_thoai"
+                  value={profileFormik.values.so_dien_thoai}
+                  onChange={(e) => {
+                    profileFormik.handleChange(e)
+                    profileFormik.setFieldTouched('so_dien_thoai', true, false)
+                  }}
+                  onBlur={profileFormik.handleBlur}
+                  maxLength={10}
+                  className={`rounded-xl border px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 ${
+                    profileFormik.touched.so_dien_thoai && profileFormik.errors.so_dien_thoai
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-200'
+                      : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500'
+                  }`}
                 />
+                {profileFormik.touched.so_dien_thoai && profileFormik.errors.so_dien_thoai && (
+                  <p className="text-xs text-red-600 mt-1">{profileFormik.errors.so_dien_thoai}</p>
+                )}
               </div>
-            </div>
 
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                type="button"
-                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                onClick={() => setIsProfileModalOpen(false)}
-              >
-                Hủy
-              </button>
-              <button
-                type="button"
-                disabled={updateProfileMutation.isPending}
-                onClick={async () => {
-                  try {
-                    await updateProfileMutation.mutateAsync({
-                      hoVaTen: profileForm.ho_va_ten,
-                      soDienThoai: profileForm.so_dien_thoai,
-                    })
-                    setIsProfileModalOpen(false)
-                  } catch (error) {
-                    console.error('Update profile failed', error)
-                  }
-                }}
-                className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:opacity-60"
-              >
-                {updateProfileMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
-              </button>
-            </div>
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  type="button"
+                  className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  onClick={() => setIsProfileModalOpen(false)}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={updateProfileMutation.isPending || !profileFormik.isValid || !hasProfileChanges}
+                  className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {updateProfileMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

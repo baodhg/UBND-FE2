@@ -251,7 +251,7 @@ export const TrackReportForm: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white text-card-foreground rounded-xl p-6 border border-gray-200 shadow-lg">
+      <div className="bg-white text-card-foreground rounded-xl p-6 border border-gray-200 shadow-lg overflow-hidden">
         <h3 className="mb-6 flex items-center gap-2">
           <Search size={24} className="text-blue-600" />
           <span className="text-lg font-semibold">Tra cứu tiến độ</span>
@@ -325,7 +325,7 @@ export const TrackReportForm: React.FC = () => {
 
       {/* Result Display Below Search */}
       {showResult && !error && (
-        <div className="mt-6 bg-white rounded-xl p-6 border border-gray-200 shadow-lg">
+        <div className="mt-6 bg-white rounded-xl p-6 border border-gray-200 shadow-lg overflow-hidden">
           {isLoading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
@@ -346,7 +346,10 @@ export const TrackReportForm: React.FC = () => {
                         <button
                           key={item.id}
                           type="button"
-                          onClick={() => setMaPhanAnh(item.ma_phan_anh)}
+                          onClick={() => {
+                            setMaPhanAnh(item.ma_phan_anh)
+                            window.scrollTo({ top: 0, behavior: 'smooth' })
+                          }}
                           className={`w-full text-left rounded-xl border px-4 py-3 transition ${
                             isSelected
                               ? 'border-blue-500 bg-blue-50'
@@ -354,15 +357,15 @@ export const TrackReportForm: React.FC = () => {
                           }`}
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <div>
-                              <p className="font-semibold text-gray-900 line-clamp-1">
+                            <div className="flex-1 min-w-0 overflow-hidden">
+                              <p className="font-semibold text-gray-900 line-clamp-1 truncate">
                                 {item.tieu_de}
                               </p>
-                              <p className="mt-1 text-xs text-gray-500 line-clamp-1">
+                              <p className="mt-1 text-xs text-gray-500 line-clamp-1 truncate">
                                 {item.mo_ta}
                               </p>
                             </div>
-                            <span className="ml-3 shrink-0 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+                            <span className="ml-3 shrink-0 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 whitespace-nowrap">
                               Mã: {item.ma_phan_anh}
                             </span>
                           </div>

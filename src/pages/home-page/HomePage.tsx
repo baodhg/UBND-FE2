@@ -268,13 +268,12 @@ export const HomePage: React.FC = () => {
                     <Search size={18} className="sm:w-5 sm:h-5" />
                     <span>Tra cứu phản ánh</span>
                   </button>
-                  <a
-                    href="tel:02812345678"
-                    className="px-6 py-3 sm:px-8 bg-white text-gray-700 border-2 border-gray-300 rounded-lg hover:border-blue-600 hover:text-blue-600 transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
+                  <div
+                    className="px-6 py-3 sm:px-8 bg-white text-gray-700 border-2 border-gray-300 rounded-lg flex items-center justify-center gap-2 text-sm sm:text-base cursor-default"
                   >
                     <Phone size={18} className="text-green-600 sm:w-5 sm:h-5" />
                     <span>Hotline: (028) 1234 5678</span>
-                  </a>
+                  </div>
                 </div>
               </div>
             </div>

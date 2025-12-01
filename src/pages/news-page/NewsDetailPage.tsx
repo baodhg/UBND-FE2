@@ -73,7 +73,7 @@ export const NewsDetailPage: React.FC = () => {
           <Button
             type="text"
             icon={<ArrowLeftOutlined />}
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/news')}
             className="mb-4"
           >
             Quay lại danh sách tin tức
@@ -104,6 +104,18 @@ export const NewsDetailPage: React.FC = () => {
 
               <Divider />
             </div>
+
+            {/* Featured image */}
+            {news.url_anh_dai_dien && (
+              <div className="mb-6">
+                <img
+                  src={resolveToAbsoluteUrl(news.url_anh_dai_dien)}
+                  alt={news.tieu_de}
+                  className="w-full rounded-lg object-cover"
+                  style={{ maxHeight: '400px' }}
+                />
+              </div>
+            )}
 
             {/* Body with 2 columns */}
             <Row gutter={24}>
@@ -142,23 +154,11 @@ export const NewsDetailPage: React.FC = () => {
                 `}</style>
               </Col>
 
-              {/* Right Column - Featured Image & Related News */}
+              {/* Right Column - Related News */}
               <Col xs={24} md={10}>
-                {/* Featured image */}
-                {news.url_anh_dai_dien && (
-                  <div className="mb-6">
-                    <img
-                      src={resolveToAbsoluteUrl(news.url_anh_dai_dien)}
-                      alt={news.tieu_de}
-                      className="w-full rounded-lg object-cover"
-                      style={{ maxHeight: '300px' }}
-                    />
-                  </div>
-                )}
-
                 {/* Related News */}
                 {filteredRelatedNews.length > 0 && (
-                  <div className="mt-6">
+                  <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Tin tức liên quan</h3>
                     {isLoadingRelated ? (
                       <div className="flex justify-center py-4">

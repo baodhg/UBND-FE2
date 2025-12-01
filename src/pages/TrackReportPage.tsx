@@ -9,7 +9,7 @@ export const TrackReportPage: React.FC = () => {
         <Card
           className="shadow-md"
           styles={{
-            body: { padding: '24px' }
+            body: { padding: '24px', overflow: 'hidden' }
           }}
         >
           {/* Title & Description */}

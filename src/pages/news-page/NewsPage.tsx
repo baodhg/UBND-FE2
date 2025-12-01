@@ -116,7 +116,7 @@ export const NewsPage: React.FC = () => {
     <div className="py-6 sm:py-8 lg:py-12 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <Card
-          bordered={false}
+          variant="borderless"
           style={{
             borderRadius: '8px',
             boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',

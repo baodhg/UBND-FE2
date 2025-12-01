@@ -96,7 +96,7 @@ export const newsApi = {
   },
   getNewsById: async (id: string): Promise<News> => {
     const response = await apiClient.get<GetNewsByIdResponse>(
-      `/tin-tuc/${id}`
+      `/tin-tuc/view/${id}`
     )
     
     // API returns { success, data, message, pagination }

@@ -48,7 +48,7 @@ export const Header: React.FC = () => {
                 Phường Tăng Nhơn Phú
               </h1>
               <p className="text-xs text-gray-500">
-                Quận 9, TP. Thủ Đức
+                Thành phố Thủ Đức, TP. Hồ Chí Minh
               </p>
             </div>
           </Link>

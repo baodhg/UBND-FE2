@@ -287,15 +287,15 @@ export const ProceduresPage: React.FC = () => {
                         )}
                     </div>
 
-                      {/* Title - Fixed height */}
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 h-[56px] flex items-start">
-                      {procedure.ten_thu_tuc}
-                    </h3>
+                      {/* Title - Clamp lines to avoid overflow */}
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2">
+                        {procedure.ten_thu_tuc}
+                      </h3>
 
-                      {/* Description - Fixed height */}
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-2 h-[48px] flex items-start">
-                      {procedure.doi_tuong_thuc_hien || 'Mô tả chi tiết sẽ được cập nhật'}
-                    </p>
+                      {/* Description - Clamp lines to avoid overflow */}
+                      <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+                        {procedure.doi_tuong_thuc_hien || 'Mô tả chi tiết sẽ được cập nhật'}
+                      </p>
 
                       {/* Info - Fixed height */}
                       <div className="space-y-2 mb-4 flex-shrink-0 h-[64px]">

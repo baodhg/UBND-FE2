@@ -18,6 +18,8 @@ const PUBLIC_ENDPOINTS = [
 // Check if endpoint is public
 const isPublicEndpoint = (url: string | undefined, method?: string): boolean => {
   if (!url) return false
+  const methodIsGet = !method || method.toLowerCase() === 'get'
+  const methodIsPost = method?.toLowerCase() === 'post'
   
   // Auth endpoints are always public
   if (PUBLIC_ENDPOINTS.some(endpoint => url.includes(endpoint))) {
@@ -25,32 +27,37 @@ const isPublicEndpoint = (url: string | undefined, method?: string): boolean => 
   }
   
   // GET /tin-tuc* (news) endpoints are public
-  if (url.includes('/tin-tuc') && method?.toLowerCase() === 'get') {
+  if (url.includes('/tin-tuc') && methodIsGet) {
     return true
   }
   
   // GET /danh-muc-tin-tuc* (news categories) endpoints are public
-  if (url.includes('/danh-muc-tin-tuc') && method?.toLowerCase() === 'get') {
+  if (url.includes('/danh-muc-tin-tuc') && methodIsGet) {
     return true
   }
   
-  // GET /thu-tuc-hanh-chinh* (procedures) endpoints are public
-  if (url.includes('/thu-tuc-hanh-chinh') && method?.toLowerCase() === 'get') {
+  // GET /thu-tuc* (procedures) endpoints are public
+  if ((url.includes('/thu-tuc-hanh-chinh') || url.includes('/thu-tuc')) && methodIsGet) {
     return true
   }
   
   // GET /linh-vuc* (procedure fields) endpoints are public
-  if (url.includes('/linh-vuc') && method?.toLowerCase() === 'get') {
+  if (url.includes('/linh-vuc') && methodIsGet) {
+    return true
+  }
+
+  // GET /uy-ban* (committee info) endpoints are public
+  if (url.includes('/uy-ban') && methodIsGet) {
     return true
   }
   
   // POST /phan-anh (submit report) is public
-  if (url.includes('/phan-anh') && method?.toLowerCase() === 'post') {
+  if (url.includes('/phan-anh') && methodIsPost) {
     return true
   }
   
   // GET /phan-anh/{code}/for-mobile (track report) is public
-  if (url.includes('/phan-anh') && url.includes('/for-mobile') && method?.toLowerCase() === 'get') {
+  if (url.includes('/phan-anh') && url.includes('/for-mobile') && methodIsGet) {
     return true
   }
   

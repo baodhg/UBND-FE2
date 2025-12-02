@@ -97,35 +97,15 @@ export const HomePage: React.FC = () => {
         <div className="relative z-10 w-full py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto text-center mb-6 sm:mb-8">
-              <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl mb-3 sm:mb-4 lg:mb-5 leading-relaxed text-[#2c6def] font-bold">
+              <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl mt-2 mb-3 sm:mb-4 lg:mb-5 leading-relaxed text-[#2c6def] font-bold">
                 Cổng thông tin điện tử
               </p>
               <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl mb-3 sm:mb-4 lg:mb-5 leading-relaxed text-gray-700">
                 Kết nối cư dân với chính quyền địa phương
               </p>
-              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-700 mb-3 sm:mb-5 lg:mb-6">
+              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-700 ">
                 Dịch vụ hành chính công hiện đại, minh bạch và hiệu quả
               </p>
-              
-            </div>
-            <div className="max-w-4xl mx-auto">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-                <button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-4 py-4 sm:px-6 sm:py-5 rounded-xl transition-all shadow-lg hover:shadow-xl text-white">
-                  <p className="text-center leading-relaxed text-sm sm:text-base">
-                    Dịch vụ công trực tuyến
-                  </p>
-                </button>
-                <button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-4 py-4 sm:px-6 sm:py-5 rounded-xl transition-all shadow-lg hover:shadow-xl text-white">
-                  <p className="text-center leading-relaxed text-sm sm:text-base">
-                    Dịch vụ công trực tuyến của Đảng
-                  </p>
-                </button>
-                <button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-4 py-4 sm:px-6 sm:py-5 rounded-xl transition-all shadow-lg hover:shadow-xl text-white sm:col-span-2 md:col-span-1">
-                  <p className="text-center leading-relaxed text-sm sm:text-base">
-                    Dịch vụ công liên thông: Khai sinh, Khai tử
-                  </p>
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -246,7 +226,8 @@ export const HomePage: React.FC = () => {
                   <div className="px-6 py-3 sm:px-8 bg-white text-gray-700 border-2 border-gray-300 rounded-lg flex items-center justify-center gap-2 text-sm sm:text-base cursor-default">
                     <Phone size={18} className="text-green-600 sm:w-5 sm:h-5" />
                     <span>
-                      Hotline: {committeeInfo?.data.so_dien_thoai || "(028) 1234 5678"}
+                      Hotline:{" "}
+                      {committeeInfo?.data.so_dien_thoai || "(028) 1234 5678"}
                     </span>
                   </div>
                 </div>

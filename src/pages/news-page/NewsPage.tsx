@@ -39,9 +39,19 @@ export const NewsPage: React.FC = () => {
   const searchFromUrl = searchParams.get('search') || ''
   
   const [search, setSearch] = useState(searchFromUrl)
+  const [debouncedSearch, setDebouncedSearch] = useState(searchFromUrl)
   const [page, setPage] = useState(1)
   const [activeTab, setActiveTab] = useState(categoryFromUrl)
   const pageSize = 10
+
+  // Debounce search input để tránh spam API
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search)
+    }, 500) // Đợi 500ms sau khi người dùng ngừng gõ
+
+    return () => clearTimeout(handler)
+  }, [search])
 
   // Sync state with URL params when they change
   useEffect(() => {
@@ -59,7 +69,7 @@ export const NewsPage: React.FC = () => {
     page,
     size: pageSize,
     isActive: true,
-    search: search || undefined,
+    search: debouncedSearch || undefined, // Dùng debouncedSearch thay vì search
     idDanhMuc: activeTab !== 'all' ? activeTab : undefined,
   })
 
@@ -88,7 +98,7 @@ export const NewsPage: React.FC = () => {
   }
 
   const handleSearch = (value: string) => {
-    setSearch(value)
+    setDebouncedSearch(value) // Cập nhật debouncedSearch ngay lập tức khi nhấn Enter
     setPage(1)
     // Update URL params
     const params = new URLSearchParams(searchParams)

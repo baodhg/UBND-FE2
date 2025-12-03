@@ -26,6 +26,7 @@ export const useProcedures = (params: GetProceduresParams = {}) => {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+    placeholderData: (previousData) => previousData, // Giữ data cũ khi fetch data mới
   })
 
   return {

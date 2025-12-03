@@ -4,7 +4,6 @@ import { Card, Button, Tag, Spin, Empty, Row, Col, Input } from 'antd'
 import { ClockCircleOutlined, DollarOutlined, ArrowRightOutlined, SearchOutlined } from '@ant-design/icons'
 import { useProcedureFields } from '../../features/procedure-fields'
 import { useProcedures, useProcedureCount } from '../../features/procedures'
-import type { Procedure } from '../../features/procedures/api/proceduresApi'
 import { ProcedureDetailModal } from './ProcedureDetailModal'
 
 const LINH_VUC_COLORS: { [key: string]: string } = {

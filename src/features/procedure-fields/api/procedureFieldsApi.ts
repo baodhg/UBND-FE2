@@ -19,6 +19,18 @@ export interface GetProcedureFieldsResponse {
   pagination: null
 }
 
+export interface ProcedureFieldCount {
+  id: string
+  ten_linh_vuc: string
+  tong_thu_tuc: number
+}
+
+export interface GetProcedureFieldCountsResponse {
+  success: boolean
+  data: ProcedureFieldCount[]
+  message: string
+}
+
 export const procedureFieldsApi = {
   getProcedureFields: async (): Promise<ProcedureField[]> => {
     const response = await apiClient.get<GetProcedureFieldsResponse>('/linh-vuc')
@@ -28,5 +40,15 @@ export const procedureFieldsApi = {
     }
     
     throw new Error(response.data.message || 'Có lỗi xảy ra khi lấy danh sách lĩnh vực')
+  },
+
+  getProcedureFieldCounts: async (): Promise<ProcedureFieldCount[]> => {
+    const response = await apiClient.get<GetProcedureFieldCountsResponse>('/linh-vuc/count-thu-tuc')
+
+    if (response.data.success && Array.isArray(response.data.data)) {
+      return response.data.data
+    }
+    
+    throw new Error(response.data.message || 'Có lỗi xảy ra khi lấy số lượng thủ tục')
   },
 }

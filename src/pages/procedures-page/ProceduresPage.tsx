@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Card, Button, Tag, Spin, Empty, Row, Col, Input } from 'antd'
 import { ClockCircleOutlined, DollarOutlined, ArrowRightOutlined, SearchOutlined } from '@ant-design/icons'
-import { useProcedureFields } from '../../features/procedure-fields'
-import { useProcedures, useProcedureCount } from '../../features/procedures'
+import { useProcedureFields, useProcedureFieldCounts } from '../../features/procedure-fields'
+import { useProcedures } from '../../features/procedures'
 import { ProcedureDetailModal } from './ProcedureDetailModal'
 
 const LINH_VUC_COLORS: { [key: string]: string } = {
@@ -24,11 +24,8 @@ const FilterButton: React.FC<{
   label: string
   isActive: boolean
   onClick: () => void
-  idLinhVuc?: string
-}> = ({ label, isActive, onClick, idLinhVuc }) => {
-  // Fetch count for this field using React Query hook
-  const { count } = useProcedureCount(idLinhVuc)
-  
+  count: number
+}> = ({ label, isActive, onClick, count }) => {
   return (
     <button
       onClick={onClick}
@@ -58,6 +55,9 @@ export const ProceduresPage: React.FC = () => {
   // Fetch lĩnh vực từ API
   const { fields: linhVucList, isLoading: isLoadingFields } = useProcedureFields()
   
+  // Fetch counts từ API mới
+  const { counts: fieldCounts, isLoading: isLoadingCounts } = useProcedureFieldCounts()
+  
   // Fetch procedures with server-side pagination (size=12)
   const { 
     procedures: displayProcedures, 
@@ -71,6 +71,20 @@ export const ProceduresPage: React.FC = () => {
     search: debouncedSearch || undefined,
     idLinhVuc: activeFilter !== 'all' ? activeFilter : undefined,
   })
+
+  // Tạo map count theo id để tra cứu nhanh
+  const countMap = useMemo(() => {
+    const map: { [key: string]: number } = {}
+    let totalCount = 0
+    
+    fieldCounts.forEach(item => {
+      map[item.id] = item.tong_thu_tuc
+      totalCount += item.tong_thu_tuc
+    })
+    
+    map['all'] = totalCount
+    return map
+  }, [fieldCounts])
 
   // Debounce search input
   useEffect(() => {
@@ -142,7 +156,7 @@ export const ProceduresPage: React.FC = () => {
 
           {/* Filter Buttons */}
           <div className="flex flex-wrap gap-3">
-            {isLoadingFields ? (
+            {isLoadingFields || isLoadingCounts ? (
               <Spin />
             ) : (
               <>
@@ -150,6 +164,7 @@ export const ProceduresPage: React.FC = () => {
                   label="Tất cả"
                   isActive={activeFilter === 'all'}
                   onClick={() => handleFilterChange('all')}
+                  count={countMap['all'] || 0}
                 />
                 {linhVucList
                   .filter((field) => field.is_active)
@@ -159,7 +174,7 @@ export const ProceduresPage: React.FC = () => {
                       label={field.ten_linh_vuc}
                       isActive={activeFilter === field.id}
                       onClick={() => handleFilterChange(field.id)}
-                      idLinhVuc={field.id}
+                      count={countMap[field.id] || 0}
                     />
                   ))}
               </>

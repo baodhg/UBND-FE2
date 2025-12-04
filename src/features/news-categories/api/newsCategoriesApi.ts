@@ -52,6 +52,18 @@ export interface GetNewsCategoryByIdResponse {
   pagination: null
 }
 
+export interface NewsCategoryCount {
+  id: string
+  ten_danh_muc: string
+  tong_tin_tuc: number
+}
+
+export interface GetNewsCategoryCountsResponse {
+  success: boolean
+  data: NewsCategoryCount[]
+  message: string
+}
+
 export const newsCategoriesApi = {
   getNewsCategories: async (
     params: GetNewsCategoriesParams = {}
@@ -115,6 +127,16 @@ export const newsCategoriesApi = {
     }
     
     throw new Error(response.data.message || 'Không tìm thấy danh mục tin tức')
+  },
+
+  getNewsCategoryCounts: async (): Promise<NewsCategoryCount[]> => {
+    const response = await apiClient.get<GetNewsCategoryCountsResponse>('/danh-muc-tin-tuc/count-tin-tuc')
+
+    if (response.data.success && Array.isArray(response.data.data)) {
+      return response.data.data
+    }
+    
+    throw new Error(response.data.message || 'Có lỗi xảy ra khi lấy số lượng tin tức')
   },
 }
 

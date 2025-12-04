@@ -3,6 +3,7 @@ import apiClient from '../../../lib/axios'
 export interface LoginRequest {
   tenDangNhap: string
   matKhau: string
+  recaptchaToken?: string
 }
 
 interface RawLoginResponse {
@@ -61,7 +62,8 @@ const normalizeLoginResponse = (response: RawLoginResponse): LoginResponse => {
 
 export const authApi = {
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {
-    const response = await apiClient.post<RawLoginResponse>('/auths/login', credentials)
+    const endpoint = credentials.recaptchaToken ? '/auths/login-with-captcha' : '/auths/login'
+    const response = await apiClient.post<RawLoginResponse>(endpoint, credentials)
     return normalizeLoginResponse(response.data)
   },
 }

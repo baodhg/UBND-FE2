@@ -16,6 +16,8 @@ export type {
 } from './api/proceduresApi'
 export { useProcedures } from './hooks/useProcedures'
 export { useProcedureById } from './hooks/useProcedureById'
+export { useAllProcedures } from './hooks/useAllProcedures'
+export { useProcedureCount } from './hooks/useProcedureCount'
 export {
   setProcedures,
   setPagination,

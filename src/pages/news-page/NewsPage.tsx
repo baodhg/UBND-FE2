@@ -2,8 +2,8 @@ import React, { useState, useMemo, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { List, Tag, Space, Spin, Card } from 'antd'
 import { CalendarOutlined, SearchOutlined } from '@ant-design/icons'
-import { useNewsList, useNewsCategoryCount } from '../../features/news'
-import { useNewsCategories } from '../../features/news-categories'
+import { useNewsList } from '../../features/news'
+import { useNewsCategories, useNewsCategoryCounts } from '../../features/news-categories'
 import { resolveToAbsoluteUrl } from '../../utils/url'
 
 // Component to render a single filter button with its count
@@ -11,11 +11,8 @@ const CategoryButton: React.FC<{
   label: string
   isActive: boolean
   onClick: () => void
-  categoryId?: string
-}> = ({ label, isActive, onClick, categoryId }) => {
-  // Fetch count for this category using React Query hook
-  const { count } = useNewsCategoryCount(categoryId)
-  
+  count: number
+}> = ({ label, isActive, onClick, count }) => {
   return (
     <button
       onClick={onClick}
@@ -39,9 +36,19 @@ export const NewsPage: React.FC = () => {
   const searchFromUrl = searchParams.get('search') || ''
   
   const [search, setSearch] = useState(searchFromUrl)
+  const [debouncedSearch, setDebouncedSearch] = useState(searchFromUrl)
   const [page, setPage] = useState(1)
   const [activeTab, setActiveTab] = useState(categoryFromUrl)
   const pageSize = 10
+
+  // Debounce search input để tránh spam API
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search)
+    }, 500) // Đợi 500ms sau khi người dùng ngừng gõ
+
+    return () => clearTimeout(handler)
+  }, [search])
 
   // Sync state with URL params when they change
   useEffect(() => {
@@ -55,21 +62,30 @@ export const NewsPage: React.FC = () => {
     isActive: true,
   })
 
+  // Fetch counts từ API mới
+  const { counts: categoryCounts, isLoading: isLoadingCounts } = useNewsCategoryCounts()
+
   const { newsList, pagination, isLoading } = useNewsList({
     page,
     size: pageSize,
     isActive: true,
-    search: search || undefined,
+    search: debouncedSearch || undefined, // Dùng debouncedSearch thay vì search
     idDanhMuc: activeTab !== 'all' ? activeTab : undefined,
   })
 
-  console.log('News data:', { 
-    newsList, 
-    pagination, 
-    total: newsList.length,
-    activeTab,
-    idDanhMuc: activeTab !== 'all' ? activeTab : undefined,
-  })
+  // Tạo map count theo id để tra cứu nhanh
+  const countMap = useMemo(() => {
+    const map: { [key: string]: number } = {}
+    let totalCount = 0
+    
+    categoryCounts.forEach(item => {
+      map[item.id] = item.tong_tin_tuc
+      totalCount += item.tong_tin_tuc
+    })
+    
+    map['all'] = totalCount
+    return map
+  }, [categoryCounts])
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -88,7 +104,7 @@ export const NewsPage: React.FC = () => {
   }
 
   const handleSearch = (value: string) => {
-    setSearch(value)
+    setDebouncedSearch(value) // Cập nhật debouncedSearch ngay lập tức khi nhấn Enter
     setPage(1)
     // Update URL params
     const params = new URLSearchParams(searchParams)
@@ -104,13 +120,15 @@ export const NewsPage: React.FC = () => {
     const allButton = { 
       key: 'all', 
       label: 'Tất cả',
+      count: countMap['all'] || 0,
     }
     const categoryButtons = categories.map((category) => ({
       key: category.id,
       label: category.ten_danh_muc,
+      count: countMap[category.id] || 0,
     }))
     return [allButton, ...categoryButtons]
-  }, [categories])
+  }, [categories, countMap])
 
   return (
     <div className="py-6 sm:py-8 lg:py-12 bg-gray-50 min-h-screen">
@@ -148,7 +166,7 @@ export const NewsPage: React.FC = () => {
 
           {/* Filter Buttons */}
           <div className="flex flex-wrap gap-3 mb-6">
-            {isCategoriesLoading ? (
+            {isCategoriesLoading || isLoadingCounts ? (
               <Spin />
             ) : (
               filterButtons.map((filter) => (
@@ -156,7 +174,7 @@ export const NewsPage: React.FC = () => {
                   key={filter.key}
                   label={filter.label}
                   isActive={activeTab === filter.key}
-                  categoryId={filter.key !== 'all' ? filter.key : undefined}
+                  count={filter.count}
                   onClick={() => {
                     setActiveTab(filter.key)
                     setPage(1)

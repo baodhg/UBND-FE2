@@ -12,6 +12,7 @@ const apiClient = axios.create({
 // Public endpoints that don't require authentication
 const PUBLIC_ENDPOINTS = [
   '/auths/login',
+  '/auths/login-with-captcha',
   '/auths/register',
 ]
 

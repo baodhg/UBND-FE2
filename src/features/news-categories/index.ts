@@ -8,4 +8,5 @@ export * from './store/newsCategoriesSlice'
 export * from './hooks/useNewsCategories'
 export * from './hooks/useNewsCategoriesWithPagination'
 export * from './hooks/useNewsCategoryById'
+export * from './hooks/useNewsCategoryCounts'
 

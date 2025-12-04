@@ -30,7 +30,7 @@ export const LoginForm = () => {
   const [loginError, setLoginError] = useState('')
   const recaptchaRef = useRef<HTMLDivElement>(null)
   const recaptchaWidgetId = useRef<number | null>(null)
-  const recaptchaTimeoutRef = useRef<number>()
+  const recaptchaTimeoutRef = useRef<number | undefined>(undefined)
   const { mutate: login, isPending } = useLogin()
 
   useEffect(() => {

@@ -16,6 +16,7 @@ declare global {
         }
       ) => number
       reset: (widgetId?: number) => void
+      ready: (callback: () => void) => void
     }
   }
 }
@@ -44,22 +45,26 @@ export const LoginForm = () => {
       }
 
       if (window.grecaptcha?.render) {
-        try {
-          recaptchaWidgetId.current = window.grecaptcha.render(recaptchaRef.current, {
-            sitekey: RECAPTCHA_SITE_KEY,
-            callback: (token: string) => {
-              setRecaptchaToken(token)
-              setRecaptchaError('')
-            },
-            'expired-callback': () => {
-              setRecaptchaToken('')
-              setRecaptchaError('Phiên reCAPTCHA đã hết hạn, vui lòng xác thực lại.')
-            },
-          })
-        } catch (error) {
-          console.error('Không thể khởi tạo reCAPTCHA:', error)
-          setRecaptchaError('Không thể tải reCAPTCHA. Vui lòng thử lại sau.')
-        }
+        window.grecaptcha.ready(() => {
+          if (!recaptchaRef.current || recaptchaWidgetId.current !== null) return
+
+          try {
+            recaptchaWidgetId.current = window.grecaptcha!.render(recaptchaRef.current, {
+              sitekey: RECAPTCHA_SITE_KEY,
+              callback: (token: string) => {
+                setRecaptchaToken(token)
+                setRecaptchaError('')
+              },
+              'expired-callback': () => {
+                setRecaptchaToken('')
+                setRecaptchaError('Phiên reCAPTCHA đã hết hạn, vui lòng xác thực lại.')
+              },
+            })
+          } catch (error) {
+            console.error('Không thể khởi tạo reCAPTCHA:', error)
+            setRecaptchaError('Không thể tải reCAPTCHA. Vui lòng thử lại sau.')
+          }
+        })
         return
       }
 
@@ -123,12 +128,9 @@ export const LoginForm = () => {
       </div>
 
       {/* Title */}
-      <h1 className="text-lg font-bold text-center text-gray-900 mb-1">
-        Đăng nhập Khu Phố
+      <h1 className="text-lg font-bold text-center text-gray-900 mb-6">
+        Đăng nhập
       </h1>
-      <p className="text-center text-xs text-gray-600 mb-4">
-        Dành cho cán bộ quản lý khu phố
-      </p>
 
       <form onSubmit={handleSubmit} className="space-y-3">
         {/* Username Input */}

@@ -137,7 +137,7 @@ export const Header: React.FC = () => {
               className="flex items-center gap-2 px-5 py-4 text-blue-50 hover:bg-blue-700 hover:text-white transition-all border-l border-blue-500"
             >
               <LogIn size={18} />
-              <span>Đăng nhập Khu Phố</span>
+              <span>Đăng nhập</span>
             </Link>
           )}
         </div>
@@ -205,7 +205,7 @@ export const Header: React.FC = () => {
                 className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-all my-1 border-t border-gray-200 mt-2 pt-3"
               >
                 <LogIn size={18} />
-                <span>Đăng nhập Khu Phố</span>
+                <span>Đăng nhập</span>
               </Link>
             )}
           </div>

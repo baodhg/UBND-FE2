@@ -18,9 +18,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const isNewsPage = pathname.startsWith('/news')
   const isTrackReportPage = pathname.startsWith('/track-report')
   const isFullWidthPage = isLoginPage || isDashboardPage || isHomePage || isProceduresPage || isNewsPage || isTrackReportPage
+  const layoutOverflowClass = isLoginPage ? 'overflow-hidden' : isFullWidthPage ? 'overflow-x-hidden' : ''
 
   return (
-    <div className={`bg-gray-50 flex flex-col min-h-screen ${isFullWidthPage ? 'overflow-x-hidden' : ''}`}>
+    <div className={`bg-gray-50 flex flex-col min-h-screen ${layoutOverflowClass}`}>
       <Header />
       <main className={`flex-grow flex flex-col ${isFullWidthPage ? '' : 'px-4 sm:px-6 lg:px-8'}`}>
         {children}

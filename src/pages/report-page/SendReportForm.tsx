@@ -488,7 +488,7 @@ export const SendReportForm: React.FC = () => {
                 as="input"
                 type="text"
                 id="location"
-                placeholder="Nhập địa chỉ hoặc khu phố"
+                placeholder="Nhập địa chỉ"
                 autoComplete="off"
                 className={`flex h-10 w-full min-w-0 rounded-md border bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 pl-9 sm:pl-10 ${
                   values.location.length > 255 || (values.location && !/^[a-zA-Z0-9\sÀ-ỹ,.\-/]*$/.test(values.location))

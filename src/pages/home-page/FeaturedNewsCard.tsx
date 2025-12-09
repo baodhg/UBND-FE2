@@ -33,15 +33,23 @@ export const FeaturedNewsCard: React.FC<FeaturedNewsCardProps> = ({
             alt={title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
-          <span className="justify-center rounded-md border font-medium w-fit whitespace-nowrap shrink-0 absolute top-3 left-3 sm:top-4 sm:left-4 bg-red-600 text-white px-2 py-1 sm:px-3 text-xs sm:text-sm flex items-center gap-1">
-            <Flame size={14} className="sm:w-4 sm:h-4" />
-            <span>Nổi bật</span>
+          <span className="justify-center rounded-md border font-medium w-fit shrink-0 absolute top-3 left-3 sm:top-4 sm:left-4 bg-red-600 text-white px-2 py-1 sm:px-3 text-xs sm:text-sm flex items-center gap-1 max-w-[calc(100%-2rem)] line-clamp-2 overflow-hidden break-all">
+            <Flame size={14} className="sm:w-4 sm:h-4 flex-shrink-0" />
+            <span className="line-clamp-2">Nổi bật</span>
           </span>
         </div>
         <div className="p-5 sm:p-6 lg:p-10 flex flex-col justify-center bg-white">
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
             {category && (
-              <span className="inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 bg-blue-100 text-blue-700 hover:bg-blue-100">
+              <span 
+                className="rounded-md border px-2 py-0.5 text-xs font-medium w-fit shrink-0 bg-blue-100 text-blue-700 hover:bg-blue-100 break-all max-w-full overflow-hidden"
+                style={{
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  wordBreak: 'break-all'
+                }}
+              >
                 {category}
               </span>
             )}

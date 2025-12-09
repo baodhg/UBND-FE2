@@ -231,7 +231,16 @@ export const NewsPage: React.FC = () => {
                         />
                         <Tag 
                           color="blue" 
-                          className="absolute top-1 left-1 text-xs"
+                          className="absolute top-1 left-1 text-xs line-clamp-2"
+                          style={{ 
+                            maxWidth: 'calc(100% - 0.5rem)',
+                            wordBreak: 'break-all',
+                            whiteSpace: 'normal',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden'
+                          }}
                         >
                           {item.danh_muc_tin_tuc.ten_danh_muc}
                         </Tag>

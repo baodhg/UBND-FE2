@@ -17,15 +17,13 @@ const ReportPage: React.FC = () => {
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50 text-blue-600">
               <Lock size={28} />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Chỉ dành cho cán bộ khu phố</h2>
-            <p className="text-gray-600 mb-6">
-              Vui lòng đăng nhập tài khoản khu phố để gửi hoặc tra cứu phản ánh.
-            </p>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Chỉ dành cho cán bộ</h2>
+            <p className="text-gray-600 mb-6">Vui lòng đăng nhập tài khoản để gửi hoặc tra cứu phản ánh.</p>
             <Link
               to="/login"
               className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-blue-700"
             >
-              Đăng nhập Khu phố
+              Đăng nhập
             </Link>
           </div>
         </div>

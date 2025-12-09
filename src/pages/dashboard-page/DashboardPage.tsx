@@ -357,8 +357,8 @@ export const DashboardPage: React.FC = () => {
         <section className="mb-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Bảng điều khiển khu phố</p>
-              <h1 className="mt-1 text-3xl font-bold text-slate-900">Bảng điều khiển Khu phố</h1>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Bảng điều khiển</p>
+            <h1 className="mt-1 text-3xl font-bold text-slate-900">Bảng điều khiển</h1>
               <p className="mt-0.5 text-sm text-slate-500">Quản lý phản ánh từ người dân Phường Tăng Nhơn Phú</p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">

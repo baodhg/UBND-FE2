@@ -571,7 +571,7 @@ export const DashboardReportModal: React.FC<DashboardReportModalProps> = ({ open
                           as="input"
                           type="text"
                           id="location"
-                          placeholder="Nhập địa chỉ hoặc khu phố"
+                          placeholder="Nhập địa chỉ"
                           autoComplete="off"
                           className="flex h-10 w-full min-w-0 rounded-md border border-gray-300 bg-gray-100 px-3 py-2 sm:py-2.5 text-sm sm:text-base outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 pl-9 sm:pl-10"
                         />

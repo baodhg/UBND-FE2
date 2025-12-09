@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Card, Button, Tag, Spin, Empty, Row, Col, Input } from 'antd'
-import { ClockCircleOutlined, DollarOutlined, ArrowRightOutlined, SearchOutlined } from '@ant-design/icons'
+import { ArrowRightOutlined, SearchOutlined } from '@ant-design/icons'
 import { useProcedureFields, useProcedureFieldCounts } from '../../features/procedure-fields'
 import { useProcedures } from '../../features/procedures'
 import { ProcedureDetailModal } from './ProcedureDetailModal'
@@ -214,7 +214,7 @@ export const ProceduresPage: React.FC = () => {
                             display: 'flex',
                             flexDirection: 'column',
                             height: '100%',
-                            minHeight: '320px'
+                            minHeight: '240px'
                           }
                         }}
                       >
@@ -241,26 +241,6 @@ export const ProceduresPage: React.FC = () => {
                           <p className="text-sm text-gray-600 mb-4 line-clamp-3">
                             {procedure.doi_tuong_thuc_hien || 'Mô tả chi tiết sẽ được cập nhật'}
                           </p>
-
-                          {/* Info - Fixed height */}
-                          <div className="space-y-2 mb-4 flex-shrink-0 h-[64px]">
-                            <div className="flex items-center text-sm text-gray-600">
-                              <ClockCircleOutlined className="mr-2 text-blue-500 flex-shrink-0" />
-                              <span className="line-clamp-1">
-                                {procedure.cach_thuc?.[0]?.thoi_gian_giai_quyet || 'Đang cập nhật thời gian'}
-                              </span>
-                            </div>
-                            <div className="flex items-center text-sm text-gray-600">
-                              <DollarOutlined className="mr-2 text-green-500 flex-shrink-0" />
-                              <span className="line-clamp-1">
-                                {procedure.cach_thuc?.[0]?.le_phi 
-                                  ? (parseInt(procedure.cach_thuc[0].le_phi) > 0 
-                                      ? `${parseInt(procedure.cach_thuc[0].le_phi).toLocaleString('vi-VN')} đ` 
-                                      : 'Miễn phí')
-                                  : 'Đang cập nhật phí'}
-                              </span>
-                            </div>
-                          </div>
 
                           {/* Button - Always at bottom */}
                           <div className="mt-auto pt-2">

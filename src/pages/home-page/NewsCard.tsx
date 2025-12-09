@@ -33,7 +33,15 @@ export const NewsCard: React.FC<NewsCardProps> = ({
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
         {category && (
-          <span className="inline-flex items-center justify-center rounded-md border px-1.5 py-0.5 sm:px-2 font-medium w-fit whitespace-nowrap shrink-0 absolute top-2 left-2 sm:top-3 sm:left-3 bg-white/95 text-gray-700 text-xs">
+          <span 
+            className="rounded-md border px-1.5 py-0.5 sm:px-2 font-medium w-fit shrink-0 absolute top-2 left-2 sm:top-3 sm:left-3 bg-white/95 text-gray-700 text-xs break-all max-w-[calc(100%-1rem)] overflow-hidden"
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              wordBreak: 'break-all'
+            }}
+          >
             {category}
           </span>
         )}

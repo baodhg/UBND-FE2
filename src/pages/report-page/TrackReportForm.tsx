@@ -4,8 +4,8 @@ import { useSearchReportsByTitle, useGetReportByCode } from '../../features/repo
 import type { SearchResultItem } from '../../features/reports/api/searchReportsByTitle'
 import { videoUploadApi } from '../../features/video-upload'
 import { resolveToAbsoluteUrl } from '../../utils/url'
+import { useParams, useNavigate } from 'react-router-dom'
 
-// Video Player Component with multiple URL fallback
 export const VideoPlayer: React.FC<{ idVideo: string; videoUrls: string[]; videoIndex: number }> = ({ 
   idVideo, 
   videoUrls, 
@@ -16,7 +16,6 @@ export const VideoPlayer: React.FC<{ idVideo: string; videoUrls: string[]; video
   const [videoError, setVideoError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Try to get video URL from API first
   useEffect(() => {
     const fetchVideoUrl = async () => {
       setIsLoading(true)
@@ -32,7 +31,6 @@ export const VideoPlayer: React.FC<{ idVideo: string; videoUrls: string[]; video
         console.error('Error fetching video URL from API:', error)
       }
       
-      // If API doesn't return URL, fallback to hardcoded URLs
       setIsLoading(false)
     }
     
@@ -43,7 +41,6 @@ export const VideoPlayer: React.FC<{ idVideo: string; videoUrls: string[]; video
     const currentUrl = videoUrl || videoUrls[currentUrlIndex]
     console.error(`Video error with URL:`, currentUrl, e)
     
-    // If we have a videoUrl from API and it failed, try hardcoded URLs
     if (videoUrl && currentUrlIndex < videoUrls.length - 1) {
       console.log(`API URL failed, trying hardcoded URL ${currentUrlIndex + 1}`)
       setVideoUrl(null)
@@ -131,20 +128,25 @@ export const TrackReportForm: React.FC = () => {
   const [validationError, setValidationError] = useState('')
   const [showErrorModal, setShowErrorModal] = useState(false)
   const [maPhanAnh, setMaPhanAnh] = useState<string>('')
-
-  // Step 1: Search by title to get list of reports
+  const { id } = useParams()
   const { data: searchResult, isLoading: isSearching, error: searchError } = useSearchReportsByTitle(
     searchTerm,
     showResult
   )
-  
-  // Step 2: Get full report details by ma_phan_anh
   const { data: report, isLoading: isLoadingDetail, error: detailError } = useGetReportByCode(maPhanAnh, !!maPhanAnh)
-  
   const isLoading = isSearching || isLoadingDetail
   const error = searchError || detailError
 
-  // When search result is available, auto-pick if only 1 result; otherwise wait for user to choose
+  useEffect(() => {
+    if (id) {
+      setMaPhanAnh(id);
+      setSearchQuery(id);
+      setShowResult(true);
+
+      setSearchTerm('')
+    }
+  }, [id])
+
   React.useEffect(() => {
     console.log('🔍 Search result:', searchResult)
     if (!searchResult || !Array.isArray(searchResult)) {
@@ -162,7 +164,6 @@ export const TrackReportForm: React.FC = () => {
     }
   }, [searchResult])
 
-  // Debug report data
   React.useEffect(() => {
     console.log('📄 Report data:', report)
     console.log('⏳ Is loading:', isLoading)

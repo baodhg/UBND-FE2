@@ -4,7 +4,7 @@ import { useSearchReportsByTitle, useGetReportByCode } from '../../features/repo
 import type { SearchResultItem } from '../../features/reports/api/searchReportsByTitle'
 import { videoUploadApi } from '../../features/video-upload'
 import { resolveToAbsoluteUrl } from '../../utils/url'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 
 export const VideoPlayer: React.FC<{ idVideo: string; videoUrls: string[]; videoIndex: number }> = ({ 
   idVideo, 

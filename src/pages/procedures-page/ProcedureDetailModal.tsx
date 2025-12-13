@@ -137,10 +137,10 @@ export const ProcedureDetailModal: React.FC<ProcedureDetailModalProps> = ({
           {/* Header */}
           <div className="mb-6">
             <div className="text-xs text-gray-500 mb-2">{getLinhVucName()}</div>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-3 break-all">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-3 break-words">
               {procedure.ten_thu_tuc}
             </h2>
-            <p className="text-sm text-gray-600 break-all">
+            <p className="text-sm text-gray-600 break-words">
               {procedure.doi_tuong_thuc_hien}
             </p>
           </div>
@@ -153,9 +153,9 @@ export const ProcedureDetailModal: React.FC<ProcedureDetailModalProps> = ({
                 <div className="bg-blue-50 rounded-lg p-4 border border-blue-100 min-h-[88px] flex flex-col">
                   <div className="flex items-center gap-2 mb-2 min-h-[20px]">
                     <ClockCircleOutlined className="text-blue-500 text-xl leading-none flex-shrink-0" />
-                    <div className="text-xs text-gray-600 font-medium leading-none break-all">Thời gian xử lý</div>
+                    <div className="text-xs text-gray-600 font-medium leading-none break-words">Thời gian xử lý</div>
                   </div>
-                  <div className="text-base font-semibold text-blue-600 break-all flex-1 flex items-center">
+                  <div className="text-base font-semibold text-blue-600 break-words flex-1 flex items-center">
                     {processingInfo.time}
                   </div>
                 </div>
@@ -166,12 +166,12 @@ export const ProcedureDetailModal: React.FC<ProcedureDetailModalProps> = ({
                 <div className="bg-green-50 rounded-lg p-4 border border-green-100 min-h-[88px] flex flex-col">
                   <div className="flex items-center gap-2 mb-2 min-h-[20px]">
                     <DollarOutlined className="text-green-500 text-xl leading-none flex-shrink-0" />
-                    <div className="text-xs text-gray-600 font-medium leading-none break-all">Lệ phí</div>
+                    <div className="text-xs text-gray-600 font-medium leading-none break-words">Lệ phí</div>
                   </div>
-                  <div className="text-base font-semibold text-green-600 break-all flex-1 flex items-start flex-col">
+                  <div className="text-base font-semibold text-green-600 break-words flex-1 flex items-start flex-col">
                     <div>{processingInfo.fee}</div>
                     {processingInfo.feeNote && (
-                      <div className="text-xs text-gray-500 mt-1 break-all">{processingInfo.feeNote}</div>
+                      <div className="text-xs text-gray-500 mt-1 break-words">{processingInfo.feeNote}</div>
                     )}
                   </div>
                 </div>
@@ -192,11 +192,11 @@ export const ProcedureDetailModal: React.FC<ProcedureDetailModalProps> = ({
                         {step.thu_tu_buoc}
                       </div>
                       <div className="flex-1 pt-0.5">
-                        <div className="text-sm font-medium text-gray-900 break-all">
+                        <div className="text-sm font-medium text-gray-900 break-words">
                           {step.ten_buoc}
                         </div>
                         {step.mo_ta_buoc && (
-                          <div className="text-sm text-gray-600 mt-1 break-all">{step.mo_ta_buoc}</div>
+                          <div className="text-sm text-gray-600 mt-1 break-words">{step.mo_ta_buoc}</div>
                         )}
                       </div>
                     </div>
@@ -214,12 +214,12 @@ export const ProcedureDetailModal: React.FC<ProcedureDetailModalProps> = ({
                   <div key={truongHop.id} className="flex flex-col h-full">
                     <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 flex-1 flex flex-col">
                       {truongHop.ten_truong_hop && (
-                        <div className="text-sm font-semibold text-gray-900 mb-3 break-all">
+                        <div className="text-sm font-semibold text-gray-900 mb-3 break-words">
                           {truongHop.ten_truong_hop}
                         </div>
                       )}
                       {truongHop.mo_ta && (
-                        <div className="text-xs text-gray-600 mb-3 pb-3 border-b border-gray-300 break-all">
+                        <div className="text-xs text-gray-600 mb-3 pb-3 border-b border-gray-300 break-words">
                           {truongHop.mo_ta}
                         </div>
                       )}
@@ -228,15 +228,15 @@ export const ProcedureDetailModal: React.FC<ProcedureDetailModalProps> = ({
                           <li key={item.id} className="flex gap-2 text-sm">
                             <span className="text-blue-500 mt-1 font-bold flex-shrink-0">•</span>
                             <div className="flex-1 min-w-0">
-                              <div className="text-gray-900 break-all">{item.ten_thanh_phan}</div>
+                              <div className="text-gray-900 break-words">{item.ten_thanh_phan}</div>
                               {item.mo_ta_chi_tiet && (
-                                <div className="text-xs text-gray-500 mt-1 break-all">{item.mo_ta_chi_tiet}</div>
+                                <div className="text-xs text-gray-500 mt-1 break-words">{item.mo_ta_chi_tiet}</div>
                               )}
                               {item.ghi_chu && (
-                                <div className="text-xs text-gray-500 italic mt-1 break-all">{item.ghi_chu}</div>
+                                <div className="text-xs text-gray-500 italic mt-1 break-words">{item.ghi_chu}</div>
                               )}
                               {(item.so_luong_ban_chinh > 0 || item.so_luong_ban_sao > 0) && (
-                                <div className="text-xs text-blue-600 mt-1 font-medium break-all">
+                                <div className="text-xs text-blue-600 mt-1 font-medium break-words">
                                   {item.so_luong_ban_chinh > 0 && `Bản chính: ${item.so_luong_ban_chinh}`}
                                   {item.so_luong_ban_chinh > 0 && item.so_luong_ban_sao > 0 && ' | '}
                                   {item.so_luong_ban_sao > 0 && `Bản sao: ${item.so_luong_ban_sao}`}
@@ -280,7 +280,7 @@ export const ProcedureDetailModal: React.FC<ProcedureDetailModalProps> = ({
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <FileTextOutlined className="text-blue-500 text-lg flex-shrink-0" />
                       <div className="text-left flex-1 min-w-0">
-                        <div className="text-sm font-medium text-gray-900 break-all">
+                        <div className="text-sm font-medium text-gray-900 break-words">
                           {item.mau_don.ten_mau_don}
                         </div>
                         <div className="text-xs text-gray-500 mt-0.5">
@@ -306,10 +306,10 @@ export const ProcedureDetailModal: React.FC<ProcedureDetailModalProps> = ({
                     <EnvironmentOutlined className="text-blue-500 text-lg flex-shrink-0 mt-0.5" />
                     <div className="flex-1 min-w-0">
                       <div className="text-xs text-gray-500 mb-1">Địa chỉ nộp hồ sơ</div>
-                      <div className="text-sm text-gray-900 font-medium break-all">
+                      <div className="text-sm text-gray-900 font-medium break-words">
                         {procedure.co_so_dich_vu_cong.ten_co_so}
                       </div>
-                      <div className="text-sm text-gray-700 mt-1 break-all">
+                      <div className="text-sm text-gray-700 mt-1 break-words">
                         {procedure.co_so_dich_vu_cong.dia_chi}
                       </div>
                     </div>

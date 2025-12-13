@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Search, Calendar, AlertCircle, X, Video, ClipboardList } from 'lucide-react'
+import { Calendar, AlertCircle, X, Video, ClipboardList } from 'lucide-react'
 import { useSearchReportsByTitle, useGetReportByCode } from '../../features/reports'
 import type { SearchResultItem } from '../../features/reports/api/searchReportsByTitle'
 import { videoUploadApi } from '../../features/video-upload'
@@ -251,12 +251,6 @@ export const TrackReportForm: React.FC = () => {
           </div>
         </div>
       )}
-
-      <div className="bg-white text-card-foreground rounded-xl p-6 border border-gray-200 shadow-lg overflow-hidden">
-        <h3 className="mb-6 flex items-center gap-2">
-          <Search size={24} className="text-blue-600" />
-          <span className="text-lg font-semibold">Tra cứu tiến độ</span>
-        </h3>
         <div className="flex gap-3">
           <input
             type="text"
@@ -292,7 +286,6 @@ export const TrackReportForm: React.FC = () => {
             <span>{validationError}</span>
           </div>
         )}
-      </div>
 
       {/* Error Modal - Only show when not found */}
       {showErrorModal && error && (

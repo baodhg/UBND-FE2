@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Search, Calendar, AlertCircle, X, Video, ClipboardList } from 'lucide-react'
+import { Calendar, AlertCircle, X, Video, ClipboardList } from 'lucide-react'
 import { useSearchReportsByTitle, useGetReportByCode } from '../../features/reports'
 import type { SearchResultItem } from '../../features/reports/api/searchReportsByTitle'
 import { videoUploadApi } from '../../features/video-upload'

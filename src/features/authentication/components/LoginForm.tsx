@@ -95,6 +95,7 @@ export const LoginForm = () => {
     e.preventDefault()
 
     setLoginError('')
+    console.log(recaptchaToken)
 
     if (!recaptchaToken) {
       setRecaptchaError('Vui lòng xác thực reCAPTCHA trước khi đăng nhập.')

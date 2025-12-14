@@ -11,7 +11,7 @@ export const LoginPage: React.FC = () => {
   useAuthRedirect('/dashboard')
 
   return (
-    <div className="flex-1 flex items-center justify-center bg-gray-50 px-4 py-8 sm:py-12 overflow-y-auto">
+    <div className="flex-1 flex items-center justify-center bg-gray-50 px-4 py-8 sm:py-12">
       <div className="w-full max-w-[320px]">
         {/* Back to Home Button */}
         <button

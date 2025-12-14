@@ -11,6 +11,7 @@ import { NewsPage } from './pages/news-page/NewsPage'
 import { NewsDetailPage } from './pages/news-page/NewsDetailPage'
 import { DashboardPage } from './pages/dashboard-page/DashboardPage'
 import { TrackReportPage } from './pages/TrackReportPage'
+import NotFound from './pages/NotFound';
 function App() {
   return (
     <ThemeProvider>
@@ -26,6 +27,9 @@ function App() {
             <Route path="/login" element={<MainLayout><LoginPage /></MainLayout>} />
             <Route path="/profile" element={<MainLayout><ProfilePage /></MainLayout>} />
             <Route path="/dashboard" element={<MainLayout><DashboardPage /></MainLayout>} />
+
+            <Route path="/track-report/:id" element={<MainLayout><TrackReportPage /></MainLayout>} />
+            <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

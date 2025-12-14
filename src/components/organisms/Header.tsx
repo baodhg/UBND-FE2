@@ -96,15 +96,6 @@ export const Header: React.FC = () => {
           
           {isAuthenticated && user ? (
             <>
-              {/* User Info - Hidden on mobile, shown on md+ */}
-              <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-100 mr-2">
-                <User size={16} className="text-blue-600" />
-                <div>
-                  <p className="text-sm text-gray-800 font-medium">{userProfile?.ho_va_ten || user.name || 'Khu phố'}</p>
-                  <p className="text-xs text-gray-500">{userProfile?.ten_dang_nhap || 'Đang tải...'}</p>
-                </div>
-              </div>
-              
               {/* Dashboard Link */}
               <Link
                 to="/dashboard"
@@ -137,7 +128,7 @@ export const Header: React.FC = () => {
               className="flex items-center gap-2 px-5 py-4 text-blue-50 hover:bg-blue-700 hover:text-white transition-all border-l border-blue-500"
             >
               <LogIn size={18} />
-              <span>Đăng nhập Khu Phố</span>
+              <span>Đăng nhập</span>
             </Link>
           )}
         </div>
@@ -205,7 +196,7 @@ export const Header: React.FC = () => {
                 className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-all my-1 border-t border-gray-200 mt-2 pt-3"
               >
                 <LogIn size={18} />
-                <span>Đăng nhập Khu Phố</span>
+                <span>Đăng nhập</span>
               </Link>
             )}
           </div>
